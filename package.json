@@ -1,0 +1,32 @@
+{
+  "name": "omp-noesis",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Cognitive substrate extension for Oh My Pi — structured cognitive state, AGM belief revision, compaction survival, Graphify perception",
+  "main": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "smoke:rpc": "bun run scripts/rpc/smoke.ts"
+  },
+  "peerDependencies": {
+    "zod": "^4"
+  },
+  "dependencies": {
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.0",
+    "@types/node": "^22.0.0",
+    "@types/uuid": "^10.0.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.0"
+  },
+  "omp": {
+    "extensions": ["./src/index.ts"]
+  },
+  "engines": {
+    "bun": ">=1.2.0"
+  }
+}
