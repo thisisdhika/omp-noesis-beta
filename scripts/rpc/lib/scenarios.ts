@@ -71,3 +71,9 @@ export const multiTurnSetup = (name: string): string => {
     "Reply with: PHASE1_OK",
   ].join("\n");
 };
+
+
+export async function seedBelief(h: { prompt(message: string): Promise<void>; waitIdle(): Promise<void> }, beliefPayload: Record<string, unknown>): Promise<void> {
+  await h.prompt(toolCmd("noesis_believe", beliefPayload));
+  await h.waitIdle();
+}

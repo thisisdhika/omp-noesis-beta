@@ -49,6 +49,8 @@ export const AttentionLayerSchema = z.object({
   files: z.array(z.string()).max(10).default([]),
   contextUsage: z.number().default(0),
   updatedAt: z.string().default(""),
+  graphFindings: z.array(z.lazy(() => GraphFindingSchema)).optional(),
+  __graphFindings: z.array(z.lazy(() => GraphFindingSchema)).optional(),
 });
 
 export type AttentionLayer = z.infer<typeof AttentionLayerSchema>;
@@ -254,16 +256,29 @@ export type NoesisState = z.infer<typeof NoesisStateSchema>;
 // Transient types (not serialized to disk)
 // ============================================================================
 
-export interface GraphFinding {
-  nodeName: string;
-  relation?: string;
-  confidence: number | null;
-  confidenceLabel: string;
-  community?: string;
-  isGodNode: boolean;
-  isSurprising: boolean;
-  rawSnippet: string;
-}
+export const ConfidenceLabelSchema = z.union([
+  z.literal("EXTRACTED"),
+  z.literal("AMBIGUOUS"),
+  z.string().regex(/^INFERRED(?:\s+\d+(?:\.\d+)?)?$/),
+]);
+
+export const GraphFindingSchema = z.object({
+  nodeName: z.string(),
+  relation: z.string().optional(),
+  confidence: z.number().nullable(),
+  confidenceLabel: ConfidenceLabelSchema,
+  community: z.string().optional(),
+  isGodNode: z.boolean(),
+  isSurprising: z.boolean(),
+  rawSnippet: z.string(),
+});
+
+export type GraphFinding = z.infer<typeof GraphFindingSchema>;
+
+export type AttentionWithTransientFindings = AttentionLayer & {
+  graphFindings?: GraphFinding[];
+  __graphFindings?: GraphFinding[];
+};
 
 export interface StaleReviewNote {
   beliefId: string;
@@ -379,6 +394,7 @@ export interface ToolResultEvent {
   details?: Record<string, unknown>;
   isError?: boolean;
 }
+
 export const NoesisCommitParamsSchema = z.object({
   mode: z.enum(["extend", "replace"]),
   goal: z.string().optional(),

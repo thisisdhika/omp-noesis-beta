@@ -1,11 +1,18 @@
 import type { StateManager } from "../infrastructure/state-manager.js";
 import * as commitmentDomain from "../domains/commitment/commitment-domain.js";
 import { checkConsistency } from "../domains/commitment/consistency-strategy.js";
-import { NoesisCommitParamsSchema, type NoesisCommitParams } from "../schema.js";
+import { NoesisCommitParamsSchema, type NoesisCommitParams, type Workflow } from "../schema.js";
+import { jsonToolResult } from "./tool-result.js";
 
 interface CommitDeps {
   state: StateManager;
 }
+
+type CommitResult = {
+  mode: NoesisCommitParams["mode"];
+  workflow: Workflow;
+  warnings: string[];
+};
 
 export function createCommitTool(deps: CommitDeps) {
   return {
@@ -20,34 +27,28 @@ export function createCommitTool(deps: CommitDeps) {
       _onUpdate?: (update: unknown) => void,
       _ctx?: unknown,
     ) {
-      let result: unknown;
+      let result!: CommitResult;
 
-      deps.state.mutate(s => {
+      deps.state.mutate((state) => {
         if (params.mode === "replace" && params.goal !== undefined) {
-          // Preserve completed steps from old workflow
-          const completed = s.commitment.workflow.steps.filter(st => st.status === "done" || st.status === "skipped");
-          const newSteps = [...completed, ...(params.steps ?? [])];
-          commitmentDomain.replaceWorkflow(s, params.goal, newSteps, params.actions ?? []);
+          const completed = state.commitment.workflow.steps.filter((step) => step.status === "done" || step.status === "skipped");
+          commitmentDomain.replaceWorkflow(state, params.goal, [...completed, ...(params.steps ?? [])], params.actions ?? []);
         } else if (params.mode === "extend") {
-          commitmentDomain.extendWorkflow(s, params.steps ?? [], params.actions ?? []);
+          commitmentDomain.extendWorkflow(state, params.steps ?? [], params.actions ?? []);
         }
 
         if (params.status !== undefined) {
-          commitmentDomain.updateWorkflowStatus(s, params.status);
+          commitmentDomain.updateWorkflowStatus(state, params.status);
         }
 
-        const warnings = checkConsistency(s);
         result = {
           mode: params.mode,
-          workflow: s.commitment.workflow,
-          warnings,
+          workflow: state.commitment.workflow,
+          warnings: checkConsistency(state),
         };
       });
 
-      return {
-        content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
-        details: result,
-      };
+      return jsonToolResult(result);
     },
   };
 }

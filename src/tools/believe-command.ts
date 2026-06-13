@@ -5,11 +5,20 @@ import {
   type NoesisBelieveFactParams,
   type NoesisBelieveDecisionParams,
   type NoesisBelieveLearningParams,
+  type BeliefFact,
+  type BeliefDecision,
+  type LearningEntry,
 } from "../schema.js";
+import { jsonToolResult } from "./tool-result.js";
 
 interface BelieveDeps {
   state: StateManager;
 }
+
+type BelieveResult =
+  | { type: "fact"; created: BeliefFact; superseded: BeliefFact[] }
+  | { type: "decision"; created: BeliefDecision; superseded: BeliefDecision[] }
+  | { type: "learning"; entry: LearningEntry | null; resolved: boolean };
 
 export function createBelieveTool(deps: BelieveDeps) {
   return {
@@ -24,32 +33,29 @@ export function createBelieveTool(deps: BelieveDeps) {
       _onUpdate?: (update: unknown) => void,
       _ctx?: unknown,
     ) {
-      let result: unknown;
+      let result: BelieveResult | undefined;
 
-      deps.state.mutate(s => {
+      deps.state.mutate((state) => {
         switch (params.type) {
           case "fact": {
-            const r = beliefDomain.addFact(s, params);
-            result = { type: "fact", created: r.created, superseded: r.superseded };
+            const created = beliefDomain.addFact(state, params);
+            result = { type: "fact", created: created.created, superseded: created.superseded };
             break;
           }
           case "decision": {
-            const r = beliefDomain.addDecision(s, params);
-            result = { type: "decision", created: r.created, superseded: r.superseded };
+            const created = beliefDomain.addDecision(state, params);
+            result = { type: "decision", created: created.created, superseded: created.superseded };
             break;
           }
           case "learning": {
-            const entry = beliefDomain.resolveLearning(s, params.learningId, params.rootCause ?? "", params.fix ?? "");
+            const entry = beliefDomain.resolveLearning(state, params.learningId, params.rootCause ?? "", params.fix ?? "");
             result = { type: "learning", entry, resolved: entry !== null };
             break;
           }
         }
       });
 
-      return {
-        content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
-        details: result,
-      };
+      return jsonToolResult(result);
     },
   };
 }

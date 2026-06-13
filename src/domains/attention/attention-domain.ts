@@ -1,6 +1,10 @@
 import { truncate } from "../../shared/text.js";
 import { nowISO } from "../../shared/time.js";
-import type { NoesisState, GraphFinding, AttentionLayer } from "../../schema.js";
+import type { GraphFinding, NoesisState } from "../../schema.js";
+
+function transientAttention(s: NoesisState) {
+  return s.attention;
+}
 
 export function setFocus(s: NoesisState, focus: string): void {
   s.attention.focus = truncate(focus, 200);
@@ -15,16 +19,7 @@ export function setFiles(s: NoesisState, files: string[]): void {
   s.attention.files = files.slice(0, 10);
 }
 
-function transientAttention(s: NoesisState): AttentionLayer & {
-  graphFindings?: GraphFinding[];
-} {
-  return s.attention as AttentionLayer & { graphFindings?: GraphFinding[] };
-}
-
-export function storeGraphFindings(
-  s: NoesisState,
-  findings: GraphFinding[],
-): void {
+export function storeGraphFindings(s: NoesisState, findings: GraphFinding[]): void {
   transientAttention(s).graphFindings = findings;
 }
 

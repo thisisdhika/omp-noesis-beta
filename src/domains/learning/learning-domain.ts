@@ -5,19 +5,23 @@ import { nowISO } from "../../shared/time.js";
 import { truncate } from "../../shared/text.js";
 import type { NoesisState, LearningEntry } from "../../schema.js";
 
-export function captureFailure(
-  state: NoesisState,
-  toolName: string,
-  description: string,
-  skillScope?: string,
-): LearningEntry {
-  const entry: LearningEntry = {
+function createEntry(toolName: string, description: string, skillScope?: string): LearningEntry {
+  return {
     id: generateId("le"),
     description: truncate(description, 500),
     skillScope,
     toolName,
     capturedAt: nowISO(),
   };
+}
+
+export function captureFailure(
+  state: NoesisState,
+  toolName: string,
+  description: string,
+  skillScope?: string,
+): LearningEntry {
+  const entry = createEntry(toolName, description, skillScope);
   state.learning.failures.push(entry);
   state.learning.summary.failureCount++;
   return entry;
@@ -29,13 +33,7 @@ export function captureSuccess(
   description: string,
   skillScope?: string,
 ): LearningEntry {
-  const entry: LearningEntry = {
-    id: generateId("le"),
-    description: truncate(description, 500),
-    skillScope,
-    toolName,
-    capturedAt: nowISO(),
-  };
+  const entry = createEntry(toolName, description, skillScope);
   state.learning.successes.push(entry);
   state.learning.summary.successCount++;
   return entry;

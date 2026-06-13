@@ -1,10 +1,17 @@
 import type { StateManager } from "../infrastructure/state-manager.js";
 import * as inferenceDomain from "../domains/inference/inference-domain.js";
-import { NoesisInferParamsSchema, type NoesisInferParams } from "../schema.js";
+import { NoesisInferParamsSchema, type NoesisInferParams, type Hypothesis, type ReasoningStep } from "../schema.js";
+import { jsonToolResult } from "./tool-result.js";
 
 interface InferDeps {
   state: StateManager;
 }
+
+type InferResult =
+  | { action: "hypothesize"; hypothesis: Hypothesis }
+  | { action: "reason"; reasoningStep: ReasoningStep }
+  | { action: "update-status"; hypothesis: Hypothesis | null; found: boolean }
+  | { action: "confirm"; created: { hypothesis: Hypothesis; belief: unknown } | null; found: boolean };
 
 export function createInferTool(deps: InferDeps) {
   return {
@@ -19,37 +26,30 @@ export function createInferTool(deps: InferDeps) {
       _onUpdate?: (update: unknown) => void,
       _ctx?: unknown,
     ) {
-      let result: unknown;
+      let result!: InferResult;
 
-      deps.state.mutate(s => {
+      deps.state.mutate((state) => {
         switch (params.action) {
-          case "hypothesize": {
-            const h = inferenceDomain.addHypothesis(s, params.content, params.evidence);
-            result = { action: "hypothesize", hypothesis: h };
+          case "hypothesize":
+            result = { action: "hypothesize", hypothesis: inferenceDomain.addHypothesis(state, params.content, params.evidence) };
             break;
-          }
-          case "reason": {
-            const r = inferenceDomain.addReasoningStep(s, params.content, params.relatesTo);
-            result = { action: "reason", reasoningStep: r };
+          case "reason":
+            result = { action: "reason", reasoningStep: inferenceDomain.addReasoningStep(state, params.content, params.relatesTo) };
             break;
-          }
           case "update-status": {
-            const h = inferenceDomain.updateHypothesisStatus(s, params.hypothesisId, params.newStatus, params.evidence);
-            result = { action: "update-status", hypothesis: h, found: h !== null };
+            const hypothesis = inferenceDomain.updateHypothesisStatus(state, params.hypothesisId, params.newStatus, params.evidence);
+            result = { action: "update-status", hypothesis, found: hypothesis !== null };
             break;
           }
           case "confirm": {
-            const r = inferenceDomain.confirmHypothesis(s, params.hypothesisId);
-            result = { action: "confirm", ...r, found: r !== null };
+            const created = inferenceDomain.confirmHypothesis(state, params.hypothesisId);
+            result = { action: "confirm", created, found: created !== null };
             break;
           }
         }
       });
 
-      return {
-        content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
-        details: result,
-      };
+      return jsonToolResult(result);
     },
   };
 }

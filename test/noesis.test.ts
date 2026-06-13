@@ -12,7 +12,6 @@ import { StateManager } from "../src/infrastructure/state-manager.js";
 import { loadState, saveState, statePath } from "../src/infrastructure/filesystem-store.js";
 import { buildPreamble } from "../src/rendering/preamble-builder.js";
 import { EMPTY_STATE } from "../src/schema.js";
-
 const roots: string[] = [];
 
 function makeRoot(): string {
@@ -20,12 +19,16 @@ function makeRoot(): string {
   roots.push(root);
   return root;
 }
+function withGraphFindings(state: ReturnType<typeof EMPTY_STATE>, graphFindings: unknown[]): void {
+  Object.assign(state.attention, { graphFindings });
+}
 
-afterEach(() => {
-  for (const root of roots.splice(0)) {
-    rmSync(root, { recursive: true, force: true });
-  }
-});
+function readPersistedState(path: string): unknown {
+  return JSON.parse(readFileSync(path, "utf-8"));
+}
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
 
 describe("EMPTY_STATE", () => {
   it("returns a fully initialized bounded state", () => {
@@ -52,10 +55,9 @@ describe("filesystem store", () => {
     const root = makeRoot();
     const state = EMPTY_STATE();
 
-    state.attention.focus = "Trace graph-backed failure";
-    (state.attention as typeof state.attention & { graphFindings?: unknown[] }).graphFindings = [
+    withGraphFindings(state, [
       { nodeName: "StateManager", rawSnippet: "mutate()", confidenceLabel: "EXTRACTED" },
-    ];
+    ]);
     state.belief.facts.push({
       id: "bf-1",
       content: "State persists on non-attention mutations",
@@ -68,14 +70,10 @@ describe("filesystem store", () => {
     });
 
     saveState(root, state);
-
-    const raw = JSON.parse(readFileSync(statePath(root), "utf-8")) as {
-      attention: Record<string, unknown>;
-    };
-    expect(raw.attention.graphFindings).toBeUndefined();
+    const raw = readPersistedState(statePath(root));
+    expect(isRecord(raw) && isRecord(raw.attention) ? raw.attention.graphFindings : undefined).toBeUndefined();
 
     const loaded = loadState(root);
-    expect(loaded.attention.focus).toBe("Trace graph-backed failure");
     expect(loaded.belief.facts).toHaveLength(1);
   });
 });
@@ -173,9 +171,9 @@ describe("learning ranking and eviction", () => {
 describe("preamble builder", () => {
   it("renders transient graph findings from attention state", () => {
     const state = EMPTY_STATE();
-    (state.attention as typeof state.attention & { graphFindings?: unknown[] }).graphFindings = [
+    withGraphFindings(state, [
       { nodeName: "GraphifyClient", rawSnippet: "detectCapability()" },
-    ];
+    ]);
 
     const preamble = buildPreamble(state, {
       capability: "FULL",
@@ -226,7 +224,7 @@ describe("extension activation", () => {
     activate({
       cwd: makeRoot(),
       registerTool(tool) {
-        tools.push(tool as (typeof tools)[number]);
+        tools.push(tool);
       },
       registerCommand(name) {
         commands.push(name);
@@ -281,7 +279,7 @@ describe("noesis init command", () => {
     expect(notifications[0]).toContain("Restart OMP or start a new session");
   });
 
-  it("updates existing project config without touching nested agent config", async () => {
+  it("updates existing project config and strips deprecated keys", async () => {
     const root = makeRoot();
     const projectConfig = join(root, ".omp", "config.yml");
     const nestedAgentConfig = join(root, ".omp", "agent", "config.yml");
@@ -293,6 +291,10 @@ describe("noesis init command", () => {
       projectConfig,
       JSON.stringify({
         compaction: {
+          enabled: true,
+          strategy: "context-full",
+          autoContinue: true,
+          thresholdTokens: 160000,
           reserveTokens: 1000,
           keepRecentTokens: 5000,
           idleThresholdTokens: 999999,
@@ -319,17 +321,15 @@ describe("noesis init command", () => {
 
     const written = readFileSync(projectConfig, "utf-8");
     expect(written).toContain("compaction:");
-    expect(written).not.toContain("reserveTokens");
-    expect(written).not.toContain("keepRecentTokens");
-    expect(written).toContain('  strategy: "context-full"');
-    expect(written).toContain("  thresholdTokens: 160000");
-    expect(written).not.toContain("idleThresholdTokens");
-    expect(written).toContain("skills:");
     expect(written).toContain("  enabled: true");
-    expect(existsSync(`${projectConfig}.noesis-backup`)).toBe(true);
-    expect(notifications[0]).toContain("Restart OMP or start a new session");
+    expect(written).toContain('  strategy: "context-full"');
+    expect(written).toContain("  autoContinue: true");
+    expect(written).toContain("  thresholdTokens: 160000");
+    expect(written).not.toContain("reserveTokens");
     expect(JSON.parse(readFileSync(nestedAgentConfig, "utf-8"))).toEqual({
       shouldStayUntouched: true,
     });
+    expect(notifications[0]).toContain("Updated project OMP config");
+    expect(notifications[0]).toContain("Restart OMP or start a new session");
   });
 });

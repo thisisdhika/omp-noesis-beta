@@ -27,14 +27,8 @@ export class GraphifyClient {
       return (this._capability = "NO_GRAPH");
     }
 
-    // Check freshness: graph mtime vs newest source mtime
     const graphMtime = statSync(graphPath).mtimeMs;
-    const newestSource = this.getNewestSourceMtime();
-    if (graphMtime < newestSource) {
-      return (this._capability = "STALE");
-    }
-
-    return (this._capability = "FULL");
+    return (this._capability = graphMtime < this.getNewestSourceMtime() ? "STALE" : "FULL");
   }
 
   refreshCapability(): CapabilityLevel {
@@ -69,22 +63,20 @@ export class GraphifyClient {
     ], { timeout: 30000, cwd: this.root });
     return result.toString("utf-8");
   }
-
   private getNewestSourceMtime(): number {
     let newest = 0;
-    try {
-      for (const dir of [this.root, join(this.root, "src")]) {
-        if (!existsSync(dir)) continue;
-        for (const entry of readdirSync(dir)) {
-          if (entry.endsWith(".ts") || entry.endsWith(".js") || entry.endsWith(".json")) {
-            try {
-              const mtime = statSync(join(dir, entry)).mtimeMs;
-              if (mtime > newest) newest = mtime;
-            } catch { /* skip unreadable */ }
-          }
+    for (const dir of [this.root, join(this.root, "src")]) {
+      if (!existsSync(dir)) continue;
+      for (const entry of readdirSync(dir)) {
+        if (!entry.endsWith(".ts") && !entry.endsWith(".js") && !entry.endsWith(".json")) continue;
+        try {
+          const mtime = statSync(join(dir, entry)).mtimeMs;
+          if (mtime > newest) newest = mtime;
+        } catch {
+          // skip unreadable
         }
       }
-    } catch { /* if stat fails, treat as stale */ }
+    }
     return newest;
   }
 }
