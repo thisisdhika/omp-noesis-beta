@@ -26,7 +26,10 @@ export function createFocusTool(deps: FocusDeps) {
       _signal?: AbortSignal,
     ): Promise<ToolResult> {
       try {
-        deps.state.focus(params);
+        deps.state.mutate((s) => {
+          s.attention.focus = params.goal;
+          s.attention.updatedAt = new Date().toISOString();
+        });
         deps.state.checkpointAttention();
 
         return {

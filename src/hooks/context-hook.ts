@@ -3,11 +3,10 @@ import type { GraphifyClient } from "../infrastructure/graphify-client.js";
 import type { PreambleCache } from "../state/state-cache.js";
 import { generateId } from "../shared/ids.js";
 import { perceive } from "../infrastructure/graphify-engine.js";
-import { parseQueryOutput } from "../infrastructure/graphify-parser.js";
 import { buildPreamble, buildSubagentPreamble } from "../rendering/preamble-builder.js";
 import { computeStaleReviewNotes } from "../domains/belief/belief-domain.js";
 import { getTopLearning } from "../domains/learning/learning-domain.js";
-import { checkConsistency } from "../domains/commitment/commitment-domain.js";
+import { checkConsistency } from "../domains/commitment/consistency-strategy.js";
 import { estimateTokens } from "../shared/tokens.js";
 
 const SUBAGENT_MARKERS = ["# Target", "# Change"];
@@ -52,15 +51,6 @@ export function createContextHook(
       }
 
       const question = snapshot.attention.focus || "What changed?";
-      let communities: string[] | undefined;
-      let godNodes: string[] | undefined;
-
-      const report = deps.graphify.readReport();
-      if (report !== null) {
-        const parsed = parseQueryOutput(report);
-        if (parsed.communities.length > 0) communities = parsed.communities;
-        if (parsed.godNodes.length > 0) godNodes = parsed.godNodes;
-      }
 
       const perception = await perceive(deps.graphify, question);
       if (!perception.error && perception.beliefs.length > 0) {
@@ -97,17 +87,9 @@ export function createContextHook(
         ...current.learning.successes,
       ];
       const effectiveCommunities =
-        communities && communities.length > 0
-          ? communities
-          : perception.communities.length > 0
-            ? perception.communities
-            : undefined;
+        perception.communities.length > 0 ? perception.communities : undefined;
       const effectiveGodNodes =
-        godNodes && godNodes.length > 0
-          ? godNodes
-          : perception.godNodes.length > 0
-            ? perception.godNodes
-            : undefined;
+        perception.godNodes.length > 0 ? perception.godNodes : undefined;
 
       const preamble = isSubAgent
         ? deps.stateCache.getSubagentOrBuild(current, taskFilter, () =>
@@ -119,12 +101,12 @@ export function createContextHook(
               vaultLabel: deps.vaultLabel,
               learningRanked: getTopLearning(learningEntries, DEFAULT_LEARNING_COUNT),
               staleNotes: computeStaleReviewNotes(
-                current.belief.facts,
+                current,
                 perception.capability,
                 current.attention.updatedAt,
               ),
               projectName: deps.projectName,
-              consistencyWarnings: checkConsistency(current.commitment.workflow),
+              consistencyWarnings: checkConsistency(current),
               communities: effectiveCommunities,
               godNodes: effectiveGodNodes,
             }),

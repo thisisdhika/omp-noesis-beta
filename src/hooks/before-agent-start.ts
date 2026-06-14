@@ -3,7 +3,7 @@ import type { GraphifyClient } from "../infrastructure/graphify-client.js";
 import { buildPreamble } from "../rendering/preamble-builder.js";
 import { getTopLearning } from "../domains/learning/learning-domain.js";
 import { computeStaleReviewNotes } from "../domains/belief/belief-domain.js";
-import { checkConsistency } from "../domains/commitment/commitment-domain.js";
+import { checkConsistency } from "../domains/commitment/consistency-strategy.js";
 
 /**
  * Create a "before_agent_start" event handler that injects the Noesis
@@ -44,8 +44,8 @@ export function createBeforeAgentStartHook(deps: {
         [...state.learning.failures, ...state.learning.successes],
         5,
       );
-      const staleNotes = computeStaleReviewNotes(state.belief.facts, capability, state.attention.updatedAt);
-      const consistencyWarnings = checkConsistency(state.commitment.workflow);
+      const staleNotes = computeStaleReviewNotes(state, capability, state.attention.updatedAt);
+      const consistencyWarnings = checkConsistency(state);
 
       const preamble = buildPreamble(state, {
         capability,

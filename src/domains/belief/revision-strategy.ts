@@ -14,15 +14,25 @@ function tagsOverlap(a: string[] | undefined, b: string[] | undefined): boolean 
   return a.some((tag) => b.includes(tag));
 }
 
-function walkToActiveHead<T extends Revisable>(items: T[], id: string): T | null {
-  let currentId: string | undefined = id;
-  while (currentId) {
-    const current = items.find((item) => item.id === currentId);
-    if (!current) return null;
+function walkToActiveHead<T extends Revisable>(items: T[], id: string, maxDepth = 100): T | null {
+  const visited = new Set<string>();
+  let current = items.find((item) => item.id === id);
+  let depth = 0;
+
+  while (current && depth < maxDepth) {
+    if (visited.has(current.id)) return null; // cycle detected
+    visited.add(current.id);
+
     if (current.status === "active") return current;
     if (!current.supersededBy) return null;
-    currentId = current.supersededBy;
+
+    const nextId = current.supersededBy;
+    const next = items.find((item) => item.id === nextId);
+    if (!next) return null;
+    current = next;
+    depth++;
   }
+
   return null;
 }
 

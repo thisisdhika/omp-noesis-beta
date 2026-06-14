@@ -13,13 +13,18 @@ import { createAttendTool } from "./tools/attend-command.js";
 import { createBelieveTool } from "./tools/believe-command.js";
 import { createInferTool } from "./tools/infer-command.js";
 import { createCommitTool } from "./tools/commit-command.js";
+import { createFocusTool } from "./tools/focus-command.js";
+import { createVaultSearchTool } from "./tools/vault-search-command.js";
+import { detectVault } from "./vault/vault-detector.js";
+import { VaultRetry } from "./vault/vault-retry.js";
+import { createTurnEndHook } from "./hooks/turn-end.js";
+import { createCompactionHook } from "./hooks/compaction-hook.js";
 import { createInitCommandHandler } from "./commands/init-command.js";
 import * as attentionDomain from "./domains/attention/attention-domain.js";
 import * as beliefDomain from "./domains/belief/belief-domain.js";
 import * as learningDomain from "./domains/learning/learning-domain.js";
 import { resolveFocus } from "./rendering/focus-resolver.js";
 import { buildPreamble } from "./rendering/preamble-builder.js";
-import { buildSurvivors } from "./rendering/survivor-builder.js";
 import { checkConsistency } from "./domains/commitment/consistency-strategy.js";
 import { truncate } from "./shared/text.js";
 import { basename } from "node:path";
@@ -81,6 +86,7 @@ interface ExtensionAPI {
   ): void;
   on(event: "context", handler: (event: ContextHookEvent) => ContextHookResult | undefined): void;
   on(event: "session.compacting", handler: () => SessionCompactingResult | undefined): void;
+  on(event: "turn_end", handler: () => void): void;
   on(event: "session_compact", handler: () => void): void;
   on(event: "tool_result", handler: (event: ToolResultEvent) => { content?: unknown; details?: unknown; isError?: boolean } | void): void;
   on(event: "before_agent_start", handler: () => BeforeAgentStartResult | undefined): void;
@@ -96,6 +102,14 @@ export default function activate(pi: ExtensionAPI): void {
   pi.registerTool(createBelieveTool(deps));
   pi.registerTool(createInferTool(deps));
   pi.registerTool(createCommitTool(deps));
+  pi.registerTool(createFocusTool({ state }));
+
+  const { store: vault } = detectVault(root);
+  const vaultRetry = new VaultRetry(root);
+  pi.registerTool(createVaultSearchTool({ vault, projectPath: root }));
+
+  pi.on("turn_end", createTurnEndHook({ state, vault, vaultRetry }));
+
 
   pi.registerCommand("noesis:init", {
     description: "Configure project-local OMP settings for noesis",
@@ -109,25 +123,25 @@ export default function activate(pi: ExtensionAPI): void {
       attentionDomain.setFocus(current, focus);
     });
 
-    const preamble = buildPreamble(state.read(), {
+    const buildState = state.read();
+    const buildLearning = [...buildState.learning.failures, ...buildState.learning.successes];
+    const preamble = buildPreamble(buildState, {
       capability: graphify.capability,
-      learningRanked: learningDomain.getTopLearning(state.read(), 10),
-      staleNotes: beliefDomain.computeStaleReviewNotes(state.read(), graphify.capability),
+      learningRanked: learningDomain.getTopLearning(buildLearning, 10),
+      staleNotes: beliefDomain.computeStaleReviewNotes(buildState, graphify.capability),
       projectName: basename(root),
-      consistencyWarnings: checkConsistency(state.read()),
+      consistencyWarnings: checkConsistency(buildState),
     });
 
     state.mutate((current) => {
       attentionDomain.clearGraphFindings(current);
     });
+    state.checkpointAttention();
 
     return { messages: prependPreamble(event.messages, preamble) };
   });
 
-  pi.on("session.compacting", () => {
-    const { contextLines, preserveData } = buildSurvivors(state.read());
-    return { context: contextLines, preserveData };
-  });
+  pi.on("session.compacting", createCompactionHook({ state, vault, vaultRetry }));
 
   pi.on("session_compact", () => {
     state.invalidateAfterCompaction();
@@ -137,7 +151,17 @@ export default function activate(pi: ExtensionAPI): void {
     if (isFailureEvent(event)) {
       state.mutate((current) => {
         learningDomain.captureFailure(current, event.toolName, extractDescription(event), inferSkillScope(event));
-        learningDomain.applyRetentionPolicy(current, 50);
+        const combined = [...current.learning.successes, ...current.learning.failures];
+        const retained = learningDomain.applyRetentionPolicy(combined, 50);
+        const successes = retained.filter((entry) => (entry.severity ?? 0) < 2);
+        const failures = retained.filter((entry) => (entry.severity ?? 0) >= 2);
+        current.learning.successes = successes;
+        current.learning.failures = failures;
+        current.learning.summary.successCount = successes.length;
+        current.learning.summary.failureCount = failures.length;
+        current.learning.summary.resolvedCount = failures.filter(
+          (entry) => entry.rootCause !== undefined && entry.fix !== undefined,
+        ).length;
       });
     }
   });

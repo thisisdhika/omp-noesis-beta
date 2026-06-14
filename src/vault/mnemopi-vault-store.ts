@@ -82,10 +82,10 @@ export class MnemopiVaultStore implements VaultStore {
       artifacts.filter((a) => a.kind === kind).slice(0, max);
 
     return {
-      decisions: cap("decision", options.decisionCap),
-      beliefs: cap("belief", options.beliefCap),
-      learnings: cap("learning", options.learningCap),
-      patterns: cap("pattern", options.patternCap),
+      decisions: cap("decision", options.decisionCap ?? 50),
+      beliefs: cap("belief", options.beliefCap ?? 50),
+      learnings: cap("learning", options.learningCap ?? 50),
+      patterns: cap("pattern", options.patternCap ?? 50),
     };
   }
 

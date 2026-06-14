@@ -68,8 +68,8 @@ export function createToolResultHook(
           skillScope,
         );
         const retained = applyRetentionPolicy(newEntries, MAX_LEARNING_ENTRIES);
-        s.learning.successes = retained.filter((e) => e.severity < 2);
-        s.learning.failures = retained.filter((e) => e.severity >= 2);
+        s.learning.successes = retained.filter((e) => (e.severity ?? 0) < 2);
+        s.learning.failures = retained.filter((e) => (e.severity ?? 0) >= 2);
       });
     } catch (err) {
       console.error("[noesis] tool_result hook error:", err);

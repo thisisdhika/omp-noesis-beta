@@ -20,8 +20,12 @@ export function loadState(root: string): NoesisState {
   const path = statePath(root);
   if (!existsSync(path)) return EMPTY_STATE();
 
-  const parsed = NoesisStateSchema.parse(JSON.parse(readFileSync(path, "utf-8")));
-  return parsed.version < CURRENT_VERSION ? runMigrations(parsed) : parsed;
+  try {
+    const parsed = NoesisStateSchema.parse(JSON.parse(readFileSync(path, "utf-8")));
+    return parsed.version < CURRENT_VERSION ? runMigrations(parsed) : parsed;
+  } catch {
+    return EMPTY_STATE();
+  }
 }
 
 function stripTransientFindings(state: NoesisState): NoesisState {

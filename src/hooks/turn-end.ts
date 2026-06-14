@@ -122,7 +122,7 @@ export function createTurnEndHook(deps: {
       const evicted: Array<{ artifact: VaultArtifact }> = [];
       const now = nowISO();
 
-      const projectPath = deps.state.rootPath();
+      const projectPath = deps.state.rootPath;
 
       deps.state.mutate((s) => {
         const stale = evictStale(s);

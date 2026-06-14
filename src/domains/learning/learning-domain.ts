@@ -40,39 +40,36 @@ export function captureSuccess(
 }
 
 export function applyRetentionPolicy(
-  state: NoesisState,
+  entries: LearningEntry[],
   maxEntries: number = 50,
-): void {
-  const combined = [
-    ...state.learning.failures,
-    ...state.learning.successes,
-  ];
-  const kept = evictLearning(combined, maxEntries);
-
-  const keptIds = new Set(kept.map((e) => e.id));
-  state.learning.failures = state.learning.failures.filter((e) =>
-    keptIds.has(e.id),
-  );
-  state.learning.successes = state.learning.successes.filter((e) =>
-    keptIds.has(e.id),
-  );
-
-  state.learning.summary.failureCount = state.learning.failures.length;
-  state.learning.summary.successCount = state.learning.successes.length;
-  state.learning.summary.resolvedCount = kept.filter(
-    (e) => e.rootCause !== undefined && e.fix !== undefined,
-  ).length;
+): LearningEntry[] {
+  return evictLearning(entries, maxEntries);
 }
 
 export function getTopLearning(
-  state: NoesisState,
+  entries: LearningEntry[],
   count: number,
   skillScope?: string,
 ): LearningEntry[] {
-  const combined = [
-    ...state.learning.failures,
-    ...state.learning.successes,
-  ];
-  const ranked = rankLearning(combined, skillScope);
+  const ranked = rankLearning(entries, skillScope);
   return ranked.slice(0, count);
 }
+
+export function captureResult(
+  entries: LearningEntry[],
+  toolName: string,
+  description: string,
+  isError: boolean,
+  skillScope?: string,
+): { newEntries: LearningEntry[] } {
+  const entry: LearningEntry = {
+    id: generateId("le"),
+    description: truncate(description, 500),
+    skillScope,
+    toolName,
+    severity: isError ? 2 : 1,
+    capturedAt: nowISO(),
+  };
+  return { newEntries: [...entries, entry] };
+}
+

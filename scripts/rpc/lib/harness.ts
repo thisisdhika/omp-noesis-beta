@@ -1,6 +1,6 @@
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 
-export const MODEL_ID = "opencode-go/deepseek-v4-flash:off";
+export const MODEL_ID = "kilo/nex-agi/nex-n2-pro:free";
 const STARTUP_MS = 20_000;
 const CMD_MS = 120_000;
 const CLOSE_MS = 10_000;
@@ -74,6 +74,11 @@ export class RpcHarness {
   async handoff(instructions?: string): Promise<void> { await this.call({ type: "handoff", ...(instructions ? { customInstructions: instructions } : {}) }); }
   async newSession(parentSession?: string): Promise<void> { await this.call({ type: "new_session", ...(parentSession ? { parentSession } : {}) }); }
   hasEvent(type: string): boolean { return this.frames.some((frame) => frame.type === type); }
+  toolStarted(name: string): boolean {
+    return this.frames.some(
+      (frame) => frame.type === "tool_execution_start" && frame.toolName === name,
+    );
+  }
   getSessionFile(): string | undefined {
     const state = this.frames.find((frame) => frame.type === "response" && frame.command === "get_state");
     const data = isRecord(state?.data) ? state.data : undefined;

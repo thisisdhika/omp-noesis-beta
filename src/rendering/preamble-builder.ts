@@ -6,6 +6,15 @@ import type {
 } from "../schema.js";
 import { estimateTokens } from "../shared/tokens.js";
 import { stripTransientState } from "./state-cleanup.js";
+
+function escapeXml(s: string): string {
+  return s.replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&apos;");
+}
+
 import {
   formatBeliefsSection,
   formatDecisionsSection,
@@ -22,6 +31,10 @@ interface PreambleOpts {
   learningRanked: LearningEntry[];
   staleNotes: StaleReviewNote[];
   projectName: string;
+  vaultLabel?: string;
+  contextUsage?: number;
+  communities?: string[];
+  godNodes?: string[];
   consistencyWarnings?: string[];
 }
 
@@ -49,7 +62,7 @@ export function buildPreamble(state: NoesisState, opts: PreambleOpts): string {
   ];
   pushIf(sections, notes.length > 0 ? `[Notes]\n${notes.join("\n")}` : undefined);
 
-  const preamble = sections.join("\n\n");
+  const preamble = escapeXml(sections.join("\n\n"));
   return estimateTokens(preamble) <= MAX_TOKENS ? preamble : trimToBudget(preamble, state);
 }
 
@@ -63,11 +76,22 @@ function trimToBudget(preamble: string, state: NoesisState): string {
 
   if (estimateTokens(result) > MAX_TOKENS) {
     const beliefsSection = formatBeliefsSection(state.belief.facts, true);
-    if (beliefsSection) result = result.replace(/\[Beliefs\][\s\S]*?(?=\n\n\[|\n*$)/, beliefsSection);
+    if (beliefsSection) result = result.replace(/\[Beliefs\][\s\S]*?(?=\n\n\[|\n*$)/, escapeXml(beliefsSection));
   }
 
   if (estimateTokens(result) > MAX_TOKENS) result = result.replace(/\[Learning\][\s\S]*?(?=\n\n\[|\n*$)/, "");
   if (estimateTokens(result) > MAX_TOKENS) result = result.replace(/\[Hypotheses\][\s\S]*?(?=\n\n\[|\n*$)/, "");
 
   return result.length > maxChars ? `${result.slice(0, maxChars - 3)}...` : result;
+}
+
+export function buildSubagentPreamble(state: NoesisState, _taskFilter?: string): string {
+  const allLearning = [...state.learning.failures, ...state.learning.successes];
+  const learningTop = allLearning.slice(0, 3);
+  return buildPreamble(state, {
+    capability: "FULL",
+    learningRanked: learningTop,
+    staleNotes: [],
+    projectName: "",
+  });
 }

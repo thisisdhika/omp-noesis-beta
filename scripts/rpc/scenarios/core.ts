@@ -6,7 +6,14 @@ import {
   believeDecisionPayload,
   inferHypothesizePayload,
   inferConfirmPayload,
+  attendPayload,
+  commitReplacePayload,
+  commitExtendPayload,
 } from "../lib/scenarios.ts";
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
 
 export async function believeFactScenario(h: RpcHarness, workDir: string): Promise<void> {
   await h.prompt(toolCmd("noesis_believe", believeFactPayload));
@@ -60,4 +67,42 @@ export async function inferConfirmScenario(h: RpcHarness, workDir: string): Prom
   }
 
   if (s2.facts().length === 0) throw new Error("no belief fact was auto-created after confirmation");
+}
+
+export async function registerTools(h: RpcHarness): Promise<void> {
+  const cmdFrame = h.frames.find(
+    (frame) => frame.type === "available_commands_update",
+  );
+  const commands = Array.isArray(cmdFrame?.commands) ? cmdFrame.commands : [];
+  const names = commands
+    .filter((command): command is { name: string } => isRecord(command) && typeof command.name === "string")
+    .map((command) => command.name);
+  if (!names.includes("noesis:init")) {
+    throw new Error("noesis:init command not registered — extension failed to load");
+  }
+}
+
+export async function attendScenario(h: RpcHarness, workDir: string): Promise<void> {
+  await h.prompt(toolCmd("noesis_attend", attendPayload));
+  await h.waitIdle();
+  if (!h.toolStarted("noesis_attend")) throw new Error("noesis_attend did not start");
+  const s = new StateAssert(workDir);
+  s.focus();
+}
+
+export async function commitReplaceScenario(h: RpcHarness, workDir: string): Promise<void> {
+  await h.prompt(toolCmd("noesis_commit", commitReplacePayload));
+  await h.waitIdle();
+  if (!h.toolStarted("noesis_commit")) throw new Error("noesis_commit did not start");
+  const s = new StateAssert(workDir);
+  s.workflowGoal(commitReplacePayload.goal);
+}
+
+export async function commitExtendScenario(h: RpcHarness, workDir: string): Promise<void> {
+  await h.prompt(toolCmd("noesis_commit", commitReplacePayload));
+  await h.waitIdle();
+  await h.prompt(toolCmd("noesis_commit", commitExtendPayload));
+  await h.waitIdle();
+  const s = new StateAssert(workDir);
+  s.stepCount(2);
 }

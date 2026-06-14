@@ -74,11 +74,10 @@ export class HindsightVaultStore implements VaultStore {
     const body = JSON.stringify({
       text: `project:${projectPath}`,
       max_results: Math.max(
-        options.decisionCap,
-        options.beliefCap,
-        options.learningCap,
-        options.patternCap,
-        10,
+        options.decisionCap ?? 50,
+        options.beliefCap ?? 50,
+        options.learningCap ?? 50,
+        options.patternCap ?? 50,
       ),
     });
 
@@ -201,10 +200,10 @@ export class HindsightVaultStore implements VaultStore {
     }
 
     return {
-      decisions: decisions.slice(0, options.decisionCap),
-      beliefs: beliefs.slice(0, options.beliefCap),
-      learnings: learnings.slice(0, options.learningCap),
-      patterns: patterns.slice(0, options.patternCap),
+      decisions: decisions.slice(0, options.decisionCap ?? 50),
+      beliefs: beliefs.slice(0, options.beliefCap ?? 50),
+      learnings: learnings.slice(0, options.learningCap ?? 50),
+      patterns: patterns.slice(0, options.patternCap ?? 50),
     };
   }
 }

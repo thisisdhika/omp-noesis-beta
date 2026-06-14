@@ -1,4 +1,4 @@
-import type { BeliefFact } from "../schema.js";
+import type { BeliefFact, CapabilityLevel } from "../schema.js";
 import type { GraphifyClient } from "./graphify-client.js";
 import { stderrOrMessage } from "./graphify-client.js";
 import { parseQueryOutput } from "./graphify-parser.js";
@@ -18,7 +18,7 @@ export interface PerceptionResult {
   beliefs: SeedBelief[];
   communities: string[];
   godNodes: string[];
-  capability: "FULL" | "STALE";
+  capability: CapabilityLevel;
   staleRecovered: boolean;
   error?: string;
 }
@@ -97,12 +97,12 @@ export async function perceive(graphify: GraphifyClient, question: string): Prom
   }
 
   // 4. Parse output
-  const parsed = parseQueryOutput(raw);
+  const findings = parseQueryOutput(raw);
 
   // 5. Translate findings → SeedBelief[]
   const beliefs: SeedBelief[] = [];
 
-  for (const finding of parsed.findings) {
+  for (const finding of findings) {
     // Skip AMBIGUOUS — never auto-committed
     if (finding.confidenceLabel === "AMBIGUOUS" || finding.confidence === null) continue;
 
@@ -150,10 +150,14 @@ export async function perceive(graphify: GraphifyClient, question: string): Prom
     });
   }
 
+  // Extract communities and god nodes from the flat finding array
+  const communities = [...new Set(findings.filter(f => f.community).map(f => f.community!))];
+  const godNodes = [...new Set(findings.filter(f => f.isGodNode).map(f => f.nodeName))];
+
   return {
     beliefs,
-    communities: parsed.communities,
-    godNodes: parsed.godNodes,
+    communities,
+    godNodes,
     capability,
     staleRecovered,
   };

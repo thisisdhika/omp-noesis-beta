@@ -30,9 +30,10 @@ export function createCommitTool(deps: CommitDeps) {
       let result!: CommitResult;
 
       deps.state.mutate((state) => {
-        if (params.mode === "replace" && params.goal !== undefined) {
+        if (params.mode === "replace") {
+          const goal = params.goal ?? state.commitment.workflow.goal ?? "";
           const completed = state.commitment.workflow.steps.filter((step) => step.status === "done" || step.status === "skipped");
-          commitmentDomain.replaceWorkflow(state, params.goal, [...completed, ...(params.steps ?? [])], params.actions ?? []);
+          commitmentDomain.replaceWorkflow(state, goal, [...completed, ...(params.steps ?? [])], params.actions ?? []);
         } else if (params.mode === "extend") {
           commitmentDomain.extendWorkflow(state, params.steps ?? [], params.actions ?? []);
         }

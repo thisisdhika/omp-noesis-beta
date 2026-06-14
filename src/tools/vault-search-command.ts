@@ -22,10 +22,7 @@ export function createVaultSearchTool(deps: VaultSearchDeps) {
         const vault = deps.vault;
         if (!vault) {
           return {
-            type: "vault_search",
-            message: "No vault backend configured. Run `noesis:init` to connect one.",
-            params,
-            results: [],
+            content: [{ type: "text", text: "No vault backend configured. Run `noesis:init` to connect one." }],
           };
         }
 
@@ -35,20 +32,11 @@ export function createVaultSearchTool(deps: VaultSearchDeps) {
         const capped = filtered.slice(0, maxResults);
 
         return {
-          type: "vault_search",
-          message:
-            capped.length > 0
-              ? `Found ${capped.length} result${capped.length === 1 ? "" : "s"}.`
-              : "No matching vault artifacts found.",
-          params,
-          results: capped,
+          content: [{ type: "text", text: JSON.stringify({ message: `Found ${capped.length} result${capped.length === 1 ? "" : "s"}.`, results: capped }) }],
         };
       } catch (err) {
         return {
-          type: "vault_search",
-          message: `Error: ${err instanceof Error ? err.message : String(err)}`,
-          params,
-          results: [],
+          content: [{ type: "text", text: `Error: ${err instanceof Error ? err.message : String(err)}` }],
         };
       }
     },

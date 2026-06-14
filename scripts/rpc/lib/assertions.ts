@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from "node:fs";
-import { NoesisStateSchema, type BeliefDecision, type BeliefFact, type CommitmentLayer, type Hypothesis, type InferenceLayer, type LearningEntry, type LearningLayer, type NoesisState, type Workflow, type AttentionLayer } from "../../src/schema.js";
+import { NoesisStateSchema, type BeliefDecision, type BeliefFact, type CommitmentLayer, type Hypothesis, type InferenceLayer, type LearningEntry, type LearningLayer, type NoesisState, type Workflow, type AttentionLayer } from "../../../src/schema.js";
 
 function readState(path: string): NoesisState {
   return NoesisStateSchema.parse(JSON.parse(readFileSync(path, "utf-8")));

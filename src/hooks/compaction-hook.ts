@@ -151,7 +151,7 @@ export function createCompactionHook(
       // 2. Push evicted items to vault (fire-and-forget)
       // ------------------------------------------------------------------
       const now = nowISO();
-      const projectPath = state.rootPath();
+      const projectPath = state.rootPath;
 
       const pushArtifact = (artifact: VaultArtifact): void => {
         vault.push(artifact).catch(() => vaultRetry.enqueue(artifact));
@@ -201,19 +201,19 @@ export function createCompactionHook(
         context.push(`Focus: ${snapshot.attention.focus}`);
       }
 
-      const activeStep = getCurrentStep(snapshot.commitment.workflow);
+      const activeStep = getCurrentStep(snapshot);
       if (snapshot.commitment.workflow.goal) {
         const stepDetail = activeStep ? ` | Step: ${activeStep.description}` : "";
         context.push(`Workflow: ${snapshot.commitment.workflow.goal}${stepDetail}`);
       }
 
-      const activeFacts = getActiveFacts(snapshot.belief.facts);
+      const activeFacts = getActiveFacts(snapshot);
       context.push(`Beliefs: ${activeFacts.length} active`);
 
-      const activeDecisions = getActiveDecisions(snapshot.belief.decisions);
+      const activeDecisions = getActiveDecisions(snapshot);
       context.push(`Decisions: ${activeDecisions.length} active`);
 
-      const testing = getUnresolvedHypotheses(snapshot.inference.hypotheses);
+      const testing = getUnresolvedHypotheses(snapshot);
       if (testing.length > 0) {
         context.push(`Hypotheses: ${testing.length} testing`);
       }

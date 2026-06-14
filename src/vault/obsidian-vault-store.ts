@@ -143,22 +143,22 @@ export class ObsidianVaultStore implements VaultStore {
 
       switch (artifact.kind) {
         case "decision":
-          if (result.decisions.length < options.decisionCap) {
+          if (result.decisions.length < (options.decisionCap ?? 50)) {
             result.decisions.push(artifact);
           }
           break;
         case "belief":
-          if (result.beliefs.length < options.beliefCap) {
+          if (result.beliefs.length < (options.beliefCap ?? 50)) {
             result.beliefs.push(artifact);
           }
           break;
         case "learning":
-          if (result.learnings.length < options.learningCap) {
+          if (result.learnings.length < (options.learningCap ?? 50)) {
             result.learnings.push(artifact);
           }
           break;
         case "pattern":
-          if (result.patterns.length < options.patternCap) {
+          if (result.patterns.length < (options.patternCap ?? 50)) {
             result.patterns.push(artifact);
           }
           break;

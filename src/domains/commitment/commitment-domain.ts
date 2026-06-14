@@ -83,13 +83,8 @@ export function getCurrentStep(state: NoesisState): WorkflowStep | null {
   return null;
 }
 
-export function getNextStep(state: NoesisState): WorkflowStep | null {
-  const { steps } = state.commitment.workflow;
-
-  const currentIdx = steps.findIndex(
-    (s) => s.status === "active" || s.status === "pending",
+export function getNextStep(state: NoesisState): WorkflowStep | undefined {
+  return state.commitment.workflow.steps.find(
+    (s) => s.status !== "done" && s.status !== "skipped",
   );
-  if (currentIdx === -1 || currentIdx + 1 >= steps.length) return null;
-
-  return steps[currentIdx + 1] ?? null;
 }

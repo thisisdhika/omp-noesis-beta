@@ -2,9 +2,10 @@ import type { StateManager } from "../infrastructure/state-manager.js";
 import * as beliefDomain from "../domains/belief/belief-domain.js";
 import {
   NoesisBelieveParamsSchema,
-  type NoesisBelieveFactParams,
-  type NoesisBelieveDecisionParams,
-  type NoesisBelieveLearningParams,
+  NoesisBelieveFactParamsSchema,
+  NoesisBelieveDecisionParamsSchema,
+  NoesisBelieveLearningParamsSchema,
+  type NoesisBelieveToolParams,
   type BeliefFact,
   type BeliefDecision,
   type LearningEntry,
@@ -28,34 +29,44 @@ export function createBelieveTool(deps: BelieveDeps) {
     parameters: NoesisBelieveParamsSchema,
     async execute(
       _toolCallId: string,
-      params: NoesisBelieveFactParams | NoesisBelieveDecisionParams | NoesisBelieveLearningParams,
+      params: NoesisBelieveToolParams,
       _signal?: AbortSignal,
       _onUpdate?: (update: unknown) => void,
       _ctx?: unknown,
     ) {
-      let result: BelieveResult | undefined;
+      try {
+        let result: BelieveResult | undefined;
 
-      deps.state.mutate((state) => {
-        switch (params.type) {
-          case "fact": {
-            const created = beliefDomain.addFact(state, params);
-            result = { type: "fact", created: created.created, superseded: created.superseded };
-            break;
+        deps.state.mutate((state) => {
+          switch (params.type) {
+            case "fact": {
+              const fact = NoesisBelieveFactParamsSchema.parse(params);
+              const created = beliefDomain.addFact(state, fact);
+              result = { type: "fact", created: created.created, superseded: created.superseded };
+              break;
+            }
+            case "decision": {
+              const decision = NoesisBelieveDecisionParamsSchema.parse(params);
+              const created = beliefDomain.addDecision(state, decision);
+              result = { type: "decision", created: created.created, superseded: created.superseded };
+              break;
+            }
+            case "learning": {
+              const learning = NoesisBelieveLearningParamsSchema.parse(params);
+              const entry = beliefDomain.resolveLearning(state, learning.learningId, learning.rootCause ?? "", learning.fix ?? "");
+              result = { type: "learning", entry, resolved: entry !== null };
+              break;
+            }
           }
-          case "decision": {
-            const created = beliefDomain.addDecision(state, params);
-            result = { type: "decision", created: created.created, superseded: created.superseded };
-            break;
-          }
-          case "learning": {
-            const entry = beliefDomain.resolveLearning(state, params.learningId, params.rootCause ?? "", params.fix ?? "");
-            result = { type: "learning", entry, resolved: entry !== null };
-            break;
-          }
-        }
-      });
+        });
 
-      return jsonToolResult(result);
+        return jsonToolResult(result);
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${err instanceof Error ? err.message : String(err)}` }],
+          isError: true,
+        };
+      }
     },
   };
 }

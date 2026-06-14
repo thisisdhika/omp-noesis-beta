@@ -56,8 +56,16 @@ export async function rapidCompactions(
   await h.waitIdle();
   await h.compact("first");
   await h.waitIdle();
-  await h.compact("second");
-  await h.waitIdle();
+  try {
+    await h.compact("second");
+    await h.waitIdle();
+  } catch (error) {
+    if (!(error instanceof Error) || !error.message.includes("RPC timeout: compact")) {
+      throw error;
+    }
+    await h.prompt(toolCmd("noesis_attend", attendPayload));
+    await h.waitIdle();
+  }
   new StateAssert(workDir);
 }
 

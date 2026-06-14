@@ -37,12 +37,12 @@ export function createAttendTool(deps: AttendDeps) {
       const cap = deps.graphify.capability;
       if (params.graphQueries && params.graphQueries.length > 0 && cap !== "DEGRADED" && cap !== "NO_GRAPH") {
         if (cap === "STALE") {
-          try { deps.graphify.updateGraph(); } catch { /* proceed with stale */ }
+          try { await deps.graphify.updateGraph(); } catch { /* proceed with stale */ }
         }
         const isStale = cap === "STALE";
         for (const query of params.graphQueries) {
           try {
-            const raw = deps.graphify.query(query);
+            const raw = await deps.graphify.query(query);
             const parsed = parseQueryOutput(raw);
             deps.state.mutate(s => {
               findings.push(...parsed);

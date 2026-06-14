@@ -19,8 +19,8 @@ export const CURRENT_VERSION = 1;
 // Enums / Literal unions
 // ============================================================================
 
-export type BeliefSource = "graph" | "execution" | "user" | "inference";
-export const BeliefSourceSchema = z.enum(["graph", "execution", "user", "inference"]);
+export type BeliefSource = "graph" | "execution" | "user" | "inference" | "vault";
+export const BeliefSourceSchema = z.enum(["graph", "execution", "user", "inference", "vault"]);
 
 export type FactStatus = "active" | "superseded" | "archived";
 export const FactStatusSchema = z.enum(["active", "superseded", "archived"]);
@@ -70,6 +70,7 @@ export const BeliefFactSchema = z.object({
   supersededBy: z.string().optional(),
   tags: z.array(z.string()).optional(),
   communityScope: z.string().optional(),
+  evidenceNodes: z.array(z.string()).optional(),
 });
 
 export type BeliefFact = z.infer<typeof BeliefFactSchema>;
@@ -208,6 +209,7 @@ export const LearningEntrySchema = z.object({
   skillScope: z.string().optional(),
   toolName: z.string().optional(),
   capturedAt: z.string(),
+  severity: z.number().optional(),
 });
 
 export type LearningEntry = z.infer<typeof LearningEntrySchema>;
@@ -326,16 +328,42 @@ export const NoesisBelieveLearningParamsSchema = z.object({
   fix: z.string().optional(),
 });
 
-export const NoesisBelieveParamsSchema = z.discriminatedUnion("type", [
-  NoesisBelieveFactParamsSchema,
-  NoesisBelieveDecisionParamsSchema,
-  NoesisBelieveLearningParamsSchema,
-]);
+export const NoesisBelieveParamsSchema = z.object({
+  type: z.enum(["fact", "decision", "learning"]),
+  content: z.string().optional(),
+  confidence: z.number().min(0).max(1).optional(),
+  source: BeliefSourceSchema.optional(),
+  tags: z.array(z.string()).optional(),
+  communityScope: z.string().optional(),
+  contradictsIds: z.array(z.string()).optional(),
+  rationale: z.string().optional(),
+  alternatives: z.array(z.string()).optional(),
+  learningId: z.string().optional(),
+  rootCause: z.string().optional(),
+  fix: z.string().optional(),
+}).superRefine((value, ctx) => {
+  if (value.type === "fact") {
+    if (value.content === undefined) ctx.addIssue({ code: "custom", path: ["content"], message: "content is required for fact" });
+    if (value.confidence === undefined) ctx.addIssue({ code: "custom", path: ["confidence"], message: "confidence is required for fact" });
+    if (value.source === undefined) ctx.addIssue({ code: "custom", path: ["source"], message: "source is required for fact" });
+    return;
+  }
+  if (value.type === "decision") {
+    if (value.content === undefined) ctx.addIssue({ code: "custom", path: ["content"], message: "content is required for decision" });
+    if (value.rationale === undefined) ctx.addIssue({ code: "custom", path: ["rationale"], message: "rationale is required for decision" });
+    return;
+  }
+  if (value.learningId === undefined) ctx.addIssue({ code: "custom", path: ["learningId"], message: "learningId is required for learning" });
+});
 
-export type NoesisBelieveParams = z.infer<typeof NoesisBelieveParamsSchema>;
+export type NoesisBelieveParams =
+  | z.infer<typeof NoesisBelieveFactParamsSchema>
+  | z.infer<typeof NoesisBelieveDecisionParamsSchema>
+  | z.infer<typeof NoesisBelieveLearningParamsSchema>;
 export type NoesisBelieveFactParams = z.infer<typeof NoesisBelieveFactParamsSchema>;
 export type NoesisBelieveDecisionParams = z.infer<typeof NoesisBelieveDecisionParamsSchema>;
 export type NoesisBelieveLearningParams = z.infer<typeof NoesisBelieveLearningParamsSchema>;
+export type NoesisBelieveToolParams = z.output<typeof NoesisBelieveParamsSchema>;
 
 export const NoesisInferHypothesizeSchema = z.object({
   action: z.literal("hypothesize"),
@@ -361,14 +389,31 @@ export const NoesisInferConfirmSchema = z.object({
   hypothesisId: z.string(),
 });
 
-export const NoesisInferParamsSchema = z.discriminatedUnion("action", [
-  NoesisInferHypothesizeSchema,
-  NoesisInferReasonSchema,
-  NoesisInferUpdateStatusSchema,
-  NoesisInferConfirmSchema,
-]);
+export const NoesisInferParamsSchema = z.object({
+  action: z.enum(["hypothesize", "reason", "update-status", "confirm"]),
+  content: z.string().optional(),
+  evidence: z.string().optional(),
+  relatesTo: z.string().optional(),
+  hypothesisId: z.string().optional(),
+  newStatus: HypothesisStatusSchema.optional(),
+}).superRefine((value, ctx) => {
+  if (value.action === "hypothesize" || value.action === "reason") {
+    if (value.content === undefined) ctx.addIssue({ code: "custom", path: ["content"], message: "content is required" });
+    return;
+  }
+  if (value.hypothesisId === undefined) ctx.addIssue({ code: "custom", path: ["hypothesisId"], message: "hypothesisId is required" });
+  if (value.action === "update-status" && value.newStatus === undefined) {
+    ctx.addIssue({ code: "custom", path: ["newStatus"], message: "newStatus is required for update-status" });
+  }
+});
 
-export type NoesisInferParams = z.infer<typeof NoesisInferParamsSchema>;
+export type NoesisInferParams =
+  | z.infer<typeof NoesisInferHypothesizeSchema>
+  | z.infer<typeof NoesisInferReasonSchema>
+  | z.infer<typeof NoesisInferUpdateStatusSchema>
+  | z.infer<typeof NoesisInferConfirmSchema>;
+
+export type NoesisInferToolParams = z.output<typeof NoesisInferParamsSchema>;
 
 export const WorkflowStepInputSchema = z.object({
   description: z.string(),
@@ -406,6 +451,56 @@ export const NoesisCommitParamsSchema = z.object({
 export type NoesisCommitParams = z.infer<typeof NoesisCommitParamsSchema>;
 export type WorkflowStepInput = z.infer<typeof WorkflowStepInputSchema>;
 export type PlannedActionInput = z.infer<typeof PlannedActionInputSchema>;
+
+// ============================================================================
+// Vault Types
+// ============================================================================
+
+export type VaultArtifactKind = "decision" | "belief" | "learning" | "pattern";
+
+export interface VaultArtifact {
+  kind: VaultArtifactKind;
+  projectPath: string;
+  id: string;
+  content: string;
+  metadata: Record<string, unknown>;
+  pushedAt: string;
+}
+
+export interface VaultPullOptions {
+  decisionCap?: number;
+  beliefCap?: number;
+  learningCap?: number;
+  patternCap?: number;
+}
+
+export interface VaultPullResult {
+  decisions: VaultArtifact[];
+  beliefs: VaultArtifact[];
+  learnings: VaultArtifact[];
+  patterns: VaultArtifact[];
+}
+
+export const NoesisVaultSearchParamsSchema = z.object({
+  query: z.string(),
+  kind: z.enum(["decision", "belief", "learning", "pattern", "all"]).optional(),
+  maxResults: z.number().int().positive().max(50).optional(),
+});
+
+export type NoesisVaultSearchParams = z.infer<typeof NoesisVaultSearchParamsSchema>;
+
+// ============================================================================
+// Focus Tool Params
+// ============================================================================
+
+export const NoesisFocusParamsSchema = z.object({
+  goal: z.string().max(500),
+  context: z.string().max(1000).optional(),
+  priority: z.enum(["low", "normal", "high", "urgent"]).optional(),
+  scope: z.string().optional(),
+});
+
+export type NoesisFocusParams = z.infer<typeof NoesisFocusParamsSchema>;
 
 // ============================================================================
 // EMPTY_STATE factory

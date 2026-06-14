@@ -12,6 +12,10 @@ export class StateManager {
     this._state = loadState(root);
   }
 
+  get rootPath(): string {
+    return this.root;
+  }
+
   read(): NoesisState {
     return this._state;
   }

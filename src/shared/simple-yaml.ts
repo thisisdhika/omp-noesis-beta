@@ -5,9 +5,6 @@ interface YamlApi {
   stringify(data: unknown): string;
 }
 
-declare global {
-  var YAML: YamlApi | undefined;
-}
 
 function asRecord(value: unknown): Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)
@@ -118,7 +115,7 @@ function parseBlock(
 }
 
 export function parseYamlRecord(text: string): Record<string, unknown> {
-  const yaml = globalThis.YAML;
+  const yaml = (globalThis as { YAML?: YamlApi }).YAML;
   if (yaml) return asRecord(yaml.parse(text));
   return asRecord(parseBlock(text.split(/\r?\n/), 0, 0).value);
 }

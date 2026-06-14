@@ -1,6 +1,6 @@
 import type { StateManager } from "../infrastructure/state-manager.js";
 import * as inferenceDomain from "../domains/inference/inference-domain.js";
-import { NoesisInferParamsSchema, type NoesisInferParams, type Hypothesis, type ReasoningStep } from "../schema.js";
+import { NoesisInferParamsSchema, NoesisInferHypothesizeSchema, NoesisInferReasonSchema, NoesisInferUpdateStatusSchema, NoesisInferConfirmSchema, type NoesisInferToolParams, type Hypothesis, type ReasoningStep } from "../schema.js";
 import { jsonToolResult } from "./tool-result.js";
 
 interface InferDeps {
@@ -21,7 +21,7 @@ export function createInferTool(deps: InferDeps) {
     parameters: NoesisInferParamsSchema,
     async execute(
       _toolCallId: string,
-      params: NoesisInferParams,
+      params: NoesisInferToolParams,
       _signal?: AbortSignal,
       _onUpdate?: (update: unknown) => void,
       _ctx?: unknown,
@@ -30,19 +30,25 @@ export function createInferTool(deps: InferDeps) {
 
       deps.state.mutate((state) => {
         switch (params.action) {
-          case "hypothesize":
-            result = { action: "hypothesize", hypothesis: inferenceDomain.addHypothesis(state, params.content, params.evidence) };
+          case "hypothesize": {
+            const hypothesize = NoesisInferHypothesizeSchema.parse(params);
+            result = { action: "hypothesize", hypothesis: inferenceDomain.addHypothesis(state, hypothesize.content, hypothesize.evidence) };
             break;
-          case "reason":
-            result = { action: "reason", reasoningStep: inferenceDomain.addReasoningStep(state, params.content, params.relatesTo) };
+          }
+          case "reason": {
+            const reason = NoesisInferReasonSchema.parse(params);
+            result = { action: "reason", reasoningStep: inferenceDomain.addReasoningStep(state, reason.content, reason.relatesTo) };
             break;
+          }
           case "update-status": {
-            const hypothesis = inferenceDomain.updateHypothesisStatus(state, params.hypothesisId, params.newStatus, params.evidence);
+            const update = NoesisInferUpdateStatusSchema.parse(params);
+            const hypothesis = inferenceDomain.updateHypothesisStatus(state, update.hypothesisId, update.newStatus, update.evidence);
             result = { action: "update-status", hypothesis, found: hypothesis !== null };
             break;
           }
           case "confirm": {
-            const created = inferenceDomain.confirmHypothesis(state, params.hypothesisId);
+            const confirm = NoesisInferConfirmSchema.parse(params);
+            const created = inferenceDomain.confirmHypothesis(state, confirm.hypothesisId);
             result = { action: "confirm", created, found: created !== null };
             break;
           }
