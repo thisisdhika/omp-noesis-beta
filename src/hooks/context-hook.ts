@@ -1,7 +1,7 @@
 import type { StateManager } from "../infrastructure/state-manager.js";
 import type { GraphifyClient } from "../infrastructure/graphify-client.js";
 import type { PreambleCache } from "../state/state-cache.js";
-import { generateId } from "../shared/ids.js";
+import { storeGraphFindings } from "../domains/attention/attention-domain.js";
 import { perceive } from "../infrastructure/graphify-engine.js";
 import { buildPreamble, buildSubagentPreamble } from "../rendering/preamble-builder.js";
 import { computeStaleReviewNotes } from "../domains/belief/belief-domain.js";
@@ -53,31 +53,9 @@ export function createContextHook(
       const question = snapshot.attention.focus || "What changed?";
 
       const perception = await perceive(deps.graphify, question);
-      if (!perception.error && perception.beliefs.length > 0) {
+      if (!perception.error && perception.findings.length > 0) {
         deps.state.mutate((s) => {
-          for (const belief of perception.beliefs) {
-            const exists = s.belief.facts.some(
-              (fact) => fact.content === belief.content && fact.source === "graph",
-            );
-            if (!exists) {
-              const now = new Date().toISOString();
-              s.belief.facts.push({
-                id: generateId("bf"),
-                content: belief.content,
-                confidence: belief.confidence,
-                source: belief.source,
-                tags: belief.tags,
-                communityScope: belief.communityScope,
-                evidenceNodes:
-                  typeof belief.metadata.nodeName === "string"
-                    ? [belief.metadata.nodeName]
-                    : undefined,
-                createdAt: now,
-                updatedAt: now,
-                status: "active",
-              });
-            }
-          }
+          storeGraphFindings(s, perception.findings);
         });
       }
 
@@ -101,7 +79,7 @@ export function createContextHook(
               vaultLabel: deps.vaultLabel,
               learningRanked: getTopLearning(learningEntries, DEFAULT_LEARNING_COUNT),
               staleNotes: computeStaleReviewNotes(
-                current,
+                current.belief.facts,
                 perception.capability,
                 current.attention.updatedAt,
               ),

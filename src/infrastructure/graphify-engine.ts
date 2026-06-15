@@ -1,4 +1,4 @@
-import type { BeliefFact, CapabilityLevel } from "../schema.js";
+import type { BeliefFact, CapabilityLevel, GraphFinding } from "../schema.js";
 import type { GraphifyClient } from "./graphify-client.js";
 import { stderrOrMessage } from "./graphify-client.js";
 import { parseQueryOutput } from "./graphify-parser.js";
@@ -21,6 +21,7 @@ export interface PerceptionResult {
   capability: CapabilityLevel;
   staleRecovered: boolean;
   error?: string;
+  findings: GraphFinding[];
 }
 
 // Confidence tier mapping (contract §7)
@@ -93,16 +94,15 @@ export async function perceive(graphify: GraphifyClient, question: string): Prom
       capability,
       staleRecovered,
       error: stderrOrMessage(e),
+      findings: [],
     };
   }
 
-  // 4. Parse output
-  const findings = parseQueryOutput(raw);
-
+  // 4. Parse output — returns GraphFinding[] directly
+  const allFindings = parseQueryOutput(raw);
   // 5. Translate findings → SeedBelief[]
   const beliefs: SeedBelief[] = [];
-
-  for (const finding of findings) {
+  for (const finding of allFindings) {
     // Skip AMBIGUOUS — never auto-committed
     if (finding.confidenceLabel === "AMBIGUOUS" || finding.confidence === null) continue;
 
@@ -150,9 +150,9 @@ export async function perceive(graphify: GraphifyClient, question: string): Prom
     });
   }
 
-  // Extract communities and god nodes from the flat finding array
-  const communities = [...new Set(findings.filter(f => f.community).map(f => f.community!))];
-  const godNodes = [...new Set(findings.filter(f => f.isGodNode).map(f => f.nodeName))];
+  // Compute communities and god nodes from the findings array
+  const communities = [...new Set(allFindings.filter(f => f.community).map(f => f.community!))];
+  const godNodes = [...new Set(allFindings.filter(f => f.isGodNode).map(f => f.nodeName))];
 
   return {
     beliefs,
@@ -160,5 +160,6 @@ export async function perceive(graphify: GraphifyClient, question: string): Prom
     godNodes,
     capability,
     staleRecovered,
+    findings: allFindings,
   };
 }

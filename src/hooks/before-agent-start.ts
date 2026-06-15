@@ -1,19 +1,14 @@
 import type { StateManager } from "../infrastructure/state-manager.js";
 import type { GraphifyClient } from "../infrastructure/graphify-client.js";
-import { buildPreamble } from "../rendering/preamble-builder.js";
-import { getTopLearning } from "../domains/learning/learning-domain.js";
-import { computeStaleReviewNotes } from "../domains/belief/belief-domain.js";
-import { checkConsistency } from "../domains/commitment/consistency-strategy.js";
 
 /**
- * Create a "before_agent_start" event handler that injects the Noesis
- * cognitive preamble as a persistent message.
+ * Create a "before_agent_start" event handler that emits a minimal safety-net
+ * preamble when the context-hook path is unavailable.
  *
- * The preamble is built from the current cognitive state and provides the
- * agent with structured context: active beliefs and decisions, ranked
- * learning entries, stale-review notes, consistency warnings, and graph
- * findings. The resulting message carries customType "noesis-preamble"
- * so the agent's context builder can embed it in every turn.
+ * The full cognitive preamble is handled by context-hook.ts on every message
+ * turn. This hook fires once per agent start and serves as a terse fallback
+ * (focus + project + capability) to keep the agent oriented when the context
+ * hook does not run.
  *
  * Usage:
  * ```ts
@@ -39,31 +34,25 @@ export function createBeforeAgentStartHook(deps: {
   return () => {
     try {
       const state = deps.state.read();
+      const focus = state.attention.focus || "No active focus";
+      const project = deps.projectName;
       const capability = deps.graphify.capability;
-      const learningRanked = getTopLearning(
-        [...state.learning.failures, ...state.learning.successes],
-        5,
-      );
-      const staleNotes = computeStaleReviewNotes(state, capability, state.attention.updatedAt);
-      const consistencyWarnings = checkConsistency(state);
 
-      const preamble = buildPreamble(state, {
-        capability,
-        vaultLabel: deps.vaultLabel,
-        learningRanked,
-        staleNotes,
-        projectName: deps.projectName,
-        contextUsage: state.attention.contextUsage,
-        consistencyWarnings:
-          consistencyWarnings.length > 0 ? consistencyWarnings : undefined,
-      });
-
-      if (!preamble) return undefined;
+      // Minimal safety-net preamble. The context-hook builds the full
+      // cognitive preamble on every message turn. This hook only fires
+      // when the context-hook path did not run, so we emit a terse
+      // fallback — focus, project, capability — to keep the agent oriented.
+      const parts = [
+        `[Noesis] Safety-net — context-hook unavailable`,
+        `Focus: ${focus}`,
+        `Project: ${project}`,
+        `Graph: ${capability}`,
+      ];
 
       return {
         message: {
           customType: "noesis-preamble",
-          content: [{ type: "text", text: preamble }],
+          content: [{ type: "text", text: parts.join(" | ") }],
           display: true,
           attribution: "agent",
         },

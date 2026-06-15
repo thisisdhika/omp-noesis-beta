@@ -369,7 +369,8 @@ Each answer is grounded in evidence from OMP defaults, Graphify's confidence mod
 **Behavior**:
 - confidence ∈ [0.75, 1.0] → active belief, eligible for preamble and survivor set
 - confidence ∈ [0.50, 0.74] → low-confidence belief, kept in state file, surfaced only when directly task-relevant
-- confidence ∈ [0.00, 0.49] → not promoted from evidence to belief
+ 
+**Preamble behavior**: low-confidence beliefs are **counted** in the preamble header (e.g. `Beliefs: 12 active, 3 low-conf`) but are **excluded** from the rendered body. Only active beliefs (confidence ≥ 0.75) appear in the `[Beliefs]` section. The low-confidence count serves as a compact awareness signal without bloating the preamble.
 
 ### 14.2 Default survivor set
 
@@ -437,7 +438,6 @@ Top 3 by computed score in preamble. All learning persists in state file regardl
 Beliefs carry `supersededBy: beliefId` pointer when status is `superseded`, providing audit trail. Archived beliefs kept for provenance, never exposed in preamble.
 
 **Grounding**: AGM belief revision requires supersession tracking. Kumiho uses explicit edge types for contradiction and supersession.
-
 ### 14.6 Preamble token budget
 
 **Decision**: 2000 tokens maximum, confirmed against OMP budget.
@@ -449,11 +449,29 @@ Beliefs carry `supersededBy: beliefId` pointer when status is `superseded`, prov
 - CWL paper uses ~80k token budget with ~30% headroom; 2000 tokens is ~2.5% of smart-zone budget.
 - Prior PRD already specified 2000 tokens; no evidence suggests change.
 
-**Trim order when over budget**:
-1. Truncate low-confidence beliefs oldest-first
-2. Truncate resolved hypotheses
-3. Truncate older learning entries
-4. Never truncate: active workflow goal, active decisions, unresolved hypotheses.
+**Implementation notes**:
+- The 2000-token limit is an estimate; the code enforces a hard character cap of 8000 chars (`MAX_TOKENS * 4`, assuming ~4 chars/token).
+- The full preamble is XML-escaped before return (`escapeXml()`) for safe OMP injection into the `<additional-context>` block (see `preamble-builder.ts`).
+
+**Trim strategy** (`preamble-builder.ts :: trimToBudget`):
+
+This is a **whole-section drop strategy**, not an oldest-first within-section truncation.
+
+1. Compute token estimate via `estimateTokens()`
+2. If over budget: rebuild the Beliefs section with active facts only (same active-only filter as initial build; this is effectively a no-op)
+3. If still over budget: **drop the Learning section entirely** — header and all content removed as a block
+4. If still over budget: **drop the Hypotheses section entirely** — header and all content removed as a block
+5. If character length exceeds 8000: hard character truncate with `...` ellipsis suffix
+
+The never-truncate safeguard for active workflow goal, active decisions, and unresolved hypotheses described in earlier design drafts is **not implemented**. There is no per-section eviction resistance in the current `trimToBudget` implementation. This is a known gap (see §14.6.1).
+
+**Known gap — §14.6.1 Missing per-section eviction safeguards**
+
+The `trimToBudget` function does not enforce the never-truncate guarantee for active workflow, active decisions, or unresolved hypotheses. Under extreme budget pressure, trimming can remove all body sections except the preamble header. Future work should add eviction-resistant markers per section.
+
+**Subagent preamble** (`preamble-builder.ts :: buildSubagentPreamble`):
+
+The `taskFilter` parameter is accepted but **ignored** — the subagent always renders the top-3 learning entries (failures + successes) rather than filtering by task scope. The preamble is built with `capability: "FULL"`, rendering all sections regardless of the subagent's actual capability level.
 
 ### 14.7 Proactive compaction vs reset + survivor reload
 

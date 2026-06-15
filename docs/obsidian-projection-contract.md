@@ -36,145 +36,70 @@ The projection is a one-way export: noesis → vault. Noesis never reads from th
 
 ## 3. What Gets Projected
 
-Noesis projects four categories of cognitive content. All are optional and independently configurable.
+Noesis projects cognitive artifacts into the vault when they are evicted from working memory (at turn end or compaction). All artifacts use the same generic flat-file format; the `kind` field distinguishes the content type.
 
 ### 3.1 Decisions
 
-Each active decision becomes a Markdown note.
+Each evicted decision becomes a Markdown note.
 
-**File**: `Decisions/<slug>.md`
+**File**: `Noesis/noesis-decision-{id}.md`
 
-**Frontmatter**:
+**Frontmatter** (minimal — no typed schema per kind in v1):
 ```yaml
 ---
-type: decision
-status: active
-confidence: high
-source: agent-oracle
-project: <detected-from-cwd>
-created: 2026-06-12T10:30:00Z
-updated: 2026-06-12T14:00:00Z
-tags: [auth, jwt, security]
-aliases: ["JWT over sessions decision"]
+kind: decision
+projectPath: <detected-from-cwd>
+id: <unique-id>
+pushedAt: 2026-06-12T14:00:00Z
+metadata:
+  status: active
+  source: agent-oracle
 ---
 ```
 
-**Body**:
-```markdown
-# <decision.content>
+**Body**: The decision's content text.
 
-## Rationale
-<decision.rationale>
-
-## Alternatives Considered
-- <alt1>
-- <alt2>
-
-## Related
-- [[<related-decision>]]
-```
-
-Superseded decisions get `status: superseded` and a wikilink to the superseding decision. Archived decisions get `status: archived`.
+> **Deferred** (future): `Decisions/` subdirectory, slug-based filenames, rich typed frontmatter (type, status, confidence, source, tags, aliases, created, updated), wikilinks, alternatives/rationale section.
 
 ### 3.2 Learning entries
 
-Each resolved failure becomes a Markdown note.
+Resolved learning entries are projected when evicted.
 
-**File**: `Learning/<slug>.md`
-
-**Frontmatter**:
-```yaml
----
-type: learning
-category: failure
-resolved: true
-skill_scope: auth
-tool: bash
-captured: 2026-06-12T14:15:00Z
-tags: [auth, test-failure, dependency]
----
-```
-
-**Body**:
-```markdown
-# <learning.description>
-
-## Root Cause
-<learning.rootCause>
-
-## Fix
-<learning.fix>
-
-## Captured
-<learning.capturedAt>
-```
-
-Success patterns can optionally be projected as `category: success`.
-
-### 3.3 State snapshots
-
-A periodic summary of the full cognitive state for archival review.
-
-**File**: `Sessions/<timestamp>-session.md`
+**File**: `Noesis/noesis-learning-{id}.md`
 
 **Frontmatter**:
 ```yaml
 ---
-type: session
-created: 2026-06-12T14:30:00Z
-beliefs_active: 12
-decisions_active: 3
-hypotheses_unresolved: 1
-learning_failures: 5
-learning_resolved: 4
+kind: learning
+projectPath: <detected-from-cwd>
+id: <unique-id>
+pushedAt: 2026-06-12T14:15:00Z
+metadata:
+  description: <...>
+  rootCause: <...>
+  fix: <...>
 ---
 ```
 
-**Body**:
-```markdown
-# Session: <timestamp>
+**Body**: The learning entry's description text.
 
-## Focus
-<attention.focus>
+> **Deferred** (future): `Learning/` subdirectory, slug-based filenames, rich typed frontmatter (type, category, resolved, skill_scope, tool, tags).
 
-## Active Beliefs
-- <belief 1> (confidence: 0.95, source: graph)
-- <belief 2> (confidence: 0.85, source: execution)
-...
+### 3.3 Belief and Pattern artifacts
 
-## Active Decisions
-- [[decision-1]]: <summary>
-- [[decision-2]]: <summary>
+Belief facts and pattern artifacts (hypotheses, commitment actions) use the same generic format when evicted by the eviction pipeline.
 
-## Unresolved Hypotheses
-- <hypothesis content>
+**File**: `Noesis/noesis-belief-{id}.md` or `Noesis/noesis-pattern-{id}.md`
 
-## Learning Summary
-- Successes: <N> | Failures: <N> (resolved: <N>)
-```
+Minimal frontmatter identical to decisions and learning.
 
-### 3.4 Index
+### 3.4 Session snapshots
 
-An auto-generated index note that links to all projected content.
+**Not implemented in v1.** Periodic state snapshots for human review are deferred.
 
-**File**: `Index.md`
+### 3.5 Index
 
-```markdown
-# Noesis Cognitive Index
-
-> Generated: <timestamp>
-> Project: <cwd-basename>
-
-## Active Decisions
-- [[Decisions/use-jwt-over-sessions]]: Use JWT over session cookies
-- [[Decisions/http-only-cookies]]: Store JWTs in HTTP-only cookies
-
-## Recent Learning
-- [[Learning/missing-jsonwebtoken]]: JWT module not found
-
-## Sessions
-- [[Sessions/2026-06-12T143000Z-session]]
-```
+**Not implemented in v1.** An auto-generated index note linking to all projected content is deferred.
 
 ---
 
@@ -182,18 +107,18 @@ An auto-generated index note that links to all projected content.
 
 ```
 <vault-root>/
-├── Index.md                   # Auto-generated index
-├── Decisions/                 # One note per decision
-│   └── <slug>.md
-├── Learning/                  # One note per resolved failure
-│   └── <slug>.md
-└── Sessions/                  # Periodic state snapshots
-    └── <timestamp>-session.md
+└── Noesis/                  # All projected artifacts (flat)
+    ├── noesis-decision-{id}.md
+    ├── noesis-learning-{id}.md
+    ├── noesis-belief-{id}.md
+    └── noesis-pattern-{id}.md
 ```
 
-The vault root defaults to `.obsidian/noesis/` within the project directory. It can be configured to point at any existing Obsidian vault.
+The vault root is discovered by the vault detector. It can be configured via `noesis.obsidianVaultPath` in OMP config, or auto-detected from the project's `.obsidian` directory.
 
-Noesis never creates a vault from scratch — the developer points it at an existing vault or accepts the default location.
+Noesis never creates a vault from scratch — the developer points it at an existing vault or accepts the detected default.
+
+> **Future**: The hierarchical layout (`Decisions/`, `Learning/`, `Sessions/`) is deferred. All files currently live flat in `Noesis/`.
 
 ---
 
@@ -210,9 +135,9 @@ This creates code-structure notes in the vault (one note per code entity, with e
 | Layer | Who projects | Content |
 |---|---|---|
 | Code structure | Graphify (`--obsidian`) | Entities, relations, communities |
-| Cognitive state | Noesis | Decisions, learning, session summaries |
+| Cognitive state | Noesis | Decisions, learning, beliefs, patterns |
 
-The two projections live in the same vault and cross-link via wikilinks when they share tags or relate to the same entities.
+The two projections live in the same vault. Cross-linking via wikilinks is a future enhancement.
 
 Noesis does not duplicate Graphify's export — it adds the cognitive layer that Graphify does not have.
 
@@ -220,44 +145,58 @@ Noesis does not duplicate Graphify's export — it adds the cognitive layer that
 
 ## 6. Projection Triggers
 
-Projection is never continuous. It happens on explicit triggers only:
+Projection is never continuous. It happens on explicit lifecycle events:
 
 | Trigger | What gets projected |
 |---|---|
-| `noesis_commit` with new/updated decision | Decision note (create or update) |
-| `noesis_believe` resolving a learning entry | Learning note (create or update) |
-| Session end / compaction | Session snapshot (create) |
-| Explicit command: `/noesis-project` | Full projection (decisions + learning + index) |
+| Turn end (eviction) | Evicted beliefs, decisions, hypotheses, learning entries |
+| Session compaction (eviction) | Same as turn end, plus VaultRetry flush |
+| VaultRetry flush | Previously failed pushes (best-effort) |
 
 ### Anti-triggers
-- Every turn: too noisy, Obsidian is for review not live tracking
+- Every turn: too noisy for full projection; only evicted items are pushed
 - On belief changes only: beliefs alone don't warrant separate notes
-- Automatically: projection is always opt-in at the trigger level
+- Automatically: projection is always triggered through eviction, never on arbitrary state changes
+
+> **Note**: VaultRetry is fully implemented and wired to both turn-end and compaction hooks. Failed pushes are buffered and retried on the next compaction cycle.
 
 ---
 
 ## 7. Format Conventions
 
-### Wikilinks
-All cross-references use Obsidian wikilinks (`[[Note Name]]`).
+### Filename structure
 
-Examples:
-- Decision → related decision: `[[use-jwt-over-sessions]]`
-- Learning → related decision: `[[use-jwt-over-sessions]]`
-- Index → projected note: `[[Decisions/use-jwt-over-sessions]]`
+All files follow the pattern `noesis-{kind}-{id}.md`, where `{id}` is a stable artifact identifier. This is independent of the artifact's content or title.
 
-Wikilink resolution follows Obsidian's shortest-unique-path algorithm.
+Example: `noesis-decision-a1b2c3d4.md`
+
+> **Future**: Slug-based filenames (`use-jwt-over-session-cookies.md`) are deferred. The current id-based naming is stable and collision-free.
+
+### Frontmatter
+
+The frontmatter uses four fixed fields and an optional metadata block:
+
+```
+---
+kind: decision
+projectPath: /path/to/project
+id: a1b2c3d4
+pushedAt: 2026-06-12T14:00:00Z
+metadata:
+  status: active
+  source: agent-oracle
+---
+```
+
+There is no typed schema per kind in v1. Kind-specific data (status, confidence, tags, etc.) is stored in the freeform `metadata` block when the caller supplies it.
 
 ### Tags
-All notes carry tags from their source state:
-- Decisions: tags from `BeliefDecision.tags`
-- Learning: `skillScope` as a tag + `toolName` as a tag
-- Sessions: no custom tags
 
-### Slug generation
-File slugs are derived from content: lowercased, non-alphanumeric → hyphens, max 48 characters.
+Tags are stored inside the `metadata` block (e.g., `metadata.tags`), not as a top-level frontmatter field. Tag semantics depend on the caller.
 
-Example: `"Use JWT over session cookies"` → `use-jwt-over-session-cookies.md`
+### Wikilinks
+
+**Not implemented in v1.** Cross-references use plain text or internal identifiers. Obsidian wikilinks (`[[Note Name]]`) are deferred.
 
 ---
 
@@ -267,12 +206,14 @@ Projection errors must never affect runtime cognition.
 
 | Scenario | Behavior |
 |---|---|
-| Vault path doesn't exist | Skip projection, log warning |
-| Vault path not writable | Skip projection, log warning |
-| Disk full | Skip projection, log warning |
-| Frontmatter parse error | Skip that note, continue others |
+| Vault path doesn't exist | Artifact is buffered to VaultRetry; logged |
+| Vault path not writable | Artifact is buffered to VaultRetry; logged |
+| Disk full | Artifact is buffered to VaultRetry; logged |
+| Frontmatter parse error (on pull) | Skip that artifact, continue others |
 
-Noesis never retries a failed projection. Projection is best-effort.
+Failed pushes are caught and enqueued in VaultRetry. On the next compaction cycle, VaultRetry flushes the buffer — previously failed artifacts are re-pushed in order. If a re-push fails, the remaining buffer is preserved for the next cycle.
+
+> **Note**: `validate()` is implemented on ObsidianVaultStore but is NOT called before `push()`. The push call itself fails and the artifact goes to VaultRetry. Pre-write validation is a future hardening opportunity.
 
 ---
 
@@ -335,7 +276,31 @@ All options default to off. The developer opts in.
 
 ---
 
-## 13. References
+## 13. v1 Scope vs Future Enhancements
+
+This table documents what is implemented in the current v1 and what is deferred to future iterations.
+
+| Feature | v1 Status | Notes |
+|---|---|---|
+| Decision projection | ✅ Implemented | Flat `Noesis/` dir, minimal frontmatter, id-based filename |
+| Learning projection | ✅ Implemented | Same flat structure |
+| Belief and pattern projection | ✅ Implemented | Side effect of eviction pipeline |
+| VaultStore interface + NoopVaultStore | ✅ Implemented | Backend abstraction |
+| Backend detection (vault-detector) | ✅ Implemented | Configurable resolution order |
+| VaultRetry retry buffer | ✅ Implemented | Wired in turn-end and compaction hooks |
+| `validate()` method | ✅ Implemented | Defined but NOT called before `push()` |
+| `pull()` / `search()` | ✅ Implemented | Session-start enrichment and vault-search tool |
+| `Decisions/`, `Learning/`, `Sessions/` subdirectory layout | ❌ Deferred | Flat `Noesis/` only |
+| Rich typed frontmatter per kind | ❌ Deferred | Minimal generic frontmatter |
+| Index.md auto-generation | ❌ Deferred | |
+| Session snapshots | ❌ Deferred | |
+| Wikilinks and cross-references | ❌ Deferred | |
+| Slug-based filenames | ❌ Deferred | Uses `noesis-{kind}-{id}.md` |
+| Pre-write validation (validate() before push()) | ❌ Deferred | validate() exists but not wired |
+
+---
+
+## 14. References
 
 Internal grounding:
 - `docs/PRD.md` (§4.2: Obsidian optional, §12.5: projection layer)
@@ -350,3 +315,122 @@ External grounding:
 - Graphify Obsidian export: https://github.com/safishamsi/graphify
 - llm-wiki (AI-maintained Obsidian wiki): https://github.com/enduserlab/llm-wiki
 - obra/knowledge-graph (Obsidian vault as graph): https://github.com/obra/knowledge-graph
+
+---
+
+## 15. Vault Store Contract
+
+### 15.1 `VaultStore` Interface
+
+File: `src/vault/vault-store.ts`
+
+The `VaultStore` interface is the memory abstraction layer. Every backend implements it so Noesis never branches on which vault is active.
+
+| Method | Signature | Behavior |
+|--------|-----------|----------|
+| `push` | `(artifact: VaultArtifact) => Promise<void>` | Fire-and-forget persistence; errors go to retry buffer |
+| `pull` | `(projectPath, options) => Promise<VaultPullResult>` | Read artifacts for session-start enrichment, capped per kind |
+| `search` | `(query, projectPath, maxResults) => Promise<VaultArtifact[]>` | Natural-language search across vault artifacts |
+| `validate` | `() => Promise<boolean>` | Health check (reachable / functional) |
+
+### 15.2 NoopVaultStore
+
+File: `src/vault/noop-vault-store.ts`
+
+Accepts every push, returns empty results on pull/search, always validates as healthy. This is the Obsidian-optionality enforcement mechanism: callers never guard on vault availability.
+
+### 15.3 VaultDetector
+
+File: `src/vault/vault-detector.ts`
+
+`detectVault(root)` resolves the active backend through a priority chain:
+
+1. **Project config** — `noesis.obsidianVaultPath` → `ObsidianVaultStore`
+2. **`.obsidian/` directory** — exists at project root → `ObsidianVaultStore`
+3. **OMP memory backend** — `settings.memory.backend` → `local`, `mnemopi`, or `hindsight`
+4. **Fallback** — `NoopVaultStore` (equivalent to `memory.backend: off`)
+
+Returns `{ store: VaultStore; label: string }` for preamble diagnostics.
+
+### 15.4 VaultRetry
+
+File: `src/vault/vault-retry.ts`
+
+On-disk retry buffer stored at `.omp/noesis/vault-retry.json`.
+
+- `enqueue(artifact)`: buffers a failed push to disk
+- `flush(store)`: replays all buffered artifacts through the given store in order; stops on first failure
+- On flush success (empty queue), the retry file is deleted
+- Loaded from disk on construction, so buffered artifacts survive process restarts
+
+### 15.5 ObsidianVaultStore
+
+File: `src/vault/obsidian-vault-store.ts`
+
+Persists artifacts as Markdown files with YAML frontmatter under `<vault-root>/Noesis/noesis-<kind>-<id>.md`. Reads artifacts by scanning the `Noesis/` directory; frontmatter fields (`kind`, `projectPath`, `id`, `pushedAt`, `metadata`) are parsed back into `VaultArtifact` structs.
+
+Search uses simple substring matching: frontmatter field hits score highest, metadata value matches score medium, content body occurrence frequency scores lowest.
+
+### 15.6 ObsidianMerger
+
+File: `src/vault/obsidian-merger.ts`
+
+`mergeVaultPull(state, artifacts)` merges pulled vault artifacts into in-memory cognitive state. Conflict rules:
+
+| Scenario | Resolution |
+|----------|------------|
+| Decision not in state | Import (vault wins) |
+| Decision exists, vault `pushedAt` newer | Vault wins, patch in place |
+| Decision exists, vault `pushedAt` older | State wins, record conflict |
+| Belief not in state | Import, confidence capped at 0.80 (vault trust discount) |
+| Belief exists in state | Preserve state (no overwrite) |
+| Resolved learning not in state | Import as success entry |
+| Learning exists in state | Skip |
+| Pattern artifact | Skipped (separate pipeline) |
+
+### 15.7 LocalVaultStore
+
+File: `src/vault/local-vault-store.ts`
+
+Append-only persistence to `MEMORY.md`. Each push appends a `## <kind>:<id>` header followed by JSON-like body lines. Pull re-reads the file filtering by project tag. Search greps line-by-line. Simplest dev fallback, no dependencies.
+
+### 15.8 MnemopiVaultStore
+
+File: `src/vault/mnemopi-vault-store.ts`
+
+SQLite-backed store at `.omp/noesis/mnemopi.sqlite` (WAL mode). Uses `Bun.sqlite` with a `vault_artifacts` table. Provides structured querying via SQL as a dev-mode alternative to Obsidian or Hindsight.
+
+### 15.9 HindsightVaultStore
+
+File: `src/vault/hindsight-vault-store.ts`
+
+Remote API-backed store using Hindsight — a hosted semantic-memory service. Pushes artifacts as structured memories via POST, recalls via GET, validates connectivity via `/health`. Configured via `noesis.hindsight.apiUrl` / `noesis.hindsight.apiToken` in OMP config, or `HINDSIGHT_API_URL` / `HINDSIGHT_API_TOKEN` environment variables. Falls back to `http://localhost:3040` with empty token.
+
+---
+
+## 16. Obsidian Writer
+
+File: `src/infrastructure/obsidian-writer.ts`
+
+`writeObsidianNote(vaultPath, note)` performs atomic file writes (temp → fsync → rename) for three note types:
+
+- `decision` → `Decisions/<slug>.md`
+- `learning` → `Learning/<slug>.md`
+- `session` → `Sessions/<slug>.md`
+
+Builds YAML frontmatter with `type`, `status`, and arbitrary metadata from `note.frontmatter`. Slugs are derived from the title (lowercased, non-alphanumeric → `-`, max 48 chars). On failure, logs a warning and cleans up temp files — never throws.
+
+---
+
+## References continued
+
+Vault backends:
+- `src/vault/vault-store.ts` — VaultStore interface
+- `src/vault/noop-vault-store.ts` — NoopVaultStore
+- `src/vault/obsidian-vault-store.ts` — ObsidianVaultStore
+- `src/vault/obsidian-merger.ts` — mergeVaultPull
+- `src/vault/vault-detector.ts` — detectVault
+- `src/vault/vault-retry.ts` — VaultRetry
+- `src/vault/local-vault-store.ts` — LocalVaultStore
+- `src/vault/mnemopi-vault-store.ts` — MnemopiVaultStore
+- `src/vault/hindsight-vault-store.ts` — HindsightVaultStore

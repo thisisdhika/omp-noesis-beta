@@ -104,7 +104,7 @@ The context problem is owned across systems, not by any single one.
 
 OMP is responsible for tool registration/execution, hook lifecycle, session lifecycle, subagents/orchestration, compaction machinery, skill loading, and existing memory infrastructure.
 
-Noesis uses these surfaces through four hooks (`context`, `session.compacting`, `tool_result`, `before_agent_start`) and four registered tools (`noesis_attend`, `noesis_believe`, `noesis_infer`, `noesis_commit`).
+Noesis uses these surfaces through five hooks (`context`, `session.compacting`, `tool_result`, `before_agent_start`, `turn_end`) and four registered tools (`noesis_attend`, `noesis_believe`, `noesis_infer`, `noesis_commit`).
 
 OMP settings noesis depends on:
 - `compaction.reserveTokens` = 16384

@@ -1,4 +1,5 @@
 import type { StateManager } from "../infrastructure/state-manager.js";
+import * as attention from "../domains/attention/attention-domain.js";
 import {
   NoesisFocusParamsSchema,
   type NoesisFocusParams,
@@ -27,10 +28,8 @@ export function createFocusTool(deps: FocusDeps) {
     ): Promise<ToolResult> {
       try {
         deps.state.mutate((s) => {
-          s.attention.focus = params.goal;
-          s.attention.updatedAt = new Date().toISOString();
+          attention.setFocus(s, params.goal);
         });
-        deps.state.checkpointAttention();
 
         return {
           content: [
