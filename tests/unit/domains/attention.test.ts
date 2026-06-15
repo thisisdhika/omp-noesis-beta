@@ -17,14 +17,12 @@ import {
 } from "../../../src/domains/attention/attention-domain.js";
 import type { NoesisState, GraphFinding } from "../../../src/schema.js";
 import { EMPTY_STATE, CAPS } from "../../../src/schema.js";
+import { freshState } from "../../helpers/fixtures.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function freshState(): NoesisState {
-  return structuredClone(EMPTY_STATE);
-}
 
 // ---------------------------------------------------------------------------
 // setFocus

@@ -7,11 +7,6 @@ import { join } from "node:path";
  * Filesystem path utilities.
  */
 
-/** Resolve a path relative to the project root. Creates parents if missing. */
-export function resolveProjectPath(projectRoot: string, ...segments: string[]): string {
-  const full = join(projectRoot, ...segments);
-  return full;
-}
 
 /** Ensure the noesis state directory exists under the project root. */
 export function ensureNoesisDir(projectRoot: string): string {

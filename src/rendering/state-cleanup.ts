@@ -21,8 +21,6 @@ import {
 // Constants
 // ---------------------------------------------------------------------------
 
-/** 30 days in hours — threshold for archived/abandoned entries. */
-const STALE_THRESHOLD_HOURS = 720;
 
 // ---------------------------------------------------------------------------
 // evictStale
@@ -46,7 +44,7 @@ export function evictStale(state: NoesisState): number {
   // --- Belief facts: remove archived facts older than 30 days -----------
   const factsBefore = state.belief.facts.length;
   state.belief.facts = state.belief.facts.filter((f) => {
-    if (f.status === "archived" && isStaleHours(f.createdAt, STALE_THRESHOLD_HOURS)) {
+    if (f.status === "archived" && isStaleHours(f.createdAt, CAPS.STALE_THRESHOLD_HOURS)) {
       return false;
     }
     return true;
@@ -56,7 +54,7 @@ export function evictStale(state: NoesisState): number {
   // --- Belief decisions: remove archived decisions older than 30 days ---
   const decisionsBefore = state.belief.decisions.length;
   state.belief.decisions = state.belief.decisions.filter((d) => {
-    if (d.status === "archived" && isStaleHours(d.createdAt, STALE_THRESHOLD_HOURS)) {
+    if (d.status === "archived" && isStaleHours(d.createdAt, CAPS.STALE_THRESHOLD_HOURS)) {
       return false;
     }
     return true;
@@ -66,7 +64,7 @@ export function evictStale(state: NoesisState): number {
   // --- Hypotheses: remove abandoned hypotheses older than 30 days -------
   const hyBefore = state.inference.hypotheses.length;
   state.inference.hypotheses = state.inference.hypotheses.filter((h) => {
-    if (h.status === "abandoned" && isStaleHours(h.createdAt, STALE_THRESHOLD_HOURS)) {
+    if (h.status === "abandoned" && isStaleHours(h.createdAt, CAPS.STALE_THRESHOLD_HOURS)) {
       return false;
     }
     return true;
@@ -75,11 +73,11 @@ export function evictStale(state: NoesisState): number {
 
   // --- Learning entries: delegate to learning eviction strategy ---------
   const successesBefore = state.learning.successes.length;
-  state.learning.successes = evictStaleLearning(state.learning.successes, STALE_THRESHOLD_HOURS);
+  state.learning.successes = evictStaleLearning(state.learning.successes, CAPS.STALE_THRESHOLD_HOURS);
   count += successesBefore - state.learning.successes.length;
 
   const failuresBefore = state.learning.failures.length;
-  state.learning.failures = evictStaleLearning(state.learning.failures, STALE_THRESHOLD_HOURS);
+  state.learning.failures = evictStaleLearning(state.learning.failures, CAPS.STALE_THRESHOLD_HOURS);
   count += failuresBefore - state.learning.failures.length;
 
   return count;

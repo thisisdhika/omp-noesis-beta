@@ -18,14 +18,12 @@ import {
 import { evictStale } from "../../../src/domains/learning/eviction-strategy.js";
 import type { NoesisState, LearningEntry } from "../../../src/schema.js";
 import { EMPTY_STATE, CAPS } from "../../../src/schema.js";
+import { freshState } from "../../helpers/fixtures.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function freshState(): NoesisState {
-  return structuredClone(EMPTY_STATE);
-}
 
 function oldTimestamp(hoursAgo: number): string {
   return new Date(Date.now() - hoursAgo * 60 * 60 * 1000).toISOString();

@@ -31,7 +31,7 @@ export class StateManager {
    */
   async initialize(): Promise<void> {
     try {
-      const loaded = await readJSON<Record<string, unknown>>(this.#statePath);
+      const loaded = await readJSON(this.#statePath);
       if (loaded === null) {
         this.#state = deepClone(EMPTY_STATE);
         await writeAtomic(this.#statePath, this.#state);
@@ -68,9 +68,10 @@ export class StateManager {
    * writes back atomically.  No-op if the file does not yet exist.
    */
   async checkpointAttention(): Promise<void> {
-    const onDisk = await readJSON<Record<string, unknown>>(this.#statePath);
+    const onDisk = await readJSON(this.#statePath);
     if (onDisk !== null) {
-      (onDisk as Record<string, unknown>).attention = this.#state.attention;
+      const record = onDisk as Record<string, unknown>;
+      record.attention = this.#state.attention;
       await writeAtomic(this.#statePath, onDisk);
     }
   }

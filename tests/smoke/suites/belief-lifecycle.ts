@@ -42,9 +42,8 @@ async function scenarioCreateFactBelief(): Promise<ScenarioResult> {
   const ctx = await createSmokeContext();
   try {
     await ctx.prompt(
-      'Use the believe tool to record this fact: "The auth service runs on port 8080". Use type "fact" and source "user".',
+      "hey just a quick note — the auth service runs on port 8080 in case you need it later",
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
     const state = await ctx.readState();
     assertNonNull(state, "state after believe tool");
     assertFactExists(state, "active");
@@ -62,9 +61,8 @@ async function scenarioCreateDecisionBelief(): Promise<ScenarioResult> {
   const ctx = await createSmokeContext();
   try {
     await ctx.prompt(
-      'Use the believe tool to record a decision: "We will use PostgreSQL for the primary database". Include rationale "Better JSON support than MySQL". Use type "decision" and source "user".',
+      "we decided to go with PostgreSQL for the primary database. rationale: better JSON support than MySQL and the team's more familiar with it",
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
     const state = await ctx.readState();
     assertNonNull(state, "state after believe tool");
     assertDecisionExists(state);
@@ -83,18 +81,16 @@ async function scenarioUpdateBelief(): Promise<ScenarioResult> {
   try {
     // First, create a belief
     await ctx.prompt(
-      'Use the believe tool to record this fact: "The auth service runs on port 8080". Use type "fact" and source "user".',
+      "the auth service runs on port 8080, jot that down as a note",
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
     let state = await ctx.readState();
     assertNonNull(state, "state after first believe tool");
     assertFactExists(state, "active");
 
     // Now update / supersede it
     await ctx.prompt(
-      'Use the believe tool to update the belief about the auth service. It now also runs on port 8443 for admin. Use the supersede action to replace the old port 8080 belief.',
+      "actually the auth service also listens on 8443 for admin endpoints now. can you update that previous note about port 8080? the old one should be superseded by this",
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
     state = await ctx.readState();
     assertNonNull(state, "state after second believe tool");
 
@@ -118,18 +114,16 @@ async function scenarioArchiveBelief(): Promise<ScenarioResult> {
   try {
     // Create a belief first
     await ctx.prompt(
-      'Use the believe tool to record this fact: "Temporary debug flag is enabled". Use type "fact" and source "user".',
+      "just a heads up — there's a temporary debug flag enabled right now, noting it so we don't forget to remove it",
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
     let state = await ctx.readState();
     assertNonNull(state, "state after first believe tool");
     assertFactExists(state, "active");
 
     // Now archive it
     await ctx.prompt(
-      'Use the believe tool to archive the belief about the temporary debug flag. The debug flag has been removed from the configuration.',
+      "the debug flag is gone now, removed from config. archive that note about it",
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
     state = await ctx.readState();
     assertNonNull(state, "state after archive believe tool");
 
@@ -149,9 +143,8 @@ async function scenarioBeliefWithConfidence(): Promise<ScenarioResult> {
   const ctx = await createSmokeContext();
   try {
     await ctx.prompt(
-      'Use the believe tool to record with high confidence (0.95): "The build takes exactly 42 seconds". Use type "fact" and source "execution".',
+      "pretty sure about this one — the build takes exactly 42 seconds, I timed it. record that with high confidence, say 0.95",
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
     const state = await ctx.readState();
     assertNonNull(state, "state after believe tool");
 
@@ -188,17 +181,17 @@ async function scenarioAssessViaRecall(): Promise<ScenarioResult> {
   try {
     // Create three beliefs first
     await ctx.prompt(
-      'Use the believe tool to record this fact: "The auth service runs on port 8080". Use type "fact" and source "user".',
+      "hey the auth service runs on port 8080, just noting that",
     );
     await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
 
     await ctx.prompt(
-      'Use the believe tool to record this fact: "PostgreSQL is the primary database". Use type "fact" and source "user".',
+      "also PostgreSQL is our primary database now, make a note of that too",
     );
     await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
 
     await ctx.prompt(
-      'Use the believe tool to record a decision: "We will use Redis for caching". Include rationale "Fast key-value store". Use type "decision" and source "user".',
+      "and we're going with Redis for caching — rationale is it's a fast key-value store and we already have experience with it",
     );
     await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
 
@@ -209,7 +202,7 @@ async function scenarioAssessViaRecall(): Promise<ScenarioResult> {
 
     // Now recall all beliefs
     await ctx.prompt(
-      'Use the recall tool to list all my current beliefs about the project.',
+      "what beliefs do I have saved right now? list em all for me",
     );
     const event = await ctx.waitForTool("noesis_recall", PROMPT_TIMEOUT_MS);
     const eventStr = JSON.stringify(event);
@@ -236,9 +229,8 @@ async function scenarioBelieveLearningPromotion(): Promise<ScenarioResult> {
   try {
     // Trigger a bash failure to create a learning entry
     await ctx.prompt(
-      'Run "bash -c exit 1" using bash to trigger learning capture.',
+      "try running this and see what happens: `exit 1` in bash",
     );
-    await ctx.waitForTool("bash", PROMPT_TIMEOUT_MS);
 
     // Read state to get the learning entry ID
     const statePre = await ctx.readState();
@@ -257,9 +249,8 @@ async function scenarioBelieveLearningPromotion(): Promise<ScenarioResult> {
 
     // Resolve the learning entry using believe tool with type="learning"
     await ctx.prompt(
-      `Use the believe tool with type="learning" to resolve learning entry "${learningId}". Set rootCause="The command exit 1 always returns non-zero" and fix="Use exit 0 for successful test commands".`,
+      `ok so the learning entry "${learningId}" — the root cause is that exit 1 always returns non-zero. fix is to use exit 0 for successful test commands. log that as a learning please`,
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
 
     // Verify the belief was created
     const state = await ctx.readState();
@@ -280,9 +271,8 @@ async function scenarioBelieveWithTagsAndEvidence(): Promise<ScenarioResult> {
   const ctx = await createSmokeContext();
   try {
     await ctx.prompt(
-      'Use the believe tool to record: type="fact", content="The API rate limit is 100 requests per minute", confidence=0.8, source="execution", tags=["api", "rate-limit"], evidence="Found in nginx.conf line 42".',
+      "just found this in nginx.conf line 42 — the API rate limit is 100 requests per minute. pretty confident about this, 0.8. tag it with api and rate-limit",
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
 
     const state = await ctx.readState();
     assertNonNull(state, "state after believe tool");

@@ -12,6 +12,11 @@
 import type { GraphFinding, GraphConfidence } from "../schema.js";
 import { now } from "../shared/time.js";
 
+/** Narrow an unknown value to a record with string keys. */
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
 // ============================================================================
 // TYPES
 // ============================================================================
@@ -66,21 +71,21 @@ function extractRelations(raw: Record<string, unknown>): string[] {
   if (Array.isArray(raw.edges)) {
     return raw.edges.map((e: unknown) => {
       if (typeof e === "string") return e;
-      const edge = e as { source?: string; target?: string };
-      return `${edge.source ?? "?"}→${edge.target ?? "?"}`;
+      if (!isRecord(e)) return "?→?";
+      return `${String(e.source ?? "?")}→${String(e.target ?? "?")}`;
     });
   }
 
   if (Array.isArray(raw.links)) {
     return raw.links.map((l: unknown) => {
       if (typeof l === "string") return l;
-      const link = l as { source?: string; target?: string };
-      return `${link.source ?? "?"}→${link.target ?? "?"}`;
+      if (!isRecord(l)) return "?→?";
+      return `${String(l.source ?? "?")}→${String(l.target ?? "?")}`;
     });
   }
 
   if (Array.isArray(raw.relations)) {
-    return raw.relations as string[];
+    return raw.relations.filter((r): r is string => typeof r === "string");
   }
 
   return [];
@@ -116,30 +121,27 @@ export function parseQueryOutput(raw: string): GraphFinding[] {
   } catch {
     return [];
   }
+  if (!isRecord(parsed)) return [];
 
-  if (typeof parsed !== "object" || parsed === null) return [];
-
-  const root = parsed as Record<string, unknown>;
   const items: Array<Record<string, unknown>> = [];
 
-  if (Array.isArray(root.results)) {
+  if (Array.isArray(parsed.results)) {
     // Shape: { results: [...] }
-    for (const result of root.results) {
-      if (typeof result === "object" && result !== null) {
-        items.push(result as Record<string, unknown>);
+    for (const result of parsed.results) {
+      if (isRecord(result)) {
+        items.push(result);
       }
     }
-  } else if (Array.isArray(root.findings)) {
+  } else if (Array.isArray(parsed.findings)) {
     // Shape: { query: "...", findings: [...] }
     const topQuery =
-      typeof root.query === "string" ? root.query : undefined;
-    for (const f of root.findings) {
-      if (typeof f !== "object" || f === null) continue;
-      const record = f as Record<string, unknown>;
-      if (!record.query && topQuery) {
-        record.query = topQuery;
+      typeof parsed.query === "string" ? parsed.query : undefined;
+    for (const f of parsed.findings) {
+      if (!isRecord(f)) continue;
+      if (!f.query && topQuery) {
+        f.query = topQuery;
       }
-      items.push(record);
+      items.push(f);
     }
   }
 
@@ -147,7 +149,7 @@ export function parseQueryOutput(raw: string): GraphFinding[] {
 
   return items.map((item): GraphFinding => ({
     query: typeof item.query === "string" ? item.query : "",
-    nodes: Array.isArray(item.nodes) ? (item.nodes as string[]) : [],
+    nodes: Array.isArray(item.nodes) ? item.nodes.filter((n): n is string => typeof n === "string") : [],
     relations: extractRelations(item),
     confidence: toGraphConfidence(
       typeof item.confidence === "string" ? item.confidence : "AMBIGUOUS",

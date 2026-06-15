@@ -7,32 +7,15 @@
  */
 
 import { describe, it, expect, beforeEach } from "bun:test";
-import { unlinkSync, existsSync } from "node:fs";
-import { join } from "node:path";
-import { createMockPi } from "../helpers/mock-pi.js";
+import { cleanPersistedState } from "../helpers/fixtures.js";
+import { createMockPi, toExtensionAPI, type MockPi } from "../helpers/mock-pi.js";
 import { createRuntime, type NoesisRuntime } from "../../src/runtime.js";
 import { registerHooks } from "../../src/hooks/index.js";
-import type { ExtensionAPI } from "@oh-my-pi/pi-coding-agent";
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-/** Mock pi with test helper methods. */
-interface MockPi {
-  logger: {
-    info: (...args: unknown[]) => void;
-    warn: (...args: unknown[]) => void;
-    error: (...args: unknown[]) => void;
-    debug: (...args: unknown[]) => void;
-  };
-  registerTool(def: Record<string, unknown>): void;
-  registerCommand(name: string, opts: Record<string, unknown>): void;
-  on(event: string, handler: (...args: unknown[]) => unknown): void;
-  _toolCount(): number;
-  _getTool(name: string): Record<string, unknown> | undefined;
-  _getHooks(event: string): Array<(...args: unknown[]) => unknown>;
-}
 
 // ---------------------------------------------------------------------------
 // Setup
@@ -50,20 +33,13 @@ const EXPECTED_EVENTS = [
 ] as const;
 
 beforeEach(async () => {
-  // Remove prior state so createRuntime starts fresh
-  const statePath = join(process.cwd(), ".omp", "noesis", "state.json");
-  try {
-    if (existsSync(statePath)) unlinkSync(statePath);
-  } catch {
-    // best-effort
-  }
+  cleanPersistedState();
 
-  const raw = createMockPi();
-  // Unsafe cast: mock structurally matches ExtensionAPI for test purposes.
-  pi = raw as unknown as MockPi;
-  runtime = await createRuntime(pi as unknown as ExtensionAPI);
-  registerHooks(pi as unknown as ExtensionAPI, runtime);
+  pi = createMockPi();
+  runtime = await createRuntime(toExtensionAPI(pi));
+  registerHooks(toExtensionAPI(pi), runtime);
 });
+
 
 // ---------------------------------------------------------------------------
 // Tests

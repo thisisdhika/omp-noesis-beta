@@ -72,10 +72,9 @@ export async function writeAtomic(path: string, data: unknown): Promise<void> {
  * Returns `null` (instead of throwing) when the file does not exist.
  * All other errors (parse errors, permission errors, etc.) propagate.
  */
-export async function readJSON<T>(path: string): Promise<T | null> {
+export async function readJSON(path: string): Promise<unknown> {
   try {
-    const result = await Bun.file(path).json();
-    return result as T;
+    return await Bun.file(path).json();
   } catch (err: unknown) {
     if (isErrnoENOENT(err)) return null;
     throw err;
@@ -103,6 +102,6 @@ function isErrnoENOENT(err: unknown): err is NodeJS.ErrnoException {
     typeof err === "object" &&
     err !== null &&
     "code" in err &&
-    (err as NodeJS.ErrnoException).code === "ENOENT"
+    (err as { code?: unknown }).code === "ENOENT"
   );
 }

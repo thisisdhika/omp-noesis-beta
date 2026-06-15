@@ -12,7 +12,7 @@
 
 
 import type { VaultArtifact, VaultPullResult } from "../schema.js";
-export type { VaultArtifact, VaultPullResult } from "../schema.js";
+export type { VaultArtifact, VaultPullResult };
 
 // ============================================================================
 // VAULT STORE INTERFACE

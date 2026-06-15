@@ -1,13 +1,12 @@
 "use strict";
 
 import { describe, it, expect } from "bun:test";
-import type { NoesisState } from "../../src/schema.js";
-import { EMPTY_STATE } from "../../src/schema.js";
+import { cloneState } from "../helpers/fixtures.js";
 import { addLearning, resolveLearning, getRankedLearning, getFailures } from "../../src/domains/learning/learning-domain.js";
 
 describe("learning loop — failure capture and resolution", () => {
   it("should capture a failure learning entry with status 'captured'", () => {
-    const state = structuredClone(EMPTY_STATE) as NoesisState;
+    const state = cloneState();
 
     const entry = addLearning(state, {
       description: "Connection timeout when calling graphQL endpoint",
@@ -23,7 +22,7 @@ describe("learning loop — failure capture and resolution", () => {
   });
 
   it("should resolve a failure entry and record root cause and fix", () => {
-    const state = structuredClone(EMPTY_STATE) as NoesisState;
+    const state = cloneState();
 
     const entry = addLearning(state, {
       description: "State persistence crash on concurrent write",
@@ -42,7 +41,7 @@ describe("learning loop — failure capture and resolution", () => {
   });
 
   it("should keep the resolved entry in the failures array with updated status", () => {
-    const state = structuredClone(EMPTY_STATE) as NoesisState;
+    const state = cloneState();
 
     const entry = addLearning(state, {
       description: "Flaky test due to async race condition",
@@ -60,14 +59,14 @@ describe("learning loop — failure capture and resolution", () => {
   });
 
   it("should return null when resolving a non-existent entry", () => {
-    const state = structuredClone(EMPTY_STATE) as NoesisState;
+    const state = cloneState();
     const result = resolveLearning(state, "le-nonexistent", "N/A", "N/A");
 
     expect(result).toBeNull();
   });
 
   it("should rank failure entries higher than success entries", () => {
-    const state = structuredClone(EMPTY_STATE) as NoesisState;
+    const state = cloneState();
 
     // Add two entries with same capturedAt semantics — use addLearning for both
     const success = addLearning(state, {
@@ -88,7 +87,7 @@ describe("learning loop — failure capture and resolution", () => {
   });
 
   it("should capture a success learning entry", () => {
-    const state = structuredClone(EMPTY_STATE) as NoesisState;
+    const state = cloneState();
 
     const entry = addLearning(state, {
       description: "Optimized database query reduced latency by 60%",

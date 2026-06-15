@@ -10,12 +10,12 @@ import { describe, it, expect } from "bun:test";
 import { mapGraphConfidence, applyStalePenalty } from "../../../src/domains/belief/confidence-strategy.js";
 import type { GraphFinding, BeliefFact } from "../../../src/schema.js";
 import { now } from "../../../src/shared/time.js";
+import { OLD_TIMESTAMP } from "../../helpers/fixtures.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-const OLD_TIMESTAMP = "2020-01-01T00:00:00.000Z";
 
 function makeFinding(overrides?: Partial<GraphFinding>): GraphFinding {
   return {

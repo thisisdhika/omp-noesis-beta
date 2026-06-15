@@ -22,7 +22,7 @@
  * @module hindsight-vault-store
  */
 
-import type { VaultStore } from "./vault-store.js";
+import { NoopVaultStore } from "./noop-vault-store.js";
 import type { VaultArtifact, VaultPullResult } from "../schema.js";
 
 // ============================================================================
@@ -38,7 +38,7 @@ import type { VaultArtifact, VaultPullResult } from "../schema.js";
  * designed to be replaced in-place once the Hindsight HTTP client is ready;
  * callers should see zero API changes.
  */
-export class HindsightVaultStore implements VaultStore {
+export class HindsightVaultStore extends NoopVaultStore {
   /** Optional API key for the future Hindsight HTTP client. */
   readonly #apiKey?: string;
 
@@ -47,6 +47,7 @@ export class HindsightVaultStore implements VaultStore {
    *   forward compatibility so the constructor signature does not change.
    */
   constructor(apiKey?: string) {
+    super();
     this.#apiKey = apiKey;
   }
 
@@ -88,32 +89,4 @@ export class HindsightVaultStore implements VaultStore {
     };
   }
 
-  // --------------------------------------------------------------------------
-  // search
-  // --------------------------------------------------------------------------
-
-  /**
-   * Full-text search across Hindsight-stored artifacts.
-   *
-   * **Stub behaviour**: returns an empty array.  Once the HTTP client is
-   * wired in, this method will query the Hindsight `/vault/search` endpoint.
-   */
-  async search(query: string, kind?: string, maxResults?: number): Promise<VaultArtifact[]> {
-    return [];
-  }
-
-  // --------------------------------------------------------------------------
-  // validate
-  // --------------------------------------------------------------------------
-
-  /**
-   * Verify Hindsight backend readiness.
-   *
-   * **Stub behaviour**: returns `false` to signal the backend is not yet
-   * operational.  Once the HTTP client is wired in, this method will perform a
-   * health check against the Hindsight service.
-   */
-  async validate(): Promise<boolean> {
-    return false;
-  }
 }

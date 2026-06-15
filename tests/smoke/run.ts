@@ -11,8 +11,10 @@ import { runErrorRecovery } from "./suites/error-recovery.ts";
 import { runRecallQueries } from "./suites/recall-queries.ts";
 import { runMalformedInputs } from "./suites/malformed-inputs.ts";
 import { runRealWorldWorkflows } from "./suites/real-world-workflows.ts";
+import { runRealWorldDeveloper } from "./suites/real-world-developer.ts";
 import { runInferenceLifecycle } from "./suites/inference-lifecycle.ts";
 import { runVaultSearch } from "./suites/vault-search.ts";
+import { runEdgeCases } from "./suites/edge-cases.ts";
 
 const suites: Array<() => Promise<SuiteResult>> = [
   runBeliefLifecycle,
@@ -29,6 +31,8 @@ const suites: Array<() => Promise<SuiteResult>> = [
   runVaultSearch,
   runErrorRecovery,
   runMalformedInputs,
+  runRealWorldDeveloper,
+  runEdgeCases,
 ];
 
 const results: SuiteResult[] = [];

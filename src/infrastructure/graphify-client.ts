@@ -8,11 +8,11 @@
  * and build delegation for graph-based cognitive state enrichment.
  */
 
-import { statSync } from "node:fs";
 import type { CapabilityLevel, GraphFinding } from "../schema.js";
 import { validateGraphPath } from "../shared/paths.js";
 import { runGraphifyBuild } from "./graphify-setup.js";
 import { parseQueryOutput } from "./graphify-parser.js";
+import { stat } from "node:fs/promises";
 
 // ============================================================================
 // CAPABILITY DETECTION
@@ -45,7 +45,7 @@ export async function detectCapability(
 
   // Check graph file freshness using modification time
   try {
-    const stats = statSync(graphPath);
+    const stats = await stat(graphPath);
     const ageHours = (Date.now() - stats.mtimeMs) / (1000 * 60 * 60);
     return ageHours > 24 ? "STALE" : "FULL";
   } catch {

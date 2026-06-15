@@ -13,8 +13,9 @@
 
 import { appendFileSync, readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
-import type { VaultStore } from "./vault-store.js";
+import { VaultArtifactSchema } from "../schema.js";
 import type { VaultArtifact, VaultPullResult } from "../schema.js";
+import type { VaultStore } from "./vault-store.js";
 
 // ============================================================================
 // CONSTANTS
@@ -169,8 +170,11 @@ export class LocalVaultStore implements VaultStore {
         contentLines.pop();
       }
 
+      const kindResult = VaultArtifactSchema.shape.kind.safeParse(kind);
+      if (!kindResult.success) continue;
+
       artifacts.push({
-        kind: kind as VaultArtifact["kind"],
+        kind: kindResult.data,
         projectPath: this.filePath,
         id,
         pushedAt,

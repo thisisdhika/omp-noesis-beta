@@ -7,9 +7,11 @@
  * All public methods are async per the VaultStore contract.
  */
 
+import { z } from "zod";
+import { VaultArtifactSchema } from "../schema.js";
 import type { VaultStore, VaultArtifact, VaultPullResult } from "./vault-store.js";
-import { Database } from "bun:sqlite";
 import { join } from "node:path";
+import { Database } from "bun:sqlite";
 
 // ---------------------------------------------------------------------------
 // Types for raw SQLite row deserialisation
@@ -23,6 +25,16 @@ interface VaultArtifactRow {
   metadata: string | null;
   content: string;
 }
+
+/** Zod schema for raw SQLite row validation at the DB boundary. */
+const VaultArtifactRowSchema = z.object({
+  id: z.string(),
+  kind: z.string(),
+  project_path: z.string(),
+  pushed_at: z.string(),
+  metadata: z.string().nullable(),
+  content: z.string(),
+});
 
 // ---------------------------------------------------------------------------
 // Prepared statement keys
@@ -52,7 +64,7 @@ const SEARCH_STMTS: Record<SearchStmt, string> = {
 function rowToArtifact(row: VaultArtifactRow): VaultArtifact {
   return {
     id: row.id,
-    kind: row.kind as VaultArtifact["kind"],
+    kind: VaultArtifactSchema.shape.kind.parse(row.kind),
     projectPath: row.project_path,
     pushedAt: row.pushed_at,
     metadata: row.metadata ? JSON.parse(row.metadata) : undefined,
@@ -135,9 +147,10 @@ export class MnemopiVaultStore implements VaultStore {
       params = [maxResults];
     }
 
-    const rows = this.db
+    const raw = this.db
       .query(PULL_STMTS[stmtKey])
-      .all(...params) as VaultArtifactRow[];
+      .all(...params);
+    const rows = VaultArtifactRowSchema.array().parse(raw);
 
     return {
       artifacts: rows.map(rowToArtifact),
@@ -161,10 +174,10 @@ export class MnemopiVaultStore implements VaultStore {
       stmtKey = "searchAll";
       params = [`%${query}%`, maxResults];
     }
-
-    const rows = this.db
+    const raw = this.db
       .query(SEARCH_STMTS[stmtKey])
-      .all(...params) as VaultArtifactRow[];
+      .all(...params);
+    const rows = VaultArtifactRowSchema.array().parse(raw);
 
     return rows.map(rowToArtifact);
   }

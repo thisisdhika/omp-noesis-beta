@@ -9,6 +9,7 @@
  */
 
 import type { LearningEntry } from "../../schema.js";
+import { CAPS } from "../../schema.js";
 import { isStaleHours } from "../../shared/time.js";
 
 /**
@@ -21,7 +22,7 @@ import { isStaleHours } from "../../shared/time.js";
  * @param staleHours  Age threshold in hours (default 720 = 30 days).
  * @returns           Filtered array with stale unresolved entries removed.
  */
-export function evictStale(entries: LearningEntry[], staleHours: number = 720): LearningEntry[] {
+export function evictStale(entries: LearningEntry[], staleHours: number = CAPS.STALE_THRESHOLD_HOURS): LearningEntry[] {
   return entries.filter((e) => {
     // Never evict resolved entries
     if (e.status === "resolved") return true;

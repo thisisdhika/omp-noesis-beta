@@ -27,7 +27,9 @@ export async function runLearningLoop(): Promise<SuiteResult> {
     let ctx;
     try {
       ctx = await createSmokeContext();
-      await ctx.prompt('Run a command that will fail: "bash -c exit 1" using the bash tool.');
+    await ctx.prompt(
+      "try this and see what happens: `exit 1` in bash",
+    );
       await ctx.waitForTool("bash", PROMPT_TIMEOUT_MS);
       const state = await ctx.readState();
       if (!state) throw new AssertionError("state file not found after prompt");
@@ -46,14 +48,9 @@ export async function runLearningLoop(): Promise<SuiteResult> {
     let ctx;
     try {
       ctx = await createSmokeContext();
-      await ctx.prompt(
-        [
-          'Run the failing Node.js command: node -e "throw new Error(\'DB timeout after 30s\')" using bash.',
-          'Then use the believe tool with type "learning" to diagnose the failure:',
-          'provide a rootCause of "Database connection pool exhausted"',
-          'and a fix of "Increase pool size and add retry logic".',
-        ].join(" "),
-      );
+    await ctx.prompt(
+      "ok so I ran `node -e \"throw new Error('DB timeout after 30s')\"` and it crashed as expected. the root cause is the database connection pool being exhausted — we need to increase the pool size and add retry logic. can you log that as a learning entry?",
+    );
       await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
       const state = await ctx.readState();
       if (!state) throw new AssertionError("state file not found after prompt");
@@ -80,7 +77,9 @@ export async function runLearningLoop(): Promise<SuiteResult> {
       ctx = await createSmokeContext();
 
       // Trigger a tool error so a learning entry is auto-captured
-      await ctx.prompt('Run a failing command: node -e "throw new Error(\'tool bug: parser crash\')" using bash.');
+    await ctx.prompt(
+      "run this failing command real quick: `node -e \"throw new Error('tool bug: parser crash')\"`",
+    );
       await ctx.waitForTool("bash", PROMPT_TIMEOUT_MS);
       // Ensure state has the captured entry
       const stateAfterCapture = await ctx.readState();
@@ -88,14 +87,9 @@ export async function runLearningLoop(): Promise<SuiteResult> {
       assertHasLearning(stateAfterCapture, { status: "captured" });
 
       // Now escalate/diagnose the captured entry via believe type "learning"
-      await ctx.prompt(
-        [
-          'Use the recall tool with query "relevant_learning" to find the recent learning entry,',
-          'then use the believe tool with type "learning" to diagnose the failure:',
-          'provide its learningId, a rootCause of "Null pointer in parser dispatch",',
-          'and a fix of "Add null check before dispatch".',
-        ].join(" "),
-      );
+    await ctx.prompt(
+      "find the recent learning entry from that parser crash and diagnose it. root cause is a null pointer in the parser dispatch — needs a null check before dispatch. record that with the believe tool as a learning type",
+    );
       await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
       const state = await ctx.readState();
       if (!state) throw new AssertionError("state file not found after escalation prompt");
@@ -114,15 +108,9 @@ export async function runLearningLoop(): Promise<SuiteResult> {
     let ctx;
     try {
       ctx = await createSmokeContext();
-      await ctx.prompt(
-        [
-          'Run three different failing commands to create multiple learning entries:',
-          'first "bash -c exit 1",',
-          'then node -e "throw new Error(\'critical failure\')",',
-          'then "bash -c \'exit 2\'".',
-          'Finally use the recall tool with query "relevant_learning" to query the ranked learning entries.',
-        ].join(" "),
-      );
+    await ctx.prompt(
+      "lets run a few different failing commands to stress the learning system a bit. first `exit 1`, then throw a node error `node -e \"throw new Error('critical failure')\"`, then `exit 2`. then pull up what we learned from all of them",
+    );
       await ctx.waitForTool("noesis_recall", PROMPT_TIMEOUT_MS);
       const state = await ctx.readState();
       if (!state) throw new AssertionError("state file not found after prompt");
@@ -150,9 +138,9 @@ export async function runLearningLoop(): Promise<SuiteResult> {
     let ctx;
     try {
       ctx = await createSmokeContext();
-      await ctx.prompt(
-        'Run the exact same failing command twice to trigger learning capture: first "bash -c exit 1", then "bash -c exit 1" again.',
-      );
+    await ctx.prompt(
+      "run the same failing command twice: `exit 1` in bash, then `exit 1` again. wanna see if the system deduplicates",
+    );
       // Wait for the first bash tool execution end; the prompt will have run both
       await ctx.waitForTool("bash", PROMPT_TIMEOUT_MS);
       const state = await ctx.readState();
@@ -174,21 +162,18 @@ export async function runLearningLoop(): Promise<SuiteResult> {
       ctx = await createSmokeContext();
 
       // Step 1: trigger a failure to capture a learning entry
-      await ctx.prompt('Run "bash -c exit 1" using bash to trigger a learning capture.');
+    await ctx.prompt(
+      "trigger a learning entry by running a failing command: `exit 1`",
+    );
       await ctx.waitForTool("bash", PROMPT_TIMEOUT_MS);
       let state = await ctx.readState();
       if (!state) throw new AssertionError("state file not found after capture prompt");
       assertHasLearning(state, { status: "captured" });
 
       // Step 2: diagnose the captured entry (captured → diagnosed)
-      await ctx.prompt(
-        [
-          'Use the recall tool with query "relevant_learning" to find the captured learning entry,',
-          'then use the believe tool with type "learning" to diagnose it:',
-          'provide a rootCause of "Script returned non-zero exit code"',
-          'and a fix of "Handle exit codes properly with error checking".',
-        ].join(" "),
-      );
+    await ctx.prompt(
+      "find the learning entry from that failed command and diagnose it. root cause is the script returned non-zero exit code — fix is to handle exit codes properly with error checking",
+    );
       await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
       state = await ctx.readState();
       if (!state) throw new AssertionError("state file not found after diagnose prompt");
@@ -196,13 +181,9 @@ export async function runLearningLoop(): Promise<SuiteResult> {
 
       // Step 3: resolve the diagnosed entry (diagnosed → resolved).
       // Use believe type "learning" again with a fix to mark it resolved.
-      await ctx.prompt(
-        [
-          'Use the recall tool to find the diagnosed learning entry,',
-          'then use the believe tool with type "learning" to mark it as resolved:',
-          'provide the learningId and fix of "Exit code check implemented".',
-        ].join(" "),
-      );
+    await ctx.prompt(
+      "alright we implemented the fix for that exit code issue. find the diagnosed learning entry and mark it as resolved — the fix is 'Exit code check implemented'.",
+    );
       await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
       state = await ctx.readState();
       if (!state) throw new AssertionError("state file not found after resolve prompt");

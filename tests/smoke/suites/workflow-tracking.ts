@@ -40,14 +40,10 @@ export async function runWorkflowTracking(): Promise<SuiteResult> {
     const s = Date.now();
     let ctx;
     try {
-      ctx = await createSmokeContext();
-      await ctx.prompt(
-        [
-          'Use the commit tool in "extend_workflow" mode to create a workflow with',
-          'goal "Build auth module" and steps ["Design schema", "Implement login", "Write tests"].',
-          'Leave the status as default draft.',
-        ].join(" "),
-      );
+    ctx = await createSmokeContext();
+    await ctx.prompt(
+      "just starting on the auth module — need to design the schema first, then implement login, then write tests. can you set up a workflow for that?",
+    );
       await ctx.waitForTool("noesis_commit", PROMPT_TIMEOUT_MS);
       const state = await ctx.readState();
       if (!state) throw new AssertionError("state file not found after prompt");
@@ -68,21 +64,21 @@ export async function runWorkflowTracking(): Promise<SuiteResult> {
       ctx = await createSmokeContext();
 
       // Create a workflow with steps
-      await ctx.prompt(
-        'Use the commit tool in "extend_workflow" mode to create a workflow with goal "Deploy pipeline" and steps ["Setup CI", "Run tests", "Deploy"].',
-      );
+    await ctx.prompt(
+      "alright we need a CI/CD pipeline. steps: setup CI, run tests, deploy. track that for me.",
+    );
       await ctx.waitForTool("noesis_commit", PROMPT_TIMEOUT_MS);
 
       // Mark the first step as active
-      await ctx.prompt(
-        'Use the commit tool in "update_step" mode to mark step "Setup CI" as active.',
-      );
+    await ctx.prompt(
+      "ok I'm starting on 'Setup CI' now, mark that as in progress",
+    );
       await ctx.waitForTool("noesis_commit", PROMPT_TIMEOUT_MS);
 
       // Mark the first step as done
-      await ctx.prompt(
-        'Use the commit tool in "update_step" mode to mark step "Setup CI" as done.',
-      );
+    await ctx.prompt(
+      "setup CI is done, mark it complete",
+    );
       await ctx.waitForTool("noesis_commit", PROMPT_TIMEOUT_MS);
 
       const state = await ctx.readState();
@@ -108,15 +104,15 @@ export async function runWorkflowTracking(): Promise<SuiteResult> {
       ctx = await createSmokeContext();
 
       // Create a workflow with several steps
-      await ctx.prompt(
-        'Use the commit tool in "extend_workflow" mode to create a workflow with goal "Refactor module" and steps ["Audit code", "Rewrite core", "Update tests"].',
-      );
+    await ctx.prompt(
+      "we're refactoring the payment service. first step is audit the code, then rewrite the core, then update tests.",
+    );
       await ctx.waitForTool("noesis_commit", PROMPT_TIMEOUT_MS);
 
       // Skip the middle step
-      await ctx.prompt(
-        'Use the commit tool in "update_step" mode to mark step "Rewrite core" as skipped.',
-      );
+    await ctx.prompt(
+      "actually after auditing I don't think we need to rewrite the core — skip that step for now",
+    );
       await ctx.waitForTool("noesis_commit", PROMPT_TIMEOUT_MS);
 
       const state = await ctx.readState();
@@ -144,15 +140,15 @@ export async function runWorkflowTracking(): Promise<SuiteResult> {
       ctx = await createSmokeContext();
 
       // Create a workflow
-      await ctx.prompt(
-        'Use the commit tool in "extend_workflow" mode to create a workflow with goal "Payment integration" and steps ["API design", "Implement"].',
-      );
+    await ctx.prompt(
+      "working on payment integration — need to design the API first then implement it",
+    );
       await ctx.waitForTool("noesis_commit", PROMPT_TIMEOUT_MS);
 
       // Add planned actions
-      await ctx.prompt(
-        'Use the commit tool in "add_action" mode to add a planned action "Research PCI compliance" with priority "high". Then add another action "Review third-party SDK" with priority "normal".',
-      );
+    await ctx.prompt(
+      "also we need to research PCI compliance (high priority) and review the third-party SDK (normal priority). add those as planned actions",
+    );
       await ctx.waitForTool("noesis_commit", PROMPT_TIMEOUT_MS);
 
       const state = await ctx.readState();
@@ -179,10 +175,10 @@ export async function runWorkflowTracking(): Promise<SuiteResult> {
     const s = Date.now();
     let ctx;
     try {
-      ctx = await createSmokeContext();
-      await ctx.prompt(
-        'Use the commit tool in "add_action" mode to add a planned action "Fix login timeout bug" with priority "critical".',
-      );
+    ctx = await createSmokeContext();
+    await ctx.prompt(
+      "there's a critical login timeout bug we need to fix — log that as an action with critical priority",
+    );
       await ctx.waitForTool("noesis_commit", PROMPT_TIMEOUT_MS);
       const state = await ctx.readState();
       if (!state) throw new AssertionError("state file not found after prompt");
@@ -216,13 +212,15 @@ export async function runWorkflowTracking(): Promise<SuiteResult> {
       ctx = await createSmokeContext();
 
       // First create a workflow so there is something to recall
-      await ctx.prompt(
-        'Use the commit tool in "extend_workflow" mode to create a workflow with goal "Notification service" and steps ["Setup queue", "Send emails"].',
-      );
+    await ctx.prompt(
+      "set up a workflow for the notification service: first setup the queue, then implement email sending",
+    );
       await ctx.waitForTool("noesis_commit", PROMPT_TIMEOUT_MS);
 
       // Now ask the agent to recall the workflow
-      await ctx.prompt('Use the recall tool with query "current_workflow" to show me the current workflow status.');
+    await ctx.prompt(
+      "what's the status of the notification service workflow? where are we at",
+    );
       await ctx.waitForTool("noesis_recall", PROMPT_TIMEOUT_MS);
 
       scenarios.push({ name: "recall workflow", passed: true, durationMs: Date.now() - s });

@@ -1,10 +1,8 @@
 "use strict";
 
 import { describe, it, expect } from "bun:test";
-import { populatedState } from "../helpers/fixtures.js";
+import { cloneState, populatedState } from "../helpers/fixtures.js";
 import { buildSurvivorContext } from "../../src/rendering/survivor-builder.js";
-import type { NoesisState } from "../../src/schema.js";
-import { EMPTY_STATE } from "../../src/schema.js";
 
 describe("compaction survival — buildSurvivorContext", () => {
   it("should include attention focus in survivor XML", () => {
@@ -53,7 +51,7 @@ describe("compaction survival — buildSurvivorContext", () => {
   });
 
   it("should always include attention, workflow, and pointer sections", () => {
-    const state = structuredClone(EMPTY_STATE) as NoesisState;
+    const state = cloneState();
     const xml = buildSurvivorContext(state);
 
     expect(xml).toContain("<attention>");

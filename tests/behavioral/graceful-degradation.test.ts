@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { mkdirSync, writeFileSync, rmSync, existsSync } from "node:fs";
 import { createTempDir } from "../helpers/temp-dir.js";
 import { StateManager } from "../../src/infrastructure/state-manager.js";
-import { EMPTY_STATE, CAPS } from "../../src/schema.js";
+import { cloneState } from "../helpers/fixtures.js";
 import type { NoesisState } from "../../src/schema.js";
 import { NoopVaultStore } from "../../src/vault/noop-vault-store.js";
 import type { VaultArtifact } from "../../src/vault/vault-store.js";
@@ -82,7 +82,7 @@ describe("graceful degradation — StateManager", () => {
 
 describe("graceful degradation — EMPTY_STATE is usable", () => {
   it("should not crash when calling belief domain functions on EMPTY_STATE", () => {
-    const state = structuredClone(EMPTY_STATE) as NoesisState;
+    const state = cloneState();
 
     const fact = addFact(state, {
       content: "First principle thinking is effective",
@@ -96,7 +96,7 @@ describe("graceful degradation — EMPTY_STATE is usable", () => {
   });
 
   it("should not crash when calling learning domain functions on EMPTY_STATE", () => {
-    const state = structuredClone(EMPTY_STATE) as NoesisState;
+    const state = cloneState();
 
     const entry = addLearning(state, {
       description: "Learned from empty slate",
@@ -109,7 +109,7 @@ describe("graceful degradation — EMPTY_STATE is usable", () => {
   });
 
   it("should not crash when building survivor context from EMPTY_STATE", () => {
-    const state = structuredClone(EMPTY_STATE) as NoesisState;
+    const state = cloneState();
 
     const xml = buildSurvivorContext(state);
     expect(xml).toContain("<noesis-state>");
@@ -119,7 +119,7 @@ describe("graceful degradation — EMPTY_STATE is usable", () => {
   });
 
   it("should resolve focus from EMPTY_STATE to default without crashing", () => {
-    const state = structuredClone(EMPTY_STATE) as NoesisState;
+    const state = cloneState();
 
     const focus = resolveFocus(state);
     expect(focus).toBe("Investigate the current task");

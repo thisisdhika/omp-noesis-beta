@@ -18,9 +18,9 @@ import { z } from "zod";
 
 export const CURRENT_VERSION = 1;
 export const MAX_PREAMBLE_TOKENS = 2000;
-export const MAX_PREAMBLE_CHARS = 8000; // ~4 chars/token
 
 export const CAPS = {
+  STALE_THRESHOLD_HOURS: 720,
   focus: 2, // sentences
   workflow: 3, // goal + current + next
   decisions: 5,

@@ -99,3 +99,17 @@ describe("fileExists", () => {
     expect(fileExists(missingPath)).toBeFalse();
   });
 });
+
+describe("writeAtomic error handling", () => {
+  it("should succeed even when parent directory does not exist (Bun auto-creates)", async () => {
+    const dir = createTempDir();
+    try {
+      const nestedPath = join(dir.path, "nested", "test.json");
+      await writeAtomic(nestedPath, { data: "test" });
+      // Bun.write auto-creates parent directories — write should succeed
+      expect(fileExists(nestedPath)).toBe(true);
+    } finally {
+      dir.cleanup();
+    }
+  });
+});

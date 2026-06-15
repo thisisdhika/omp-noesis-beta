@@ -41,7 +41,7 @@ graphify explain <node> --graph graphify-out/graph.json    # Deep dive
 ```
 Input: queryString
 1. Build: ["graphify", "query", queryString, "--graph", "graphify-out/graph.json"]
-2. Execute: execFile with timeout 30s
+2. Execute: Bun.spawn with timeout 30s
 3. Parse: Extract nodes, relations, confidence, communities
 4. Handle: exitCode 0 → findings; ≠0 → error; timeout → timeout error
 ```
@@ -105,4 +105,4 @@ Provides structured JSON output. v1 uses CLI; MCP is future enhancement.
 4. Confidence is always evidence-grounded for graph sources.
 5. Stale graphs get confidence penalties, not query refusals.
 6. DEGRADED mode is graceful: rest of noesis still works.
-7. All Graphify commands use execFile, never shell.
+7. All Graphify commands use Bun.spawn, never shell.

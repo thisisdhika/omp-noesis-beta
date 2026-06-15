@@ -1,13 +1,12 @@
 "use strict";
 
 import { describe, it, expect } from "bun:test";
-import type { NoesisState } from "../../src/schema.js";
-import { EMPTY_STATE } from "../../src/schema.js";
+import { cloneState } from "../helpers/fixtures.js";
 import { addFact, getActiveFacts } from "../../src/domains/belief/belief-domain.js";
 
 describe("belief revision — AGM supersession chain", () => {
   it("should create an active belief fact", () => {
-    const state = structuredClone(EMPTY_STATE) as NoesisState;
+    const state = cloneState();
 
     const fact = addFact(state, {
       content: "TypeScript strict mode prevents common runtime errors",
@@ -23,7 +22,7 @@ describe("belief revision — AGM supersession chain", () => {
   });
 
   it("should supersede two existing facts when adding a contradictory fact", () => {
-    const state = structuredClone(EMPTY_STATE) as NoesisState;
+    const state = cloneState();
 
     const oldFact1 = addFact(state, {
       content: "Use callback-based file API",
@@ -65,7 +64,7 @@ describe("belief revision — AGM supersession chain", () => {
   });
 
   it("should exclude superseded facts from getActiveFacts", () => {
-    const state = structuredClone(EMPTY_STATE) as NoesisState;
+    const state = cloneState();
 
     const oldFact = addFact(state, {
       content: "Manual memory management is required",
@@ -88,7 +87,7 @@ describe("belief revision — AGM supersession chain", () => {
   });
 
   it("should only supersede active facts (not already-superseded ones)", () => {
-    const state = structuredClone(EMPTY_STATE) as NoesisState;
+    const state = cloneState();
 
     const fact1 = addFact(state, {
       content: "First approach: XML config files",
@@ -125,7 +124,7 @@ describe("belief revision — AGM supersession chain", () => {
   });
 
   it("should support getActiveFacts with confidence and tag filters", () => {
-    const state = structuredClone(EMPTY_STATE) as NoesisState;
+    const state = cloneState();
 
     addFact(state, {
       content: "Important: use dependency injection",

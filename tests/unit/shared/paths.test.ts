@@ -1,24 +1,11 @@
 "use strict";
 
 import { describe, it, expect, beforeEach, afterEach } from "bun:test";
-import { resolveProjectPath, ensureNoesisDir, validateGraphPath } from "../../../src/shared/paths.js";
+import { ensureNoesisDir, validateGraphPath } from "../../../src/shared/paths.js";
 import { createTempDir } from "../../helpers/temp-dir.js";
 import { existsSync, writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 
-describe("resolveProjectPath", () => {
-  it("should join root with a single segment", () => {
-    expect(resolveProjectPath("/root", "dir")).toBe("/root/dir");
-  });
-
-  it("should join root with multiple segments", () => {
-    expect(resolveProjectPath("/root", "a", "b", "c")).toBe("/root/a/b/c");
-  });
-
-  it("should handle relative root paths", () => {
-    expect(resolveProjectPath("relative", "path")).toBe("relative/path");
-  });
-});
 
 describe("ensureNoesisDir", () => {
   let tmp: { path: string; cleanup(): void };

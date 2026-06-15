@@ -8,6 +8,7 @@
  */
 
 import { writeAtomic, readJSON } from "../infrastructure/filesystem-store.js";
+import { VaultArtifactSchema } from "../schema.js";
 import type { VaultArtifact } from "../schema.js";
 import { ensureNoesisDir } from "../shared/paths.js";
 import { join } from "node:path";
@@ -26,10 +27,16 @@ export class RetryBuffer {
   // --------------------------------------------------------------------------
   // PUBLIC API
   // --------------------------------------------------------------------------
+  /** Read and validate the retry queue from disk. Returns an empty array when the file is missing. */
+  async #readQueue(): Promise<VaultArtifact[]> {
+    const data = await readJSON(this.#filePath);
+    if (data === null) return [];
+    return VaultArtifactSchema.array().parse(data);
+  }
 
   /** Append an artifact to the retry queue. */
   async enqueue(artifact: VaultArtifact): Promise<void> {
-    const queue = (await readJSON<VaultArtifact[]>(this.#filePath)) ?? [];
+    const queue = await this.#readQueue();
     queue.push(artifact);
     await writeAtomic(this.#filePath, queue);
   }
@@ -39,7 +46,7 @@ export class RetryBuffer {
    * Returns fewer items when the queue is shorter than `maxCount`.
    */
   async dequeue(maxCount: number): Promise<VaultArtifact[]> {
-    const queue = (await readJSON<VaultArtifact[]>(this.#filePath)) ?? [];
+    const queue = await this.#readQueue();
     const removed = queue.splice(0, maxCount);
     await writeAtomic(this.#filePath, queue);
     return removed;
@@ -47,7 +54,7 @@ export class RetryBuffer {
 
   /** Return all queued artifacts without removing them. */
   async peek(): Promise<VaultArtifact[]> {
-    return (await readJSON<VaultArtifact[]>(this.#filePath)) ?? [];
+    return this.#readQueue();
   }
 
   /** Remove every artifact from the retry queue. */
@@ -57,7 +64,7 @@ export class RetryBuffer {
 
   /** Return the number of artifacts currently queued. */
   async count(): Promise<number> {
-    const queue = (await readJSON<VaultArtifact[]>(this.#filePath)) ?? [];
+    const queue = await this.#readQueue();
     return queue.length;
   }
 }

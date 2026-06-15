@@ -7,6 +7,34 @@
 import type { NoesisState, BeliefFact, BeliefDecision, Hypothesis, Workflow, LearningEntry } from "../../src/schema.js";
 import { EMPTY_STATE, generateId } from "../../src/schema.js";
 import { now } from "../../src/shared/time.js";
+import { unlinkSync, existsSync } from "node:fs";
+import { join } from "node:path";
+
+/** Old timestamp for staleness tests. */
+export const OLD_TIMESTAMP = "2020-01-01T00:00:00.000Z";
+
+/** Recent timestamp for non-stale tests. */
+export const RECENT_TIMESTAMP = "2099-01-01T00:00:00.000Z";
+
+/** Clone EMPTY_STATE with full type inference (avoids `as NoesisState` casts). */
+export function cloneState(): NoesisState {
+  return structuredClone(EMPTY_STATE);
+}
+
+/** Create a fresh empty state for testing (alias for cloneState). */
+export function freshState(): NoesisState {
+  return cloneState();
+}
+
+/** Remove persisted state.json so tests start from EMPTY_STATE. */
+export function cleanPersistedState(): void {
+  const statePath = join(process.cwd(), ".omp", "noesis", "state.json");
+  try {
+    if (existsSync(statePath)) unlinkSync(statePath);
+  } catch {
+    // best-effort cleanup
+  }
+}
 
 /** A minimal NoesisState with some data pre-populated for testing. */
 export function populatedState(): NoesisState {

@@ -11,18 +11,14 @@ import { evictStale, evictOverCap, fullCleanup } from "../../../src/rendering/st
 import { EMPTY_STATE, CAPS, generateId } from "../../../src/schema.js";
 import type { NoesisState, BeliefFact, BeliefDecision, Hypothesis, WorkflowStep, PlannedAction, LearningEntry } from "../../../src/schema.js";
 import { now } from "../../../src/shared/time.js";
+import { freshState, OLD_TIMESTAMP, RECENT_TIMESTAMP } from "../../helpers/fixtures.js";
+
+const TS = now();
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-const OLD_TIMESTAMP = "2020-01-01T00:00:00.000Z";
-const RECENT_TIMESTAMP = "2099-01-01T00:00:00.000Z";
-const TS = now();
-
-function freshState(): NoesisState {
-  return structuredClone(EMPTY_STATE);
-}
 
 // ---------------------------------------------------------------------------
 // evictStale

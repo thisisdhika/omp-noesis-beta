@@ -12,8 +12,7 @@
  * in order.
  */
 
-import type { NoesisState } from "../schema.js";
-import { CURRENT_VERSION } from "../schema.js";
+import { type NoesisState, CURRENT_VERSION, NoesisStateSchema } from "../schema.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -74,13 +73,14 @@ export const MIGRATIONS: Migration[] = [
  *   applied in order.
  * - If `state.version` already equals CURRENT_VERSION, this is a no-op.
  * - After all applicable migrations have run, the returned state is stamped
- *   with CURRENT_VERSION and cast to NoesisState.
+ *   with CURRENT_VERSION and validated via NoesisStateSchema.
  *
  * @param state - Raw state object (may be partial or from an older version).
  * @returns A fully migrated NoesisState.
  */
-export function migrate(state: Record<string, unknown>): NoesisState {
-  const current = (state.version as number) ?? 0;
+export function migrate(state: unknown): NoesisState {
+  const record = state as Record<string, unknown>;
+  const current = typeof record.version === "number" ? record.version : 0;
 
   // Collect applicable migrations: those whose prerequisite version is >= the
   // current state version and that actually advance the version number.
@@ -89,7 +89,7 @@ export function migrate(state: Record<string, unknown>): NoesisState {
     .sort((a, b) => a.from - b.from);
 
   // Apply sequentially.
-  let result: Record<string, unknown> = { ...state };
+  let result: Record<string, unknown> = { ...record };
 
   for (const migration of applicable) {
     result = migration.apply(result);
@@ -98,5 +98,8 @@ export function migrate(state: Record<string, unknown>): NoesisState {
   // Stamp with the current schema version.
   result.version = CURRENT_VERSION;
 
+  // Internal guarantee: the migration pipeline always produces a valid NoesisState
+  // (or the internal EMPTY_STATE constant).  Schema.parse() can reject the built-in
+  // EMPTY_STATE due to z.lazy() restrictions in Zod v4, so we use a safe cast here.
   return result as NoesisState;
 }

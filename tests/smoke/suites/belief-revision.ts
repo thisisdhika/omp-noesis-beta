@@ -46,18 +46,16 @@ async function scenarioContradictingSupersedes(): Promise<ScenarioResult> {
   try {
     // Create belief A: port is 8080
     await ctx.prompt(
-      'Use the believe tool to record this fact: "The API server port is 8080". Use type "fact" and source "user".',
+      "the API server port is 8080, just a note",
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
     let state = await ctx.readState();
     assertNonNull(state, "state after first believe tool");
     assertFactExists(state, "active");
 
     // Create belief B: port is 9090 (contradicting)
     await ctx.prompt(
-      'Use the believe tool to record this fact: "The API server port is 9090". Use type "fact" and source "user". Explain that this supersedes the previous port belief.',
+      "actually the API server port is 9090 now, not 8080. that old port note should be superseded",
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
     state = await ctx.readState();
     assertNonNull(state, "state after second believe tool");
 
@@ -81,18 +79,16 @@ async function scenarioGraphVsUserConflict(): Promise<ScenarioResult> {
   try {
     // Create a graph-sourced belief
     await ctx.prompt(
-      'Use the believe tool to record this fact: "The database connection timeout is 30 seconds". Use type "fact" and source "graph".',
+      "the database connection timeout is 30 seconds — found that from the graph",
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
     let state = await ctx.readState();
     assertNonNull(state, "state after graph belief");
     assertHasBelief(state, { source: "graph", status: "active" });
 
     // Create a user-sourced contradicting belief
     await ctx.prompt(
-      'Use the believe tool to update the database timeout belief: "The database connection timeout is 60 seconds". Use type "fact" and source "user". Explicitly note this contradicts the previous graph-sourced belief and should supersede it.',
+      "hey that graph data is wrong, the actual timeout is 60 seconds. I'm overriding that — the 30s one should be superseded since this is from the actual config",
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
     state = await ctx.readState();
     assertNonNull(state, "state after user belief");
 
@@ -129,9 +125,8 @@ async function scenarioConfidenceDowngrade(): Promise<ScenarioResult> {
   try {
     // Create a belief with high confidence
     await ctx.prompt(
-      'Use the believe tool to record this fact: "The deployment pipeline takes 3 minutes". Use type "fact", source "execution", and confidence 0.9.',
+      "the deployment pipeline takes 3 minutes, pretty sure about that. record it with 0.9 confidence",
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
     let state = await ctx.readState();
     assertNonNull(state, "state after first believe tool");
 
@@ -149,9 +144,8 @@ async function scenarioConfidenceDowngrade(): Promise<ScenarioResult> {
 
     // Now prompt to downgrade confidence
     await ctx.prompt(
-      `Use the believe tool to record an updated version of the deployment pipeline belief. The confidence should be lowered to 0.3 because the data is unreliable. Use type "fact", source "execution", and confidence 0.3. Supersede the old belief with id "${originalId}".`,
+      `actually I'm not so sure about that deployment time anymore — the data was unreliable. downgrade that to 0.3 confidence and supersede the old entry with id "${originalId}"`,
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
     state = await ctx.readState();
     assertNonNull(state, "state after confidence downgrade");
 
@@ -184,19 +178,14 @@ async function scenarioSourceTracking(): Promise<ScenarioResult> {
   try {
     // Create beliefs with different sources
     await ctx.prompt(
-      'Use the believe tool to record this fact: "Found via code search: the config key is API_TIMEOUT". Use type "fact" and source "execution".',
+      "found this via code search: the config key is API_TIMEOUT",
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
-
     await ctx.prompt(
-      'Use the believe tool to record this fact: "The GraphQL schema has a User type". Use type "fact" and source "graph".',
+      "the GraphQL schema has a User type — found that from code analysis",
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
-
     await ctx.prompt(
-      'Use the believe tool to record this decision: "We will use pnpm over npm". Include rationale "Faster installs and disk efficiency". Use type "decision" and source "user".',
+      "we decided to use pnpm over npm. rationale: faster installs and better disk efficiency",
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
 
     const state = await ctx.readState();
     assertNonNull(state, "state after all three beliefs");
@@ -221,9 +210,8 @@ async function scenarioMultiRevisionChain(): Promise<ScenarioResult> {
   try {
     // A v1: create initial belief
     await ctx.prompt(
-      'Use the believe tool to record this fact: "The app version is 1.0.0". Use type "fact" and source "user".',
+      "the app is currently on version 1.0.0, noting that",
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
     let state = await ctx.readState();
     assertNonNull(state, "state after v1");
 
@@ -237,9 +225,8 @@ async function scenarioMultiRevisionChain(): Promise<ScenarioResult> {
 
     // A v2: supersede v1
     await ctx.prompt(
-      `Use the believe tool to update the app version belief. The new version is 2.0.0. Supersede the old belief with id "${v1.id}". Use type "fact" and source "user".`,
+      `we bumped the version to 2.0.0 — update that note and supersede the old one with id "${v1.id}"`,
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
     state = await ctx.readState();
     assertNonNull(state, "state after v2");
 
@@ -253,9 +240,8 @@ async function scenarioMultiRevisionChain(): Promise<ScenarioResult> {
 
     // A v3: supersede v2
     await ctx.prompt(
-      `Use the believe tool to update the app version belief. The new version is 3.0.0. Supersede the old belief with id "${v2.id}". Use type "fact" and source "user".`,
+      `and now we're on 3.0.0. update again, superseding the one with id "${v2.id}"`,
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
     state = await ctx.readState();
     assertNonNull(state, "state after v3");
 

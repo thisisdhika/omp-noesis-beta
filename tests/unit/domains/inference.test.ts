@@ -18,14 +18,12 @@ import {
 } from "../../../src/domains/inference/inference-domain.js";
 import type { NoesisState } from "../../../src/schema.js";
 import { EMPTY_STATE } from "../../../src/schema.js";
+import { freshState } from "../../helpers/fixtures.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function freshState(): NoesisState {
-  return structuredClone(EMPTY_STATE);
-}
 
 // ---------------------------------------------------------------------------
 // addHypothesis

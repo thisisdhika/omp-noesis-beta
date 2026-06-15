@@ -66,29 +66,43 @@ All notable changes to omp-noesis.
 - `clone` — deep clone with Date/RegExp/Map/Set support
 
 ### Testing
-- **402 tests, 0 failures** across 34 test files
-- Coverage: 91.7% lines, 90.1% functions
+- **536 tests, 0 failures** across 41 test files
+- Coverage: 94.99% lines, 91.93% functions
 - Unit tests for all 5 domain layers, shared utilities, vault stores, rendering pipeline, infrastructure
 - Integration tests for tools, hooks, state flow, Graphify integration, vault system
 - Behavioral tests for compaction survival, learning loop, belief revision, graceful degradation
 
 ### Latest (2026-06-15)
 
-#### Vault Unit Tests
-- 33 new tests across 5 files covering `MnemopiVaultStore`, `LocalVaultStore`, `HindsightVaultStore`, `VaultDetector`, and `RetryBuffer`
-- Vault store coverage: 0% → 100% for all store implementations
+#### Type Safety Hardening
+- Eliminated all unnecessary `as T` and `as Record<string, unknown>` type assertions across source and test files
+- Replaced with proper type narrowing, type guards (`isRecord()`), and zod runtime validation at boundaries
+- Added `cloneState()` helper in test fixtures to avoid `structuredClone(EMPTY_STATE) as NoesisState` repetition
+- Unified `MockPi` interface and `toExtensionAPI()`/`castToExtensionAPI()` bridge functions in test helpers
+- Zero `: any` or `as any` annotations. Remaining `as` casts are at true boundary points only
 
-#### Improved Token Estimator
-- Replaced naive `chars/4` heuristic with regex-based approximate BPE pre-tokenizer
-- Splits on contractions, words, numbers, punctuation, and whitespace — ~15-20% more accurate for English text
+#### Code Quality — Deduplication
+- Unified 7 duplicated test helpers: `MockPi` interface, `cleanPersistedState()`, `freshState()`, `cloneState()`, timestamp constants
+- Removed dead `resolveProjectPath()` function from `src/shared/paths.ts`
+- Unified `STALE_THRESHOLD_HOURS = 720` into CAPS constant (was hardcoded in 3 files)
+- Consolidated redundant re-export in `vault-store.ts`
+- Made `HindsightVaultStore` extend `NoopVaultStore` (removed duplicate no-op methods)
 
-#### Belief Contested Marking
-- Implemented Step 5 of AGM supersession algorithm: `getContestedWarnings()` detects hypotheses dependent on superseded beliefs
-- Contested warnings surfaced as `[WARNINGS]` section in cognitive preamble (protected, never dropped during budget enforcement)
+#### Graphify Async Migration (Complete)
+- Replaced `statSync` from `node:fs` with `stat` from `node:fs/promises` in `graphify-client.ts`
+- All Graphify infrastructure now fully async (`Bun.spawn`, `Bun.stat`, `fetch`)
+- Updated `GRAPHIFY_CONTRACT.md` terminology: `execFile` → `Bun.spawn`
 
-#### Comprehensive Test Coverage
-- 36 tool handler integration tests covering all believe/infer/commit/recall variants and error paths
-- 11 hook lifecycle tests (before-agent-start, compaction, context, tool-result, turn-end)
-- 41 unit tests for strategies (confidence, consistency) and state cleanup (evictStale, evictOverCap)
-- 11 Graphify e2e tests (client build/query, parser edge cases, setup CLI checks)
-- All 5 hooks at 100% coverage, all domain strategies at 95%+, all vault stores at 100%
+#### Cleanup
+- Removed dead `MAX_PREAMBLE_CHARS` constant (token estimator was already upgraded to regex-based BPE)
+- Updated stale documentation in `IMPLEMENTATION_GUIDE.md`
+
+#### Smoke Test Improvements
+- Added `real-world-developer.ts` suite: 4 mid-complex scenarios (CI debugging, refactoring, incident response, code review)
+- Added `edge-cases.ts` suite: 5 boundary cases (rapid switching, long content, many beliefs, empty params, max workflow steps)
+- Improved prompt quality across 8 existing suites — natural developer language instead of robotic instructions
+- All new assertions use structural checks only (no LLM content matching)
+
+#### Coverage Improvements
+- New test files: `focus-resolver.test.ts` (11 tests), `focus-command.test.ts` (6 tests), `vault-detector.test.ts` (4 tests), `schema-defaults.test.ts` (15 tests), `graphify-parser-edge.test.ts` (16 tests), `graphify-setup.test.ts` (5 tests), `ranking-strategy.test.ts` (13 tests), `state-manager-checkpoint.test.ts` (4 tests)
+- Augmented: `preamble-builder.test.ts` (+13), `survivor-builder.test.ts` (+4), `tools.test.ts` (+65), `filesystem-store.test.ts` (+1)

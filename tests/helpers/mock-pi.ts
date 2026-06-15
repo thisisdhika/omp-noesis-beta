@@ -5,11 +5,38 @@
  */
 
 import { z } from "zod";
+import type { ExtensionAPI } from "@oh-my-pi/pi-coding-agent";
 
+/** Mock pi with test helper methods, structurally matching ExtensionAPI. */
+export interface MockPi {
+  zod: typeof z;
+  logger: {
+    info: (...args: unknown[]) => void;
+    warn: (...args: unknown[]) => void;
+    error: (...args: unknown[]) => void;
+    debug: (...args: unknown[]) => void;
+  };
+  registerTool(def: Record<string, unknown>): void;
+  registerCommand(name: string, opts: Record<string, unknown>): void;
+  on(event: string, handler: (...args: unknown[]) => unknown): void;
+  _toolCount(): number;
+  _getTool(name: string): Record<string, unknown> | undefined;
+  _getHooks(event: string): Array<(...args: unknown[]) => unknown>;
+}
+
+/** Bridge a MockPi to ExtensionAPI for use in tool/hook registration. */
+export function toExtensionAPI(pi: MockPi): ExtensionAPI {
+  return pi as unknown as ExtensionAPI;
+}
+
+/** Cast a MockPi to ExtensionAPI using the intentional double-cast bypass. */
+export function castToExtensionAPI(pi: MockPi): ExtensionAPI {
+  return pi as unknown as ExtensionAPI;
+}
 /**
  * Creates a minimal mock of OMP's ExtensionAPI for testing.
  */
-export function createMockPi(): Record<string, unknown> {
+export function createMockPi(): MockPi {
   const tools: Map<string, unknown> = new Map();
   const hooks: Map<string, Array<(...args: unknown[]) => unknown>> = new Map();
 
@@ -39,8 +66,8 @@ export function createMockPi(): Record<string, unknown> {
     },
 
     // Test helpers
-    _getTool(name: string): unknown | undefined {
-      return tools.get(name);
+    _getTool(name: string): Record<string, unknown> | undefined {
+      return tools.get(name) as Record<string, unknown> | undefined;
     },
 
     _getHooks(event: string): Array<(...args: unknown[]) => unknown> {

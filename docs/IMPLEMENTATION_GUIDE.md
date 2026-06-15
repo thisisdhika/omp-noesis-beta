@@ -33,7 +33,7 @@ src/schema.ts
 src/shared/
   ids.ts      — UUID v4 generation
   time.ts     — ISO 8601 helpers
-  tokens.ts   — Token estimation (4 chars/token)
+  tokens.ts   — Token estimation (regex-based approximate BPE)
   text.ts     — Truncation, XML escaping
   paths.ts    — Project path resolution
   clone.ts    — Deep clone for immutable state

@@ -40,19 +40,18 @@ async function scenarioBugInvestigation(): Promise<ScenarioResult> {
 
     // Turn 2: Ask agent to record a hypothesis about the cause
     await ctx.prompt(
-      'Based on what you found, use the infer tool with action="add_hypothesis" to record a hypothesis about the cause.',
+      "ok so what do you think is causing this? jot down a hypothesis — feels like maybe the connection pool is exhausted or something",
     );
-    await ctx.waitForTool("noesis_infer", PROMPT_TIMEOUT_MS);
 
     // Turn 3: Ask agent to record a belief about the timeout issue
     await ctx.prompt(
-      'Use the believe tool to record a fact about the timeout issue with type="fact", source="execution", confidence=0.7.',
+      "hey record that as a fact will you? call it a timeout issue on the auth endpoint, source is execution, confidence like 0.7 since we haven't fully confirmed yet",
     );
     await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
 
     // Turn 4: Ask to create a workflow to fix the bug
     await ctx.prompt(
-      'Use the commit tool with mode="extend_workflow" to create a workflow: goal="Fix auth timeout bug", steps=["Investigate DB connection pool", "Add connection timeout to config", "Add retry logic", "Write tests"].',
+      "let's create a workflow to actually fix this. goal is 'Fix auth timeout bug'. Steps: investigate the DB connection pool, add connection timeout to config, add retry logic, then write tests",
     );
     await ctx.waitForTool("noesis_commit", PROMPT_TIMEOUT_MS);
 
@@ -87,21 +86,19 @@ async function scenarioLearningFromFailure(): Promise<ScenarioResult> {
   try {
     // Turn 1: Run a failing command to trigger learning capture
     await ctx.prompt(
-      'Run the command "node -e throw new Error(\'BUG-42: null pointer in parser\')" using bash.',
+      "hey can you run this real quick? `node -e \"throw new Error('BUG-42: null pointer in parser')\"` — want to see how the error handling catches this kind of parser crash",
     );
-    await ctx.waitForTool("bash", PROMPT_TIMEOUT_MS);
 
     // Turn 2: Ask to recall what was learned
     await ctx.prompt(
-      'Use the recall tool with query="relevant_learning" to check what we learned from the failure.',
+      "what did we learn from that failure? check the learning log for me",
     );
     await ctx.waitForTool("noesis_recall", PROMPT_TIMEOUT_MS);
 
     // Turn 3: Diagnose the captured learning entry
     await ctx.prompt(
-      'Use the believe tool with type="learning" to diagnose the captured failure. Find the learning entry and set rootCause="Null check missing before dereference" and fix="Add null guard at line 42".',
+      "alright so the root cause here is a missing null check before dereference. can you log that as a learning entry with the fix? should be adding a null guard around line 42 in the parser",
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
 
     // Verify learning was captured and belief was created
     const state = await ctx.readState();

@@ -42,7 +42,7 @@ async function scenarioRecallActiveDecisions(): Promise<ScenarioResult> {
   try {
     // Create a decision belief first
     await ctx.prompt(
-      'Use the believe tool to record a decision: "We will adopt microservices architecture for the new platform". Include rationale "Better scalability and team autonomy". Use type "decision" and source "user".',
+      "we decided to adopt microservices for the new platform — better scalability and team autonomy. log that as a decision",
     );
     await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
 
@@ -53,7 +53,7 @@ async function scenarioRecallActiveDecisions(): Promise<ScenarioResult> {
 
     // Now recall active decisions
     await ctx.prompt(
-      'Use the recall tool with query="active_decisions" to list all active decisions.',
+      "what decisions have I made that are still active? list em for me",
     );
     const event = await ctx.waitForTool("noesis_recall", PROMPT_TIMEOUT_MS);
     const eventStr = JSON.stringify(event);
@@ -80,13 +80,13 @@ async function scenarioRecallUnresolvedHypotheses(): Promise<ScenarioResult> {
   try {
     // Create a hypothesis (unresolved / testing status)
     await ctx.prompt(
-      'Use the infer tool with action="add_hypothesis" to record a hypothesis: "The database connection timeout might be caused by network latency between services".',
+      "I've got a hunch that the database connection timeout might be caused by network latency between services. add that as a hypothesis",
     );
     await ctx.waitForTool("noesis_infer", PROMPT_TIMEOUT_MS);
 
     // Now recall unresolved hypotheses
     await ctx.prompt(
-      'Use the recall tool with query="unresolved_hypotheses" to list unresolved hypotheses.',
+      "show me all the hypotheses I haven't resolved yet",
     );
     await ctx.waitForTool("noesis_recall", PROMPT_TIMEOUT_MS);
 
@@ -104,7 +104,9 @@ async function scenarioRecallRelevantLearning(): Promise<ScenarioResult> {
   const ctx = await createSmokeContext();
   try {
     // Trigger a bash failure to create learning entries
-    await ctx.prompt('Run a command that will fail: "bash -c exit 1" using the bash tool.');
+    await ctx.prompt(
+      "trigger a learning capture by running a failing command: `exit 1`",
+    );
     await ctx.waitForTool("bash", PROMPT_TIMEOUT_MS);
 
     // Verify learning was captured
@@ -114,7 +116,7 @@ async function scenarioRecallRelevantLearning(): Promise<ScenarioResult> {
 
     // Now recall relevant learning
     await ctx.prompt(
-      'Use the recall tool with query="relevant_learning" to show relevant learning entries.',
+      "what did we learn from recent failures? pull up the relevant learning entries",
     );
     await ctx.waitForTool("noesis_recall", PROMPT_TIMEOUT_MS);
 
@@ -133,29 +135,31 @@ async function scenarioRecallFullStateDigest(): Promise<ScenarioResult> {
   try {
     // Create a fact belief
     await ctx.prompt(
-      'Use the believe tool to record this fact: "The API gateway runs on Kubernetes". Use type "fact" and source "user".',
+      "just so you know, the API gateway runs on Kubernetes",
     );
     await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
 
     // Create a decision
     await ctx.prompt(
-      'Use the believe tool to record a decision: "We will use PostgreSQL for persistence". Include rationale "ACID compliance and JSON support". Use type "decision" and source "user".',
+      "we decided to use PostgreSQL for persistence — ACID compliance and JSON support were the main reasons",
     );
     await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
 
     // Trigger learning via bash failure
-    await ctx.prompt('Run a command that will fail: "bash -c exit 2" using the bash tool.');
+    await ctx.prompt(
+      "run a failing command to generate a learning entry: `exit 2`",
+    );
     await ctx.waitForTool("bash", PROMPT_TIMEOUT_MS);
 
     // Create a hypothesis
     await ctx.prompt(
-      'Use the infer tool with action="add_hypothesis" to record a hypothesis: "Kubernetes pod restarts might be caused by resource limits being too low".',
+      "I wonder if the Kubernetes pod restarts are from resource limits being too low. add that as a hypothesis",
     );
     await ctx.waitForTool("noesis_infer", PROMPT_TIMEOUT_MS);
 
     // Now recall full state digest
     await ctx.prompt(
-      'Use the recall tool with query="full_state_digest" to show a comprehensive state summary.',
+      "give me the full picture — a comprehensive summary of everything we know and are tracking",
     );
     const event = await ctx.waitForTool("noesis_recall", PROMPT_TIMEOUT_MS);
     const eventStr = JSON.stringify(event);
@@ -182,12 +186,11 @@ async function scenarioRecallWithSearch(): Promise<ScenarioResult> {
   try {
     // Create beliefs with distinct tags
     await ctx.prompt(
-      'Use the believe tool to record this fact: "PostgreSQL is the primary database". Add tags ["database", "infrastructure"]. Use type "fact" and source "user".',
+      "PostgreSQL is our primary database. tag that with database and infrastructure",
     );
     await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
-
     await ctx.prompt(
-      'Use the believe tool to record this fact: "Redis cache runs on port 6379". Add tags ["cache", "infrastructure"]. Use type "fact" and source "user".',
+      "Redis cache runs on port 6379. tag it with cache and infrastructure",
     );
     await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
 
@@ -198,7 +201,7 @@ async function scenarioRecallWithSearch(): Promise<ScenarioResult> {
 
     // Now search via recall
     await ctx.prompt(
-      'Use the recall tool with query="search" and keyword="database" to search across all cognitive layers.',
+      "search for everything related to 'database' across all our notes",
     );
     const event = await ctx.waitForTool("noesis_recall", PROMPT_TIMEOUT_MS);
     const eventStr = JSON.stringify(event);
@@ -225,13 +228,13 @@ async function scenarioRecallWithTagFilter(): Promise<ScenarioResult> {
   try {
     // Create a belief with tag "auth"
     await ctx.prompt(
-      'Use the believe tool to record this fact: "JWT tokens expire after 1 hour". Add tags ["auth", "security"]. Use type "fact" and source "user".',
+      "JWT tokens expire after 1 hour. tag with auth and security",
     );
     await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
 
     // Create a belief without "auth" tag
     await ctx.prompt(
-      'Use the believe tool to record this fact: "Log level is set to INFO". Add tags ["logging"]. Use type "fact" and source "user".',
+      "log level is set to INFO. tag with logging",
     );
     await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
 
@@ -242,7 +245,7 @@ async function scenarioRecallWithTagFilter(): Promise<ScenarioResult> {
 
     // Now recall with tagFilter on "auth"
     await ctx.prompt(
-      'Use the recall tool with query="active_beliefs" and tagFilter=["auth"] to show only auth-related beliefs.',
+      "show me only the auth-related stuff I've saved",
     );
     const event = await ctx.waitForTool("noesis_recall", PROMPT_TIMEOUT_MS);
     const eventStr = JSON.stringify(event);

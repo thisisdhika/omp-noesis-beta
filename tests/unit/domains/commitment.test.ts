@@ -17,14 +17,12 @@ import {
 } from "../../../src/domains/commitment/commitment-domain.js";
 import type { NoesisState, WorkflowStep } from "../../../src/schema.js";
 import { EMPTY_STATE, CAPS } from "../../../src/schema.js";
+import { freshState } from "../../helpers/fixtures.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function freshState(): NoesisState {
-  return structuredClone(EMPTY_STATE);
-}
 
 // ---------------------------------------------------------------------------
 // extendWorkflow

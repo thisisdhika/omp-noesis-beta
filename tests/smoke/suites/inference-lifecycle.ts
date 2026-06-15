@@ -70,9 +70,8 @@ async function scenarioAddHypothesis(): Promise<ScenarioResult> {
   const ctx = await createSmokeContext();
   try {
     await ctx.prompt(
-      'Use the infer tool with action="add_hypothesis" to record: "The memory leak is caused by unclosed database connections".',
+      "hey I'm wondering if the memory leak is from unclosed database connections — add that as a hypothesis so we can track it",
     );
-    await ctx.waitForTool("noesis_infer", PROMPT_TIMEOUT_MS);
     const state = await ctx.readState();
     assertNonNull(state, "state after add_hypothesis");
 
@@ -96,9 +95,8 @@ async function scenarioConfirmHypothesis(): Promise<ScenarioResult> {
   try {
     // First, create a hypothesis
     await ctx.prompt(
-      'Use the infer tool with action="add_hypothesis" to record: "The memory leak is caused by unclosed database connections".',
+      "I think the memory leak might be caused by unclosed database connections. add that as a hypothesis",
     );
-    await ctx.waitForTool("noesis_infer", PROMPT_TIMEOUT_MS);
     let state = await ctx.readState();
     assertNonNull(state, "state after add_hypothesis");
     if (state.inference.hypotheses.length < 1) {
@@ -107,9 +105,8 @@ async function scenarioConfirmHypothesis(): Promise<ScenarioResult> {
 
     // Now confirm it — the agent should use the hypothesis id from its own context
     await ctx.prompt(
-      'Use the infer tool with action="update_hypothesis" to confirm the memory leak hypothesis. Set status="confirmed" and evidence="Found 47 unclosed connections in heap dump". Update the hypothesis with the id from the first call.',
+      "so I checked the heap dump and found 47 unclosed connections. that pretty much confirms it — update the memory leak hypothesis to confirmed with that as evidence",
     );
-    await ctx.waitForTool("noesis_infer", PROMPT_TIMEOUT_MS);
     state = await ctx.readState();
     assertNonNull(state, "state after update_hypothesis");
 
@@ -147,9 +144,8 @@ async function scenarioRefuteHypothesis(): Promise<ScenarioResult> {
   try {
     // First, create a hypothesis
     await ctx.prompt(
-      'Use the infer tool with action="add_hypothesis" to record: "The high CPU usage is caused by excessive garbage collection".',
+      "I've got a theory — the high CPU might be from excessive GC. add it as a hypothesis so we can test it",
     );
-    await ctx.waitForTool("noesis_infer", PROMPT_TIMEOUT_MS);
     let state = await ctx.readState();
     assertNonNull(state, "state after add_hypothesis");
     if (state.inference.hypotheses.length < 1) {
@@ -158,9 +154,8 @@ async function scenarioRefuteHypothesis(): Promise<ScenarioResult> {
 
     // Now refute it
     await ctx.prompt(
-      'Use the infer tool with action="update_hypothesis" to refute the hypothesis about garbage collection. Set status="refuted" and evidence="Heap profiling shows GC pauses are under 20ms, well within normal range". Update the hypothesis with the id from the first call.',
+      "ran heap profiling and GC pauses are under 20ms which is totally normal. so high CPU isn't from GC — lets refute that hypothesis and note the evidence",
     );
-    await ctx.waitForTool("noesis_infer", PROMPT_TIMEOUT_MS);
     state = await ctx.readState();
     assertNonNull(state, "state after update_hypothesis");
 
@@ -191,9 +186,8 @@ async function scenarioAbandonHypothesis(): Promise<ScenarioResult> {
   try {
     // First, create a hypothesis
     await ctx.prompt(
-      'Use the infer tool with action="add_hypothesis" to record: "The API latency is caused by slow DNS resolution".',
+      "I suspect the API latency might be from slow DNS resolution. capture that as a hypothesis",
     );
-    await ctx.waitForTool("noesis_infer", PROMPT_TIMEOUT_MS);
     let state = await ctx.readState();
     assertNonNull(state, "state after add_hypothesis");
     if (state.inference.hypotheses.length < 1) {
@@ -202,9 +196,8 @@ async function scenarioAbandonHypothesis(): Promise<ScenarioResult> {
 
     // Now abandon it
     await ctx.prompt(
-      'Use the infer tool with action="update_hypothesis" to abandon the DNS hypothesis. Set status="abandoned". Update the hypothesis with the id from the first call.',
+      "actually we checked and DNS is fine, the latency is from something else. abandon the DNS hypothesis for now",
     );
-    await ctx.waitForTool("noesis_infer", PROMPT_TIMEOUT_MS);
     state = await ctx.readState();
     assertNonNull(state, "state after update_hypothesis");
 
@@ -234,9 +227,8 @@ async function scenarioAddReasoning(): Promise<ScenarioResult> {
   const ctx = await createSmokeContext();
   try {
     await ctx.prompt(
-      'Use the infer tool with action="add_reasoning" to record: content="The logs show the auth service starts before the DB service" and reasoning="Race condition: auth.init() calls db.connect() before DB is ready". Use relatesTo="auth-startup-race".',
+      "looking at the logs, the auth service starts before the DB service. pretty sure it's a race condition — auth.init() calls db.connect() before the DB is ready. log that as a reasoning step with relatesTo 'auth-startup-race'",
     );
-    await ctx.waitForTool("noesis_infer", PROMPT_TIMEOUT_MS);
     const state = await ctx.readState();
     assertNonNull(state, "state after add_reasoning");
 
@@ -260,9 +252,8 @@ async function scenarioInferenceChainToBelief(): Promise<ScenarioResult> {
   try {
     // Create a hypothesis
     await ctx.prompt(
-      'Use the infer tool with action="add_hypothesis" to record: "The payment service fails due to a timeout in the external gateway call".',
+      "I think the payment service is failing because of a timeout in the external gateway call. add that as a hypothesis",
     );
-    await ctx.waitForTool("noesis_infer", PROMPT_TIMEOUT_MS);
     let state = await ctx.readState();
     assertNonNull(state, "state after add_hypothesis");
     if (state.inference.hypotheses.length < 1) {
@@ -271,9 +262,8 @@ async function scenarioInferenceChainToBelief(): Promise<ScenarioResult> {
 
     // Confirm it — this should auto-promote to a belief with source "inference"
     await ctx.prompt(
-      'Use the infer tool with action="update_hypothesis" to confirm the payment service hypothesis. Set status="confirmed" and evidence="Gateway timeout threshold is 5s but external calls average 7s". Update the hypothesis with the id from the first call.',
+      "confirmed — the gateway timeout threshold is 5s but external calls average 7s. update the payment service hypothesis to confirmed with that evidence",
     );
-    await ctx.waitForTool("noesis_infer", PROMPT_TIMEOUT_MS);
     state = await ctx.readState();
     assertNonNull(state, "state after update_hypothesis");
 
