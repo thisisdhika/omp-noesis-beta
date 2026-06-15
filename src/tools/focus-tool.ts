@@ -20,7 +20,7 @@ export function registerFocusTool(pi: ExtensionAPI, runtime: NoesisRuntime): voi
       "Quickly set the agent's current focus and optional file references. " +
       "Lighter than noesis_attend — does not run graph queries.",
     parameters: pi.zod.object({
-      focus: pi.zod.string().max(200),
+      focus: pi.zod.string().min(1).max(200),
       files: pi.zod.array(pi.zod.string()).max(10).optional(),
       priority: pi.zod.enum(["low", "normal", "high", "critical"]).default("normal"),
     }),

@@ -11,8 +11,12 @@
 
 import type { ExtensionAPI, ContextEvent, ContextEventResult } from "@oh-my-pi/pi-coding-agent";
 import type { NoesisRuntime } from "../runtime.js";
-import type { RenderContext } from "../schema.js";
+import type { CapabilityLevel, RenderContext } from "../schema.js";
 import { buildPreamble } from "../rendering/preamble-builder.js";
+import { detectCapability } from "../infrastructure/graphify-client.js";
+
+/** Module-level cache: detect once and reuse across turns. */
+let _capability: CapabilityLevel | null = null;
 
 /**
  * Register the context hook that prepends the cognitive preamble
@@ -21,11 +25,16 @@ import { buildPreamble } from "../rendering/preamble-builder.js";
 export function registerContextHook(pi: ExtensionAPI, runtime: NoesisRuntime): void {
   pi.on("context", async (event: ContextEvent, _ctx): Promise<ContextEventResult> => {
     const state = runtime.stateManager.read();
+    // Detect capability level once and cache it
+    if (_capability === null) {
+      _capability = await detectCapability(runtime.projectRoot);
+    }
 
     const renderContext: RenderContext = {
-      capabilityLevel: "DEGRADED",
+      capabilityLevel: _capability,
       contextHookFired: true,
     };
+
 
     const preamble = buildPreamble(state, renderContext);
 

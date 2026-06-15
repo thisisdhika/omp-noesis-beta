@@ -67,4 +67,16 @@ describe("compaction survival — buildSurvivorContext", () => {
     expect(xml).toContain("<learning>");
     expect(xml).toContain("State corruption after unhandled exception during write");
   });
+
+  it("does not mutate the original state when building survivor context", () => {
+    const state = populatedState();
+    const original = structuredClone(state);
+
+    // Build survivor context — this should not modify state
+    const xml = buildSurvivorContext(state);
+
+    // Verify no fields were mutated
+    expect(state).toEqual(original);
+    expect(xml.length).toBeGreaterThan(0);
+  });
 });

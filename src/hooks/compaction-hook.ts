@@ -11,6 +11,7 @@
 import type { ExtensionAPI } from "@oh-my-pi/pi-coding-agent";
 import type { NoesisRuntime } from "../runtime.js";
 import { buildSurvivorContext } from "../rendering/survivor-builder.js";
+import { deepClone } from "../shared/clone.js";
 
 /**
  * Register the session.compacting hook that builds a survivor context
@@ -23,7 +24,7 @@ export function registerCompactionHook(pi: ExtensionAPI, runtime: NoesisRuntime)
 
     return {
       context: [survivorContext],
-      preserveData: { noesis: { ...state } },
+      preserveData: { noesis: deepClone(state) },
     };
   });
 }

@@ -12,6 +12,8 @@
 
 import type { ExtensionAPI } from "@oh-my-pi/pi-coding-agent";
 import type { NoesisRuntime } from "../runtime.js";
+import { detectCapability } from "../infrastructure/graphify-client.js";
+import type { CapabilityLevel } from "../schema.js";
 
 interface BeforeAgentStartResult {
   systemPrompt?: string[];
@@ -24,8 +26,12 @@ interface BeforeAgentStartResult {
  */
 export function registerBeforeAgentStartHook(pi: ExtensionAPI, runtime: NoesisRuntime): void {
   pi.on("before_agent_start", async (_event) => {
+    // Detect capability dynamically so the agent knows its operational mode
+    const capability: CapabilityLevel = await detectCapability(runtime.projectRoot);
     return {
-      systemPrompt: ["[Noesis cognitive substrate active. State: .omp/noesis/state.json]"],
+      systemPrompt: [
+        `[Noesis cognitive substrate active. Mode: ${capability}. State: .omp/noesis/state.json]`,
+      ],
     };
   });
 }

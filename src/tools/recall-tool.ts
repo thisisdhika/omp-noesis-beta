@@ -52,13 +52,13 @@ export function registerRecallTool(pi: ExtensionAPI, runtime: NoesisRuntime): vo
       includeCompleted: pi.zod.boolean().default(false),
       includeSuperseded: pi.zod.boolean().default(false),
       includeArchived: pi.zod.boolean().default(false),
-      keyword: pi.zod.string().max(200).optional(),
+      keyword: pi.zod.string().min(1).max(200).optional(),
       layers: pi.zod.array(
         pi.zod.enum(["belief", "learning", "inference", "commitment", "attention"]),
       ).optional(),
     }).refine((data) => {
       if (data.query === "search") {
-        return typeof data.keyword === "string";
+        return typeof data.keyword === "string" && data.keyword.length > 0;
       }
       return true;
     }, { message: "Keyword is required for search query" }),

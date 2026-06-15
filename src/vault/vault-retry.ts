@@ -14,6 +14,15 @@ import { ensureNoesisDir } from "../shared/paths.js";
 import { join } from "node:path";
 
 // ============================================================================
+// FLUSH RESULT
+// ============================================================================
+
+export interface FlushResult {
+  succeeded: number;
+  failed: number;
+}
+
+// ============================================================================
 // RETRY BUFFER
 // ============================================================================
 
@@ -66,5 +75,39 @@ export class RetryBuffer {
   async count(): Promise<number> {
     const queue = await this.#readQueue();
     return queue.length;
+  }
+
+  /**
+   * Retry all queued artifacts by passing each to the given writer function.
+   *
+   * Artifacts that succeed are removed from the queue; artifacts whose writer
+   * throws are preserved for the next retry cycle.
+   *
+   * @param writer - Async function that durably writes a single artifact.
+   *   This should be the low-level write (not `VaultStore.push()`, which may
+   *   itself enqueue failures back into this buffer and cause a loop).
+   */
+  async flush(
+    writer: (artifact: VaultArtifact) => Promise<void>,
+  ): Promise<FlushResult> {
+    const queue = await this.#readQueue();
+    if (queue.length === 0) return { succeeded: 0, failed: 0 };
+
+    const remaining: VaultArtifact[] = [];
+
+    for (const artifact of queue) {
+      try {
+        await writer(artifact);
+      } catch {
+        remaining.push(artifact);
+      }
+    }
+
+    await writeAtomic(this.#filePath, remaining);
+
+    return {
+      succeeded: queue.length - remaining.length,
+      failed: remaining.length,
+    };
   }
 }

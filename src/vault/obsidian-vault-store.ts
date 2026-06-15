@@ -14,7 +14,8 @@
 
 import type { VaultStore, VaultArtifact, VaultPullResult } from "./vault-store.js";
 import { writeObsidianNote } from "./obsidian-writer.js";
-import { mergeInto } from "./obsidian-merger.js";
+import { RetryBuffer } from "./vault-retry.js";
+import type { FlushResult } from "./vault-retry.js";
 import { join } from "node:path";
 import { readdir, readFile, stat } from "node:fs/promises";
 
@@ -222,9 +223,11 @@ async function listSubdirectories(dir: string): Promise<string[]> {
  */
 export class ObsidianVaultStore implements VaultStore {
   readonly #projectRoot: string;
+  readonly #retryBuffer: RetryBuffer;
 
   constructor(projectRoot: string) {
     this.#projectRoot = projectRoot;
+    this.#retryBuffer = new RetryBuffer(projectRoot);
   }
 
   // -----------------------------------------------------------------------
@@ -238,12 +241,50 @@ export class ObsidianVaultStore implements VaultStore {
    * never leave a corrupt file.
    */
   async push(artifact: VaultArtifact): Promise<void> {
+    try {
+      await this.#writeArtifact(artifact);
+    } catch (err) {
+      // Write failed (disk full, permissions, etc.) — buffer for retry
+      await this.#retryBuffer.enqueue(artifact);
+      console.warn(
+        `[ObsidianVaultStore] Failed to push artifact ${artifact.id} of kind ${artifact.kind}: ` +
+          `${err instanceof Error ? err.message : String(err)}`,
+      );
+      // Degrade gracefully — don't propagate the error
+    }
+  }
+
+  /** Low-level write that bypasses the retry buffer (used by push and flush). */
+  async #writeArtifact(artifact: VaultArtifact): Promise<void> {
     const dir = join(this.#projectRoot, NOESIS_DIR, artifact.kind);
     const filename = `${artifact.id}.md`;
     const frontmatter = formatFrontmatter(artifact);
     const content = frontmatter + "\n" + artifact.content;
 
     await writeObsidianNote(dir, filename, content);
+  }
+
+  // -----------------------------------------------------------------------
+  // flush (VaultStore contract)
+  // -----------------------------------------------------------------------
+
+  /**
+   * Retry all previously-failed pushes from the on-disk retry queue.
+   *
+   * Uses the low-level write directly (bypassing push's own retry logic)
+   * so that a re-failure does not loop back into the queue.  Results
+   * are logged via console.warn; the method never throws.
+   */
+  async flush(): Promise<void> {
+    const result: FlushResult = await this.#retryBuffer.flush(
+      (artifact) => this.#writeArtifact(artifact),
+    );
+
+    if (result.failed > 0) {
+      console.warn(
+        `[ObsidianVaultStore] Flush: ${result.succeeded} succeeded, ${result.failed} still queued`,
+      );
+    }
   }
 
   // -----------------------------------------------------------------------

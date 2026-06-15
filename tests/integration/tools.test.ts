@@ -3,7 +3,7 @@
 /**
  * Integration tests for tool registration and execution via mock ExtensionAPI.
  *
- * Verifies that all 7 noesis tools register correctly and each tool's execute
+ * Verifies that all noesis tools register correctly and each tool's execute
  * handler produces expected side effects on cognitive state.
  */
 
@@ -72,9 +72,15 @@ function toolExecutor(
 // ---------------------------------------------------------------------------
 
 describe("tool registration", () => {
-  it("registers all 7 tools", async () => {
+  it("registers all expected tools by name", async () => {
     const { pi } = await setup();
-    expect(pi._toolCount()).toBe(7);
+    expect(pi._getTool("noesis_focus")).toBeTruthy();
+    expect(pi._getTool("noesis_believe")).toBeTruthy();
+    expect(pi._getTool("noesis_infer")).toBeTruthy();
+    expect(pi._getTool("noesis_commit")).toBeTruthy();
+    expect(pi._getTool("noesis_recall")).toBeTruthy();
+    expect(pi._getTool("noesis_attend")).toBeTruthy();
+    expect(pi._getTool("noesis_vault_search")).toBeTruthy();
   });
 
   it("registers each tool by its expected name", async () => {

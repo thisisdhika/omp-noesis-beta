@@ -28,26 +28,31 @@ export function registerBelieveTool(pi: ExtensionAPI, runtime: NoesisRuntime): v
       "and type=\"learning\" to promote a learning entry to a belief.",
     parameters: pi.zod.object({
       type: pi.zod.enum(["fact", "decision", "learning"]),
-      content: pi.zod.string().max(1000).optional(),
+      content: pi.zod.string().min(1).max(1000).optional(),
       confidence: pi.zod.number().min(0).max(1).optional(),
       source: pi.zod.enum(["graph", "execution", "user", "inference"]).optional(),
-      rationale: pi.zod.string().max(1000).optional(),
+      rationale: pi.zod.string().min(1).max(1000).optional(),
       alternatives: pi.zod.array(pi.zod.string()).max(3).optional(),
       learningId: pi.zod.string().optional(),
-      rootCause: pi.zod.string().max(1000).optional(),
-      fix: pi.zod.string().max(1000).optional(),
+      rootCause: pi.zod.string().min(1).max(1000).optional(),
+      fix: pi.zod.string().min(1).max(1000).optional(),
       tags: pi.zod.array(pi.zod.string()).max(5).optional(),
       contradictsIds: pi.zod.array(pi.zod.string()).optional(),
       evidence: pi.zod.string().max(500).optional(),
     }).refine((data) => {
       if (data.type === "fact") {
-        return typeof data.content === "string" && typeof data.confidence === "number" && typeof data.source === "string";
+        return typeof data.content === "string" && data.content.length > 0 &&
+          typeof data.confidence === "number" && typeof data.source === "string";
       }
       if (data.type === "decision") {
-        return typeof data.content === "string" && typeof data.rationale === "string" && typeof data.source === "string";
+        return typeof data.content === "string" && data.content.length > 0 &&
+          typeof data.rationale === "string" && data.rationale.length > 0 &&
+          typeof data.source === "string";
       }
       if (data.type === "learning") {
-        return typeof data.learningId === "string" && typeof data.rootCause === "string" && typeof data.fix === "string";
+        return typeof data.learningId === "string" && data.learningId.length > 0 &&
+          typeof data.rootCause === "string" && data.rootCause.length > 0 &&
+          typeof data.fix === "string" && data.fix.length > 0;
       }
       return false;
     }, { message: "Missing required fields for the selected type" }),

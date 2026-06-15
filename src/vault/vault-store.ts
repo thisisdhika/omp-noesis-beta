@@ -50,4 +50,10 @@ export interface VaultStore {
    * Returns `true` when the store is able to accept writes.
    */
   validate(): Promise<boolean>;
+
+  /**
+   * Flush any pending or buffered writes (e.g. retry queue).
+   * Implementations that do not buffer can omit this method.
+   */
+  flush?(): Promise<void>;
 }

@@ -236,7 +236,7 @@ describe("tool_result execution", () => {
     expect(lastFailure.toolName).toBe("test_tool_fail");
   });
 
-  it("captures tool success as learning entry", async () => {
+  it("does not capture tool success as learning entry", async () => {
     const before = runtime.stateManager.read().learning.successes.length;
 
     const handler = pi._getHooks("tool_result")[0]!;
@@ -248,11 +248,8 @@ describe("tool_result execution", () => {
     await handler(event);
 
     const after = runtime.stateManager.read().learning.successes.length;
-    expect(after).toBe(before + 1);
-
-    const state = runtime.stateManager.read();
-    const lastSuccess = state.learning.successes[state.learning.successes.length - 1]!;
-    expect(lastSuccess.toolName).toBe("test_tool_ok");
+    // Tool-result-hook only captures failures, not successful results
+    expect(after).toBe(before);
   });
 
   it("detects failure from error keywords in content", async () => {

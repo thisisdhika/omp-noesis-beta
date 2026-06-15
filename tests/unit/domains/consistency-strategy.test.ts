@@ -163,6 +163,19 @@ describe("checkStatusConsistency", () => {
     expect(result.valid).toBeTrue();
   });
 
+  it("flags done step with pending dependent as invalid", () => {
+    const steps = [
+      makeStep("ws-1", "Step A", { status: "done" }),
+      makeStep("ws-2", "Step B", { status: "pending", dependsOn: ["ws-1"] }),
+    ];
+    const workflow = makeWorkflow({ steps });
+    const result = checkStatusConsistency(workflow);
+    expect(result.valid).toBeFalse();
+    expect(result.issues.length).toBeGreaterThan(0);
+    expect(result.issues[0]).toContain("Step B");
+    expect(result.issues[0]).toContain("Step A");
+  });
+
   it("returns valid for empty workflow", () => {
     const workflow = makeWorkflow({ steps: [] });
     const result = checkStatusConsistency(workflow);

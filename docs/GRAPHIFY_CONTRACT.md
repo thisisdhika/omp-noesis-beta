@@ -22,10 +22,9 @@ Graphify is the required perception substrate. Noesis queries Graphify but never
 ```bash
 graphify --version           # Availability check
 graphify .                   # First-time build
-graphify update .            # Incremental update
+graphify . --no-viz          # First-time build without visualization
+graphify . --update          # Incremental update
 graphify query "..." --graph graphify-out/graph.json   # Primary query
-graphify path <src> <tgt> --graph graphify-out/graph.json  # Impact analysis
-graphify explain <node> --graph graphify-out/graph.json    # Deep dive
 ```
 
 ## 4. Commands Never Used
@@ -48,7 +47,7 @@ Input: queryString
 
 ## 6. Confidence Translation
 
-| Graphify | Noesis | Stale Penalty |
+| Graphify | Noesis | Stale Penalty (-0.10) |
 |---|---|---|
 | EXTRACTED | 1.0 | None |
 | INFERRED 0.95 | 0.95 | → 0.85 |
@@ -56,14 +55,15 @@ Input: queryString
 | INFERRED 0.75 | 0.75 | → 0.65 |
 | INFERRED 0.65 | 0.65 | → 0.55 |
 | INFERRED 0.55 | 0.55 | Floor 0.55 |
-| AMBIGUOUS | Never promoted | — |
+| INFERRED (none) | 0.70 | → 0.60 |
+| AMBIGUOUS | 0.55 | None (already at floor) |
 
 ## 7. Evidence-to-Belief Pipeline
 
 ```
 1. TRIGGER: Agent calls noesis_attend with graphQueries
 2. DETECT: Check capability level
-3. UPDATE: If stale, run graphify update .
+3. UPDATE: If stale, run graphify . --update
 4. QUERY: Run graphify query with 30s timeout
 5. PARSE: Extract structured findings
 6. TRANSLATE: Apply confidence mapping, stale penalty, tags

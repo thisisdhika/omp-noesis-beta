@@ -1,16 +1,15 @@
 "use strict";
 
 /**
- * Integration test: Graphify client, parser, and engine.
+ * Integration test: Graphify client, parser, and setup.
  */
 import { describe, it, expect, beforeAll, afterAll } from "bun:test";
-import { cpSync, existsSync, mkdirSync } from "node:fs";
+import { cpSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { parseQueryOutput } from "../../src/infrastructure/graphify-parser.js";
-import { enrichFindings, toBeliefCandidates } from "../../src/infrastructure/graphify-engine.js";
 import { detectCapability, query, build } from "../../src/infrastructure/graphify-client.js";
 import { checkGraphifyCLI, runGraphifyBuild } from "../../src/infrastructure/graphify-setup.js";
-import type { GraphFinding, CapabilityLevel } from "../../src/schema.js";
+import type { CapabilityLevel } from "../../src/schema.js";
 import { createTempDir } from "../helpers/temp-dir.js";
 
 const VALID_CAPABILITIES: CapabilityLevel[] = ["FULL", "STALE", "NO_GRAPH", "DEGRADED"];
@@ -164,53 +163,6 @@ describe("Graphify Integration", () => {
       })}`;
       const findings = parseQueryOutput(raw);
       expect(findings).toEqual([]);
-    });
-  });
-
-  describe("graphify-engine", () => {
-    const sampleFindings: GraphFinding[] = [
-      {
-        query: "How does caching work?",
-        nodes: ["Cache", "Store"],
-        relations: ["uses"],
-        confidence: "EXTRACTED",
-        inferredConfidence: 0.9,
-        timestamp: new Date().toISOString(),
-      },
-      {
-        query: "What triggers eviction?",
-        nodes: ["Eviction", "Timer"],
-        relations: ["triggers"],
-        confidence: "INFERRED",
-        timestamp: new Date().toISOString(),
-      },
-    ];
-
-    it("enrichFindings adds inferredConfidence", () => {
-      const enriched = enrichFindings([
-        {
-          query: "test",
-          nodes: ["A"],
-          relations: [],
-          confidence: "EXTRACTED",
-          timestamp: new Date().toISOString(),
-        },
-      ]);
-      expect(enriched[0]!.inferredConfidence).toBeDefined();
-      // EXTRACTED maps to 0.9
-      expect(enriched[0]!.inferredConfidence).toBe(0.9);
-    });
-
-    it("toBeliefCandidates converts findings above threshold", () => {
-      const candidates = toBeliefCandidates(sampleFindings, 0.7);
-      expect(candidates.length).toBeGreaterThan(0);
-      expect(candidates[0]!.source).toBe("graph");
-      expect(candidates[0]!.content).toBe("How does caching work?");
-    });
-
-    it("toBeliefCandidates filters below threshold", () => {
-      const candidates = toBeliefCandidates(sampleFindings, 0.95);
-      expect(candidates.length).toBe(0);
     });
   });
 

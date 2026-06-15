@@ -46,30 +46,29 @@ Noesis implements K*2 through K*6 at the belief-base level (Hansson 1999).
 - Accessible for audit, rollback, provenance
 
 ## 4. Supersession Algorithm
-
 ```
 Given: newFact N contradicts active belief O
 
-1. VALIDATE
+1. VALIDATE (belief-domain.ts: addFact / addDecision)
    - O.status must be "active"
-   - O.id must exist in belief.facts
+   - O.id must exist in belief.facts or belief.decisions
 
-2. SUPERSEDE O
+2. SUPERSEDE O (revision-strategy.ts: supersede())
    - O.status = "superseded"
    - O.supersededBy = N.id
    - O.updatedAt = now()
 
-3. ADD N
+3. ADD N (belief-domain.ts: addFact / addDecision)
    - N.status = "active"
    - N.id = new unique id
    - N.createdAt = now()
    - N.updatedAt = now()
 
 4. PERSIST
-   - Push N to belief.facts[]
-   - O remains in belief.facts[] (archive tier)
+   - Push N to belief.facts[] or belief.decisions[]
+   - O remains in its array (archive tier)
 
-5. PROPAGATE
+5. PROPAGATE (belief-domain.ts: getContestedWarnings)
    - Flag decisions/hypotheses that cite O as evidence
    - Surface in preamble: "Belief X superseded; decisions Y, Z may need review"
 ```

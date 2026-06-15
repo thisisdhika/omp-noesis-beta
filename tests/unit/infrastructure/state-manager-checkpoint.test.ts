@@ -81,13 +81,13 @@ describe("StateManager checkpointAttention", () => {
     await sm.initialize();
 
     // Directly write a state with known belief data
+    const now = new Date().toISOString();
     await writeAtomic(statePath(tempDir.path), {
       ...EMPTY_STATE,
       attention: { ...EMPTY_STATE.attention, focus: "original" },
       belief: {
-        facts: [{ id: "fact-1", claim: "test", source: "test", timestamp: new Date().toISOString() }],
+        facts: [{ id: "bf-testfact", content: "test claim", confidence: 0.8, source: "user", createdAt: now, updatedAt: now, status: "active" }],
         decisions: [],
-        tags: [],
       },
     });
 
@@ -108,6 +108,6 @@ describe("StateManager checkpointAttention", () => {
     // Verify other fields survived
     const beliefOnDisk = onDisk!.belief as Record<string, unknown>;
     expect(Array.isArray(beliefOnDisk.facts)).toBeTrue();
-    expect((beliefOnDisk.facts as Array<Record<string, unknown>>)[0]!.id).toBe("fact-1");
+    expect((beliefOnDisk.facts as Array<Record<string, unknown>>)[0]!.id).toBe("bf-testfact");
   });
 });

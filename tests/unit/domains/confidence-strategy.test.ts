@@ -47,9 +47,9 @@ function makeFact(overrides?: Partial<BeliefFact>): BeliefFact {
 // ---------------------------------------------------------------------------
 
 describe("mapGraphConfidence", () => {
-  it("maps EXTRACTED to 0.9", () => {
+  it("maps EXTRACTED to 1.0", () => {
     const finding = makeFinding({ confidence: "EXTRACTED" });
-    expect(mapGraphConfidence(finding)).toBe(0.9);
+    expect(mapGraphConfidence(finding)).toBe(1.0);
   });
 
   it("maps INFERRED to 0.7", () => {
@@ -69,7 +69,7 @@ describe("mapGraphConfidence", () => {
 
   it("keeps mapping value when inferredConfidence is lower", () => {
     const finding = makeFinding({ confidence: "EXTRACTED", inferredConfidence: 0.6 });
-    expect(mapGraphConfidence(finding)).toBe(0.9);
+    expect(mapGraphConfidence(finding)).toBe(1.0);
   });
 });
 
@@ -89,14 +89,14 @@ describe("applyStalePenalty", () => {
     expect(applyStalePenalty(fact, 720)).toBe(0.9);
   });
 
-  it("reduces confidence by 0.85 when fact is older than staleHours", () => {
+  it("reduces confidence by 0.10 when fact is older than staleHours", () => {
     const fact = makeFact({ confidence: 0.8, updatedAt: OLD_TIMESTAMP });
-    expect(applyStalePenalty(fact, 1)).toBeCloseTo(0.68, 5);
+    expect(applyStalePenalty(fact, 1)).toBeCloseTo(0.70, 5);
   });
 
-  it("clamps result to 0 when penalty would go below zero", () => {
+  it("floors stale penalty at 0.55", () => {
     const fact = makeFact({ confidence: 0, updatedAt: OLD_TIMESTAMP });
-    expect(applyStalePenalty(fact, 1)).toBe(0);
+    expect(applyStalePenalty(fact, 1)).toBe(0.55);
   });
 
   it("clamps result to 1 when adjusted value exceeds max", () => {

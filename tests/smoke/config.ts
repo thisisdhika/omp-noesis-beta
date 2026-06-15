@@ -7,13 +7,15 @@
  * persisted and OMP agent sessions are created.
  */
 
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
 export const WORKDIR =
-  "/Users/thisisdhika/Projects/kaa.ltd/LAB/experiments/noesis";
+  process.env.SMOKE_WORKDIR || join(tmpdir(), "omp-noesis-smoke-" + Date.now());
 
 export const MODEL = "opencode-go/deepseek-v4-flash:off";
 
-export const STATE_PATH =
-  "/Users/thisisdhika/Projects/kaa.ltd/LAB/experiments/noesis/.omp/noesis/state.json";
+export const STATE_PATH = join(WORKDIR, ".omp", "noesis", "state.json");
 
 /** Hard timeout for the overall agent prompt call (2 minutes). */
 export const TIMEOUT_MS = 120_000;

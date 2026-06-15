@@ -29,24 +29,16 @@ export function registerToolResultHook(pi: ExtensionAPI, runtime: NoesisRuntime)
         "text" in block && ERROR_KEYWORDS.some((kw) => block.text.toLowerCase().includes(kw)),
     );
 
-
     const isFailure = isError || hasErrorContent;
 
-    const candidate = {
-      toolName,
-      isError: isFailure,
-      description: isFailure
-        ? `Tool ${toolName} failed`
-        : `Tool ${toolName} executed successfully`,
-      significant: false,
-      capturedAt: new Date().toISOString(),
-    };
+    // Only capture significant events — failures with error content
+    if (!isFailure) return;
 
     await runtime.stateManager.mutate((state) => {
       addLearning(state, {
-        description: candidate.description,
-        toolName: candidate.toolName,
-        isSuccess: !candidate.isError,
+        description: `Tool ${toolName} failed`,
+        toolName,
+        isSuccess: false,
       });
     });
   });

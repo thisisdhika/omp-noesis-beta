@@ -192,7 +192,7 @@ export type WorkflowStep = z.infer<typeof WorkflowStepSchema>;
 
 export const WorkflowSchema = z.object({
   id: z.string().regex(/^wf-[a-z0-9-]+$/),
-  goal: z.string().min(1).max(CAPS.descriptionLength),
+  goal: z.string().max(CAPS.descriptionLength),
   status: WorkflowStatusSchema,
   steps: z.array(WorkflowStepSchema).max(CAPS.workflowSteps).default([]),
   createdAt: z.string().datetime(),
@@ -245,7 +245,6 @@ export const LearningSummarySchema = z.object({
   resolvedCount: z.number().default(0),
   diagnosedCount: z.number().default(0),
 });
-export type LearningSummary = z.infer<typeof LearningSummarySchema>;
 
 export const LearningLayerSchema = z.object({
   successes: z.array(LearningEntrySchema).default([]),
@@ -315,157 +314,6 @@ export const EMPTY_STATE: NoesisState = {
   },
 };
 
-// ============================================================================
-// TOOL PARAMETER SCHEMAS
-// ============================================================================
-
-export const NoesisAttendParamsSchema = z.object({
-  focus: z.string().max(CAPS.focusLength),
-  files: z.array(z.string()).max(CAPS.files).optional(),
-  graphQueries: z.array(z.string()).max(CAPS.graphQueries).optional(),
-  priority: PrioritySchema.default("normal"),
-});
-export type NoesisAttendParams = z.infer<typeof NoesisAttendParamsSchema>;
-
-export const NoesisBelieveParamsSchema = z.discriminatedUnion("type", [
-  z.object({
-    type: z.literal("fact"),
-    content: z.string().max(CAPS.contentLength),
-    confidence: z.number().min(0).max(1),
-    source: BeliefSourceSchema,
-    tags: z.array(z.string()).max(CAPS.beliefTags).optional(),
-    contradictsIds: z.array(z.string()).optional(),
-    evidence: z.string().max(CAPS.evidenceLength).optional(),
-  }),
-  z.object({
-    type: z.literal("decision"),
-    content: z.string().max(CAPS.contentLength),
-    rationale: z.string().max(CAPS.rationaleLength),
-    alternatives: z.array(z.string()).max(CAPS.alternatives).optional(),
-    source: BeliefSourceSchema,
-    tags: z.array(z.string()).max(CAPS.decisionTags).optional(),
-    contradictsIds: z.array(z.string()).optional(),
-  }),
-  z.object({
-    type: z.literal("learning"),
-    learningId: z.string(),
-    rootCause: z.string().max(CAPS.rootCauseLength),
-    fix: z.string().max(CAPS.fixLength),
-    confidence: z.number().min(0).max(1).default(0.85),
-    tags: z.array(z.string()).max(CAPS.beliefTags).optional(),
-  }),
-]);
-export type NoesisBelieveParams = z.infer<typeof NoesisBelieveParamsSchema>;
-
-export const NoesisInferParamsSchema = z.discriminatedUnion("action", [
-  z.object({
-    action: z.literal("add_hypothesis"),
-    content: z.string().max(CAPS.contentLength),
-    evidence: z.string().max(CAPS.evidenceLength).optional(),
-    tags: z.array(z.string()).max(CAPS.hypothesisTags).optional(),
-  }),
-  z.object({
-    action: z.literal("update_hypothesis"),
-    id: z.string(),
-    status: HypothesisStatusSchema,
-    evidence: z.string().max(CAPS.evidenceLength).optional(),
-    reasoning: z.string().max(CAPS.rationaleLength).optional(),
-    autoPromote: z.boolean().default(true),
-  }),
-  z.object({
-    action: z.literal("add_reasoning"),
-    content: z.string().max(CAPS.contentLength * 2),
-    relatesTo: z.string().optional(),
-    tags: z.array(z.string()).max(CAPS.hypothesisTags).optional(),
-  }),
-]);
-export type NoesisInferParams = z.infer<typeof NoesisInferParamsSchema>;
-
-export const NoesisCommitParamsSchema = z.discriminatedUnion("mode", [
-  z.object({
-    mode: z.literal("extend_workflow"),
-    goal: z.string().max(CAPS.descriptionLength).optional(),
-    steps: z.array(z.object({
-      description: z.string().max(CAPS.descriptionLength),
-      dependsOn: z.array(z.string()).optional(),
-      verification: z.string().max(CAPS.verificationLength).optional(),
-    })).max(CAPS.workflowSteps),
-    status: WorkflowStatusSchema.optional(),
-  }),
-  z.object({
-    mode: z.literal("replace_workflow"),
-    goal: z.string().max(CAPS.descriptionLength),
-    steps: z.array(z.object({
-      description: z.string().max(CAPS.descriptionLength),
-      dependsOn: z.array(z.string()).optional(),
-      verification: z.string().max(CAPS.verificationLength).optional(),
-    })).max(CAPS.workflowSteps),
-    status: WorkflowStatusSchema.default("active"),
-  }),
-  z.object({
-    mode: z.literal("update_step"),
-    stepId: z.string(),
-    status: StepStatusSchema,
-    note: z.string().max(CAPS.descriptionLength).optional(),
-  }),
-  z.object({
-    mode: z.literal("add_action"),
-    content: z.string().max(CAPS.descriptionLength),
-    priority: PrioritySchema.default("normal"),
-  }),
-]);
-export type NoesisCommitParams = z.infer<typeof NoesisCommitParamsSchema>;
-
-export const NoesisFocusParamsSchema = z.object({
-  focus: z.string().max(CAPS.focusLength),
-  files: z.array(z.string()).max(CAPS.files).optional(),
-  priority: PrioritySchema.default("normal"),
-});
-export type NoesisFocusParams = z.infer<typeof NoesisFocusParamsSchema>;
-
-export const NoesisRecallParamsSchema = z.discriminatedUnion("query", [
-  z.object({
-    query: z.literal("active_beliefs"),
-    tagFilter: z.array(z.string()).optional(),
-    minConfidence: z.number().min(0).max(1).default(0.75),
-  }),
-  z.object({
-    query: z.literal("active_decisions"),
-    tagFilter: z.array(z.string()).optional(),
-  }),
-  z.object({
-    query: z.literal("unresolved_hypotheses"),
-    tagFilter: z.array(z.string()).optional(),
-  }),
-  z.object({
-    query: z.literal("relevant_learning"),
-    skillScope: z.string().optional(),
-    limit: z.number().min(1).max(10).default(3),
-  }),
-  z.object({
-    query: z.literal("current_workflow"),
-    includeCompleted: z.boolean().default(false),
-  }),
-  z.object({
-    query: z.literal("full_state_digest"),
-    includeSuperseded: z.boolean().default(false),
-    includeArchived: z.boolean().default(false),
-  }),
-  z.object({
-    query: z.literal("search"),
-    keyword: z.string(),
-    limit: z.number().min(1).max(20).default(10),
-  }),
-]);
-export type NoesisRecallParams = z.infer<typeof NoesisRecallParamsSchema>;
-
-export const NoesisVaultSearchParamsSchema = z.object({
-  query: z.string(),
-  kind: z.enum(["all", "decision", "learning", "belief", "pattern"]).default("all"),
-  maxResults: z.number().min(1).max(20).default(5),
-  projectPath: z.string().optional(),
-});
-export type NoesisVaultSearchParams = z.infer<typeof NoesisVaultSearchParamsSchema>;
 
 // ============================================================================
 // VAULT ARTIFACT SCHEMAS
@@ -474,7 +322,7 @@ export type NoesisVaultSearchParams = z.infer<typeof NoesisVaultSearchParamsSche
 export const VaultArtifactSchema = z.object({
   kind: z.enum(["decision", "learning", "belief", "pattern", "session"]),
   projectPath: z.string(),
-  id: z.string(),
+  id: z.string().refine(s => !s.includes('..') && !s.includes('/'), 'Artifact ID must not contain path separators'),
   pushedAt: z.string().datetime(),
   metadata: z.record(z.string(), z.unknown()).optional(),
   content: z.string(),
@@ -505,16 +353,3 @@ export const RenderContextSchema = z.object({
 });
 export type RenderContext = z.infer<typeof RenderContextSchema>;
 
-// ============================================================================
-// TOOL RESULT LEARNING CANDIDATE
-// ============================================================================
-
-export const LearningCandidateSchema = z.object({
-  toolName: z.string(),
-  exitCode: z.number().optional(),
-  isError: z.boolean(),
-  description: z.string().max(CAPS.descriptionLength),
-  significant: z.boolean(), // Determined by significance filter
-  capturedAt: z.string().datetime(),
-});
-export type LearningCandidate = z.infer<typeof LearningCandidateSchema>;

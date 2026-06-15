@@ -12,12 +12,25 @@ import type { LearningEntry } from "../../schema.js";
 /**
  * Rank entries by descending score.
  * Entries with equal scores retain their relative order.
+ *
+ * @param entries     The learning entries to rank.
+ * @param isFailure   Optional predicate returning true for failure entries.
+ * @param taskDomain  Optional domain for relevance scoring against entry.toolName.
  */
-export function rank(entries: LearningEntry[], isFailure?: (entry: LearningEntry) => boolean): LearningEntry[] {
+export function rank(entries: LearningEntry[], isFailure?: (entry: LearningEntry) => boolean, taskDomain?: string): LearningEntry[] {
   const failPredicate = isFailure ?? (() => false);
+
+  // Determine position-based recency: sort by capturedAt descending,
+  // then each entry gets recency = Math.max(0, 1.0 - index * 0.2)
+  const sortedByTime = [...entries].sort((a, b) => b.capturedAt.localeCompare(a.capturedAt));
+  const recencyMap = new Map<LearningEntry, number>();
+  for (let i = 0; i < sortedByTime.length; i++) {
+    recencyMap.set(sortedByTime[i]!, Math.max(0, 1.0 - i * 0.2));
+  }
+
   return [...entries].sort((a, b) => {
-    const scoreA = computeRank(a, failPredicate(a));
-    const scoreB = computeRank(b, failPredicate(b));
+    const scoreA = computeRank(a, failPredicate(a), recencyMap.get(a), taskDomain);
+    const scoreB = computeRank(b, failPredicate(b), recencyMap.get(b), taskDomain);
     return scoreB - scoreA;
   });
 }
@@ -27,32 +40,23 @@ export function rank(entries: LearningEntry[], isFailure?: (entry: LearningEntry
  *
  * score = recency × taskRelevance × failureMultiplier × resolvedFixMultiplier
  *
- * @param entry    The learning entry to score.
- * @param isFailure  True if this entry lives in the failures array (default false).
+ * @param entry       The learning entry to score.
+ * @param isFailure   True if this entry lives in the failures array (default false).
+ * @param recency     Position-based recency factor; defaults to 1.0 when called standalone.
+ * @param taskDomain  Optional domain to compare against entry.toolName for relevance scoring.
  */
-export function computeRank(entry: LearningEntry, isFailure: boolean = false): number {
-  const recency = getRecency(entry.capturedAt);
-  const taskRelevance = 1.0;
-  const failureMultiplier = isFailure ? 1.5 : 1.0;
-  const resolvedFixMultiplier = entry.status === "resolved" ? 2.0 : 1.0;
-  return recency * taskRelevance * failureMultiplier * resolvedFixMultiplier;
+export function computeRank(
+  entry: LearningEntry,
+  isFailure: boolean = false,
+  recency?: number,
+  taskDomain?: string,
+): number {
+  const r = recency ?? 1.0;
+  const taskRelevance = taskDomain !== undefined
+    ? (entry.toolName && entry.toolName.startsWith(taskDomain) ? 1.0 : 0.5)
+    : 1.0;
+  const failureMultiplier = isFailure ? 2.0 : 1.0;
+  const resolvedFixMultiplier = entry.rootCause && entry.fix ? 2.0 : 1.0;
+  return r * taskRelevance * failureMultiplier * resolvedFixMultiplier;
 }
 
-/**
- * Determine recency factor based on age.
- *
- * - ≤ 24 hours → 1.0
- * - ≤ 7 days   → 0.5
- * - older      → 0.1
- */
-function getRecency(capturedAt: string): number {
-  const ageMs = Date.now() - Date.parse(capturedAt);
-  if (Number.isNaN(ageMs)) return 0.1; // unparseable = stale
-
-  const msPerHour = 60 * 60 * 1000;
-  const msPerDay = 24 * msPerHour;
-
-  if (ageMs <= msPerDay) return 1.0;
-  if (ageMs <= 7 * msPerDay) return 0.5;
-  return 0.1;
-}

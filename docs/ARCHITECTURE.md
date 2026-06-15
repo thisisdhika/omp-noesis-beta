@@ -41,22 +41,25 @@ omp-noesis is an Oh My Pi extension that adds a structured cognitive substrate t
 │  │  │  Cognition   │  │  Perception  │  │   Learning   │    │  │
 │  │  │  Layer       │  │  Layer       │  │   Layer      │    │  │
 │  │  │              │  │              │  │              │    │  │
-│  │  │ - schema.ts  │  │ - percept.ts │  │ - loop.ts    │    │  │
-│  │  │ - preamble   │  │ - status.ts  │  │ - patterns   │    │  │
-│  │  │ - survivors  │  │              │  │              │    │  │
+│  │  │ - schema.ts  │  │  │ - graphify-  │  │  │ - learning-  │  │  │
+│  │  │ - preamble   │  │  │   client.ts  │  │  │   domain.ts  │  │  │
+│  │  │ - survivors  │  │  │ - graphify-  │  │  │ - ranking-   │  │  │
+│  │  │              │  │  │   parser.ts  │  │  │   strategy.ts│  │  │
+│  │  │              │  │  │              │  │  │ - eviction-  │  │  │
+│  │  │              │  │  │              │  │  │   strategy.ts│  │  │
 │  │  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘    │  │
 │  │         │                 │                 │            │  │
 │  │  ┌──────▼─────────────────▼─────────────────▼─────────┐  │  │
 │  │  │              Persistence Layer                       │  │  │
-│  │  │  - store.ts (atomic write)                          │  │  │
-│  │  │  - migration.ts (schema versioning)                 │  │  │
+│  │  │  - filesystem-store.ts (atomic write)               │  │  │
+│  │  │  - migrations.ts (schema versioning)                │  │  │
 │  │  │  - .omp/noesis/state.json                           │  │  │
 │  │  └─────────────────────────────────────────────────────┘  │  │
 │  │                                                           │  │
 │  │  ┌─────────────────────────────────────────────────────┐  │  │
 │  │  │              Workflow Layer                          │  │  │
-│  │  │  - render.ts (living document)                      │  │  │
-│  │  │  - engine.ts (dependency resolution)                │  │  │
+│  │  │  - preamble-builder.ts (living document)              │  │  │
+│  │  │  - consistency-strategy.ts (dependency resolution)    │  │  │
 │  │  └─────────────────────────────────────────────────────┘  │  │
 │  └───────────────────────────────────────────────────────────┘  │
 │                                                                 │
@@ -96,7 +99,7 @@ omp-noesis is an Oh My Pi extension that adds a structured cognitive substrate t
 | `graphify-client.ts` | Graphify subprocess + MCP fallback, capability detection |
 | `graphify-parser.ts` | Semi-structured NL → structured `GraphFinding` |
 | `graphify-engine.ts` | Confidence mapping, stale penalty, community tags |
-| `obsidian-writer.ts` | Atomic Markdown note creation (temp → fsync → rename) |
+| `graphify-setup.ts` | CLI detection, skill installation, build invocation |
 
 ### 3.4 Domain Layer
 
@@ -120,6 +123,16 @@ omp-noesis is an Oh My Pi extension that adds a structured cognitive substrate t
 
 ### 3.6 Tool Adapters (`src/tools/`)
 
+| Tool | File |
+|---|---|
+| `noesis_attend` | `attend-tool.ts` |
+| `noesis_believe` | `believe-tool.ts` |
+| `noesis_infer` | `infer-tool.ts` |
+| `noesis_commit` | `commit-tool.ts` |
+| `noesis_focus` | `focus-tool.ts` |
+| `noesis_recall` | `recall-tool.ts` |
+| `noesis_vault_search` | `vault-search-tool.ts` |
+
 Thin wrappers over domain logic. Each validates params, calls domain, persists, returns structured result.
 
 ### 3.7 Hook Adapters (`src/hooks/`)
@@ -127,10 +140,10 @@ Thin wrappers over domain logic. Each validates params, calls domain, persists, 
 | Hook | File | Responsibility |
 |---|---|---|
 | `context` | `context-hook.ts` | Sole live preamble injector (read-only) |
-| `before_agent_start` | `before-agent-start.ts` | Safety-net fallback (1-2 sentences) |
+| `before_agent_start` | `before-agent-start-hook.ts` | Safety-net fallback (1-2 sentences) |
 | `session.compacting` | `compaction-hook.ts` | Survivor + preserveData |
 | `tool_result` | `tool-result-hook.ts` | Phase-1 learning capture |
-| `turn_end` | `turn-end.ts` | Eviction + vault flush |
+| `turn_end` | `turn-end-hook.ts` | Eviction + vault flush |
 
 ### 3.8 Vault Layer (`src/vault/`)
 
@@ -140,6 +153,7 @@ Thin wrappers over domain logic. Each validates params, calls domain, persists, 
 | `noop-vault-store.ts` | No-op fallback (optionality guarantee) |
 | `obsidian-vault-store.ts` | Markdown + frontmatter projection |
 | `obsidian-merger.ts` | Conflict resolution for pulled artifacts |
+| `obsidian-writer.ts` | Atomic Markdown note creation (temp → fsync → rename) |
 | `vault-detector.ts` | Backend resolution chain |
 | `vault-retry.ts` | On-disk retry buffer |
 | `local-vault-store.ts` | Append-only MEMORY.md |
@@ -207,7 +221,7 @@ session.compacting → survivor-builder selects bounded subset → preserveData.
 | Observer | Hook subscription, projection intent enqueueing |
 | Command | Tool execution adapters |
 | Adapter | OMP hook integration |
-| Singleton | Runtime instance, Graphify client |
+| Singleton | Runtime instance |
 | Template Method | Preamble section rendering |
 | Chain of Responsibility | Focus resolution fallback |
 | Memento | Compaction survivor preservation |
@@ -221,7 +235,7 @@ session.compacting → survivor-builder selects bounded subset → preserveData.
 - Preamble construction: Cached via state hash
 
 ### 7.2 Vertical
-- Learning entries: Hard cap (100), rank-based eviction
+- Learning entries: Hard cap (100), age-based eviction
 - Belief facts: No hard cap (archive grows), only 10 active survive compaction
 - Hypotheses: No hard cap, only 3 unresolved survive compaction
 - Workflow steps: No hard cap, only current + next survive compaction
@@ -230,7 +244,9 @@ session.compacting → survivor-builder selects bounded subset → preserveData.
 
 | Scenario | Behavior |
 |---|---|
-| State file corrupted | Restore from `preserveData.noesis` or start EMPTY_STATE |
+| Corrupt state JSON (parse error) | Rebuild from EMPTY_STATE (SyntaxError caught by StateManager.initialize) |
+| State file I/O error (permissions, disk) | Rethrow — do not destroy existing data |
+| preserveData.noesis gap | TODO: Not yet consulted on initialize (known gap) |
 | Graphify not available | DEGRADED mode, no graph beliefs, agent continues |
 | Graphify query timeout | Return error, agent decides retry |
 | Vault write fails | Buffer to `vault-retry.json`, retry on next turn |

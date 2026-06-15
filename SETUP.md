@@ -4,26 +4,37 @@
 
 - **Bun** >= 1.3.0 ([install](https://bun.sh))
 - **Oh My Pi** >= 15.6.0
-- **Graphify** >= 8.2.0 (`pip install graphify`)
+- **Graphify** >= 0.3.0 (`uv tool install graphifyy` or `pip install graphifyy`)
 - **Python** >= 3.10 (for Graphify)
+
 
 ## Installation
 
 ### Step 1: Install Graphify
 
 ```bash
-pip install graphify
-graphify --version  # Should show v8.2.0+
+# Recommended:
+uv tool install graphifyy
+# Alternative:
+pipx install graphifyy
+
+graphify --version  # Should show v0.3.x+
 ```
+
 
 ### Step 2: Install Noesis Extension
 
 ```bash
-cd your-project/
-bun add @omp-noesis/extension
+omp install omp-noesis
 ```
 
+This installs the extension into `~/.omp/plugins/` and registers it for all OMP sessions.
+
+> **Local development**: To load from a local clone instead, use `omp --extension ./path/to/omp-noesis/src/index.ts`.
+
 ### Step 3: Initialize Noesis
+
+Run this command inside an active OMP session after the extension is loaded:
 
 ```bash
 /noesis:init
@@ -31,59 +42,32 @@ bun add @omp-noesis/extension
 
 This creates:
 - `.omp/noesis/` directory
-- `.omp/config.yml` with noesis settings
+- `.omp/noesis/state.json` with initial empty cognitive state
 
-### Step 4: Build Codebase Graph
+> Note: Noesis does NOT create a `.omp/config.yml`. Configuration is injected by OMP via the extension API.
 
-```bash
-graphify .
-```
-
-This creates `graphify-out/graph.json` — the perception substrate.
-
-### Step 5: Verify
+### Step 4: Verify
 
 ```bash
-omp --check-extensions
+# Check extension health
+omp doctor
+
+# Verify state file exists
+ls .omp/noesis/state.json
+
+# Verify graph was built
+ls graphify-out/graph.json
 ```
 
-Expected output:
-```
-noesis [loaded] capability: FULL
-  Graphify: v8.2.0
-  Graph: fresh (built 2026-06-15T10:00:00Z)
-  State: .omp/noesis/state.json (empty)
-  Vault: NoopVaultStore (no vault configured)
-```
+## Configuration (Planned Feature)
 
-## Configuration
+The full YAML configuration system is a future enhancement. Noesis currently reads all settings from the OMP extension API at load time. Settings such as `autoUpdate`, `staleThresholdHours`, `maxTokens`, and `vault.backend` are planned for a `.omp/config.yml`-based configuration file.
 
-### `.omp/config.yml`
-
-```yaml
-compaction:
-  strategy: "context-full"
-  autoContinue: true
-  reserveTokens: 16384
-  keepRecentTokens: 20000
-  idleThresholdTokens: 200000
-
-noesis:
-  enabled: true
-  graphify:
-    autoUpdate: true
-    staleThresholdHours: 24
-  learning:
-    maxEntries: 100
-    autoCaptureFailures: true
-  preamble:
-    maxTokens: 2000
-    includeGraphEvidence: true
-    includeLowConfidenceCount: true
-  vault:
-    backend: "noop"  # noop | local | obsidian | mnemopi | hindsight
-    obsidianVaultPath: ".obsidian/noesis/"
-```
+For now, vault backend selection is automatic via heuristic detection (see [vault-detector.ts](src/vault/vault-detector.ts)):
+- `.obsidian/` directory exists → `"obsidian"`
+- `MEMORY.md` file exists → `"local"`
+- `.omp/mnemopi.db` file exists → `"mnemopi"`
+- Otherwise → `"none"` (NoopVaultStore)
 
 ## Optional: Obsidian Vault
 
@@ -91,32 +75,40 @@ noesis:
 # 1. Create or point to an existing Obsidian vault
 mkdir -p .obsidian/noesis/
 
-# 2. Update config
-# .omp/config.yml:
-#   vault:
-#     backend: "obsidian"
-#     obsidianVaultPath: ".obsidian/noesis/"
-
-# 3. Projected artifacts will appear at:
-# .obsidian/noesis/noesis-decision-*.md
-# .obsidian/noesis/noesis-learning-*.md
+# 2. Projected artifacts will appear at:
+# .obsidian/noesis/decision/{id}.md
+# .obsidian/noesis/learning/{id}.md
+# .obsidian/noesis/belief/{id}.md
+# .obsidian/noesis/pattern/{id}.md
+# .obsidian/noesis/session/{id}.md
 ```
+
+Vault backend is detected automatically when `.obsidian/` exists. No manual config change needed.
 
 ## Optional: Mnemopi Vault (SQLite)
 
+Mnemopi is a separate OMP plugin (`@oh-my-pi/mnemopi`) that provides an agentic memory backend.
+
 ```bash
-# .omp/config.yml:
-#   vault:
-#     backend: "mnemopi"
-# Creates: .omp/noesis/mnemopi.sqlite
+# Install the Mnemopi plugin
+omp install @oh-my-pi/mnemopi
 ```
+
+Alternatively, add to `.omp/config.yml`:
+
+```yaml
+extensions:
+  - @oh-my-pi/mnemopi
+```
+
+Mnemopi backend is detected automatically when `.omp/mnemopi.db` exists.
 
 ## Next Steps
 
 1. Start an OMP session
-2. The agent will automatically load the `noesis` skill
+2. The extension loads automatically from `~/.omp/plugins/` — no manual config needed
 3. The cognitive preamble will appear in the first LLM call
-4. Use `noesis_attend`, `noesis_believe`, `noesis_commit`, etc. as needed
+4. Use `noesis_attend`, `noesis_focus`, `noesis_believe`, `noesis_commit`, `noesis_infer`, `noesis_recall`, and `noesis_vault_search` as needed
 
 ## Troubleshooting
 

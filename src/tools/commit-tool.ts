@@ -25,7 +25,7 @@ import {
 
 export function registerCommitTool(pi: ExtensionAPI, runtime: NoesisRuntime): void {
   const stepSchema = pi.zod.object({
-    description: pi.zod.string().max(500),
+    description: pi.zod.string().min(1).max(500),
     dependsOn: pi.zod.array(pi.zod.string()).optional(),
     verification: pi.zod.string().max(200).optional(),
   });
@@ -39,30 +39,43 @@ export function registerCommitTool(pi: ExtensionAPI, runtime: NoesisRuntime): vo
       "\"update_step\" to mark progress, and \"add_action\" to record a to-do.",
     parameters: pi.zod.object({
       mode: pi.zod.enum(["extend_workflow", "replace_workflow", "update_step", "add_action"]),
-      goal: pi.zod.string().max(500).optional(),
+      goal: pi.zod.string().min(1).max(500).optional(),
       steps: pi.zod.array(stepSchema).max(20).optional(),
-      status: pi.zod.string().optional(),
-      stepId: pi.zod.string().optional(),
+      status: pi.zod.enum(["draft", "active", "done", "abandoned", "pending", "skipped"]).optional(),
+      stepId: pi.zod.string().min(1).optional(),
       note: pi.zod.string().max(500).optional(),
-      content: pi.zod.string().max(500).optional(),
+      content: pi.zod.string().min(1).max(500).optional(),
       priority: pi.zod.enum(["low", "normal", "high", "critical"]).default("normal"),
     }).refine((data) => {
       if (data.mode === "extend_workflow") {
         return Array.isArray(data.steps) && data.steps.length > 0;
       }
       if (data.mode === "replace_workflow") {
-        return typeof data.goal === "string" && Array.isArray(data.steps) && data.steps.length > 0;
+        return typeof data.goal === "string" && data.goal.length > 0 &&
+          Array.isArray(data.steps) && data.steps.length > 0;
       }
       if (data.mode === "update_step") {
-        return typeof data.stepId === "string" && typeof data.status === "string";
+        return typeof data.stepId === "string" && data.stepId.length > 0 &&
+          typeof data.status === "string" && data.status.length > 0;
       }
       if (data.mode === "add_action") {
-        return typeof data.content === "string";
+        return typeof data.content === "string" && data.content.length > 0;
       }
       return false;
     }, { message: "Missing required fields for the selected mode" }),
 
     async execute(toolCallId, params, signal, onUpdate, ctx) {
+      // Runtime type guards — narrow the status union to the mode-specific subset
+      function workflowStatus(s: typeof params.status): "draft" | "active" | "done" | "abandoned" | undefined {
+        if (s === "draft" || s === "active" || s === "done" || s === "abandoned" || s === undefined) return s;
+        return undefined;
+      }
+      function stepStatus(s: typeof params.status): "pending" | "active" | "done" | "skipped" {
+        if (s === "pending" || s === "active" || s === "done" || s === "skipped") return s;
+        // Should never happen — refine() already validated mode === "update_step" with a valid status
+        return "pending";
+      }
+
       if (params.mode === "extend_workflow") {
         if (!params.steps || params.steps.length === 0) {
           return {
@@ -79,7 +92,7 @@ export function registerCommitTool(pi: ExtensionAPI, runtime: NoesisRuntime): vo
           workflow = extendWorkflow(state, {
             goal,
             steps,
-            status: ws as "draft" | "active" | "done" | "abandoned" | undefined,
+            status: workflowStatus(ws),
           });
         });
 
@@ -117,7 +130,7 @@ export function registerCommitTool(pi: ExtensionAPI, runtime: NoesisRuntime): vo
           workflow = replaceWorkflow(state, {
             goal,
             steps,
-            status: ws as "draft" | "active" | "done" | "abandoned" | undefined,
+            status: workflowStatus(ws),
           });
         });
 
@@ -148,10 +161,10 @@ export function registerCommitTool(pi: ExtensionAPI, runtime: NoesisRuntime): vo
           };
         }
         const stepId = params.stepId;
-        const stepStatus = params.status as "pending" | "active" | "done" | "skipped";
+        const narrowedStatus = stepStatus(params.status);
         let step!: WorkflowStep | null;
         await runtime.stateManager.mutate((state) => {
-          step = updateStep(state, stepId, stepStatus);
+          step = updateStep(state, stepId, narrowedStatus);
         });
 
         if (step === null) {

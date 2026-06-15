@@ -94,7 +94,25 @@ interface BeliefDecision {
 | 0.50 - 0.74 | Low-confidence | Counted only | Not eligible |
 | 0.00 - 0.49 | Not promoted | Hidden | Not eligible |
 
+> **Note:** Entries with confidence 0.00–0.49 can be stored in the state (no schema
+> minimum constraint), but domain logic treats them as "not promoted": they never
+> appear in the preamble or survive compaction. This is a behavioral guideline, not
+> a schema validation rule.
+
 ### 4.4 Graphify Confidence Mapping
+
+
+Graphify confidence labels are mapped to numeric belief values by
+[`mapGraphConfidence()`](../src/domains/belief/confidence-strategy.ts).
+**EXTRACTED** findings receive exactly 1.0 — the highest confidence tier.
+**INFERRED** findings use their `inferredConfidence` value directly (one of
+0.55, 0.65, 0.75, 0.85, 0.95) or fall back to 0.7 when absent.
+**AMBIGUOUS** findings are assigned 0.55 numerically, but they are never
+promoted to active belief — they remain ephemeral in the attention layer.
+
+Beliefs older than `CAPS.STALE_THRESHOLD_HOURS` (720) have their confidence
+reduced by **0.10** (floored at 0.55) via
+[`applyStalePenalty()`](../src/domains/belief/confidence-strategy.ts).
 
 | Graphify | Noesis | Stale Penalty | Result |
 |---|---|---|---|
@@ -226,23 +244,30 @@ interface LearningSummary {
 rank = recency × taskRelevance × failureMultiplier × resolvedFixMultiplier
 ```
 
-- `recency`: 1.0 base, decays 0.2 per older sibling
-- `taskRelevance`: 1.0 same domain, 0.5 different, 0.0 unrelated
+- `recency`: position-based: `Math.max(0, 1.0 - index × 0.2)`, where index
+  is the entry's position in `capturedAt`-descending order (newest first)
+- `taskRelevance`: defaults to 1.0; when `taskDomain` is provided, scores
+  1.0 if `toolName` starts with `taskDomain`, otherwise 0.5
 - `failureMultiplier`: 2.0 (failure), 1.0 (success)
-- `resolvedFixMultiplier`: 2.0 (rootCause + fix), 1.0 (not resolved)
+- `resolvedFixMultiplier`: 2.0 (rootCause AND fix both present), 1.0 (otherwise)
 
 ### 7.2 Survivor Caps
 
-| Category | Cap |
-|---|---|
-| Focus | 2 sentences |
-| Workflow | 3 items (goal + current + next) |
-| Active decisions | 5 |
-| Active beliefs (≥0.75) | 10 |
-| Unresolved hypotheses | 3 |
-| Learning entries | 3 |
-| Learning counters | Always |
-| State file pointer | 1 |
+| Category | Cap | Notes |
+|---|---|---|
+| Focus | 2 sentences | Max length 200 chars |
+| Workflow | 3 items | Goal + current + next step |
+| Active decisions | 5 | |
+| Active beliefs (≥0.75) | 10 | |
+| Graph queries | 5 | |
+| Files | 10 | |
+| Unresolved hypotheses | 3 | |
+| Workflow steps | 20 | |
+| Actions | 50 | |
+| Learning entries | 100 | Hard cap on stored entries |
+| Learning (preamble) | 3 | Top-ranked in survivor context |
+| Learning counters | Always | successCount, failureCount, etc. |
+| State file pointer | 1 | |
 
 ## 8. Persistence Contract
 
@@ -263,9 +288,11 @@ rank = recency × taskRelevance × failureMultiplier × resolvedFixMultiplier
 ```
 1. If file doesn't exist → return EMPTY_STATE
 2. Read and parse JSON
-3. Validate with Zod
-4. If malformed → throw with path and reason
-5. If version mismatch → run migration
+3. If JSON parse error (SyntaxError) → rebuild from EMPTY_STATE and persist
+4. If I/O error (permissions, disk failure) → rethrow, preserving on-disk data
+5. Run migration pipeline via `migrate()` — applies version transformations
+   and performs a safe cast to `NoesisState` (schema validation via parse
+   is intentionally skipped due to Zod v4 z.lazy() constraints)
 6. Return validated state
 ```
 
@@ -291,3 +318,7 @@ const EMPTY_STATE: NoesisState = {
   learning: { successes: [], failures: [], summary: { successCount: 0, failureCount: 0, resolvedCount: 0, diagnosedCount: 0 } },
 };
 ```
+
+Note: `WorkflowSchema.goal` permits an empty string (`""`) to support draft
+workflows without an explicit goal. The `.min(1)` constraint was removed from
+the Zod schema to enable this pattern.

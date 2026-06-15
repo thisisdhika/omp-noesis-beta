@@ -14,10 +14,10 @@ Traditional code coverage measures lines executed. Product coverage measures beh
 
 | Layer | Scope | Target | Count |
 |---|---|---|---|
-| **Unit** | Domain logic, pure functions, strategies | 100% of branches | ~150 tests |
-| **Integration** | Tool + hook wiring, persistence, Graphify client | 100% of paths | ~80 tests |
-| **Behavioral** | Agent simulation, compaction survival, learning | 100% of behaviors | ~60 tests |
-| **Total** | — | **300%** | **~290 tests** |
+| **Unit** | Domain logic, pure functions, strategies | 100% of branches | ~250 tests |
+| **Integration** | Tool + hook wiring, persistence, Graphify client | 100% of paths | ~140 tests |
+| **Behavioral** | Agent simulation, compaction survival, learning | 100% of behaviors | ~117 tests |
+| **Total** | — | **300%** | **~507 tests** |
 
 ## 3. Unit Tests (`tests/unit/`)
 
@@ -26,7 +26,7 @@ Traditional code coverage measures lines executed. Product coverage measures beh
 - Property-based testing for ranking formulas
 - Mutation testing for revision strategies
 
-### Example Matrix
+### Example Matrix (selected modules)
 
 | Module | Category | Cases |
 |---|---|---|
@@ -46,8 +46,11 @@ Traditional code coverage measures lines executed. Product coverage measures beh
 | `preamble-builder.ts` | Trim strategy | 12 |
 | `focus-resolver.ts` | Fallback chain | 6 |
 | `graphify-parser.ts` | Output parsing | 20 |
-| `graphify-engine.ts` | Confidence translation | 10 |
-
+| `obsidian-vault-store.ts` | Note creation + search | 10 |
+| `obsidian-writer.ts` | Atomic write + fsync | 6 |
+| `vault-detector.ts` | Backend resolution | 8 |
+| `mnemopi-vault-store.ts` | SQLite persistence | 8 |
+| `state-manager.ts` | Mutex + checkpoint + validate | 10 |
 ### Sample Test
 
 ```typescript
@@ -209,14 +212,19 @@ describe("noesis_believe integration", () => {
 |---|---|---|
 | Compaction Survival | Agent works 20 turns, compaction fires, new session resumes | Beliefs, decisions, workflow intact |
 | Learning Prevention | Agent fails test → captures learning → next session avoids mistake | Second session does not repeat failure |
-| Graphify Grounding | Agent queries Graphify → commits belief → survives compaction | Belief content matches graph output |
 | Belief Revision | Agent commits fact A → later commits contradictory fact B | Fact A is superseded, not deleted |
-| Smart Zone | Agent accumulates 50 beliefs → preamble stays ≤2000 tokens | Token count verified |
 | Graceful Degradation | Graphify not installed → agent still functions | DEGRADED mode, no errors |
-| Skill Effectiveness | Agent with noesis skill vs. agent without | Task completion rate, token efficiency |
 | Vault Projection | Agent resolves learning → turn ends → artifact in vault | Markdown file exists |
 | Cross-Session Recall | Session 1 commits belief → Session 2 recalls it | `noesis_recall` returns correct belief |
 | Double-Preamble Guard | Both context and before_agent_start hooks fire | Only one preamble injected |
+
+### Planned Behavioral Tests (Future)
+
+| Behavior | Scenario | Validation |
+|---|---|---|
+| Graphify Grounding | Agent queries Graphify → commits belief → survives compaction | Belief content matches graph output |
+| Smart Zone | Agent accumulates 50 beliefs → preamble stays ≤2000 tokens | Token count verified |
+| Skill Effectiveness | Agent with noesis skill vs. agent without | Task completion rate, token efficiency |
 
 ### Sample Test
 
@@ -263,37 +271,9 @@ describe("Product: Learning Loop prevents repeated failures", () => {
 });
 ```
 
-## 6. Test Infrastructure
+## 6. Test Infrastructure (Planned)
 
-```typescript
-// tests/helpers/agent-simulator.ts
-export class AgentSimulator {
-  private turns: Turn[] = [];
-  private state: NoesisState;
-  private pi: MockExtensionAPI;
-  private runtime: NoesisRuntime;
-
-  constructor(options: SimulatorOptions) {
-    this.pi = createMockPi();
-    this.runtime = createRuntime(options.projectRoot, this.pi);
-    if (options.loadNoesis) {
-      registerTools(this.pi, this.runtime);
-      registerHooks(this.pi, this.runtime);
-    }
-    if (options.loadSkills) {
-      loadSkills(this.pi, options.loadSkills);
-    }
-  }
-
-  async turn(userMessage: string): Promise<void> { /* ... */ }
-  async toolCall(toolName: string, params: unknown): Promise<void> { /* ... */ }
-  async toolResult(toolName: string, result: unknown): Promise<void> { /* ... */ }
-  async agentAction(toolName: string, params: unknown): Promise<void> { /* ... */ }
-  async compact(): Promise<void> { /* ... */ }
-  async newSession(): Promise<void> { /* ... */ }
-  getActions(): AgentAction[] { return this.turns.at(-1)?.actions ?? []; }
-}
-```
+Planned test infrastructure features include an `AgentSimulator` helper for orchestrating multi-turn agent sessions. For now, behavioral tests use direct runtime and mock-pi setup.
 
 ## 7. Running Tests
 

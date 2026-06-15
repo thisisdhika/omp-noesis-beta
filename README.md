@@ -23,20 +23,18 @@ Noesis adds a structured, durable, and formally principled cognitive layer to OM
 # 1. Prerequisites
 bun --version        # >= 1.3.0
 omp --version        # >= 15.6.0
-graphify --version   # >= 8.2.0
+graphify --version   # >= 0.3.0
 
 # 2. Install noesis
-bun add @omp-noesis/extension
+omp install omp-noesis
 
 # 3. Initialize in your project
 /noesis:init
 
-# 4. Build the codebase graph
-graphify .
-
-# 5. Verify
-omp --check-extensions
-# Should show: noesis [loaded] capability: FULL
+# 4. Verify
+omp doctor
+ls .omp/noesis/state.json
+ls graphify-out/graph.json
 ```
 
 ## Architecture

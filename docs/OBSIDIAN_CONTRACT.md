@@ -17,7 +17,7 @@ Noesis must never:
 
 ### 2.1 Decisions
 
-**File**: `Noesis/noesis-decision-{id}.md`
+**File**: `.obsidian/noesis/decision/{id}.md`
 
 ```yaml
 ---
@@ -35,8 +35,7 @@ metadata:
 
 ### 2.2 Learning Entries
 
-**File**: `Noesis/noesis-learning-{id}.md`
-
+**File**: `.obsidian/noesis/learning/{id}.md`
 ```yaml
 ---
 kind: learning
@@ -52,28 +51,33 @@ metadata:
 
 ### 2.3 Belief and Pattern Artifacts
 
-**File**: `Noesis/noesis-belief-{id}.md` or `Noesis/noesis-pattern-{id}.md`
-
-Minimal frontmatter identical to decisions and learning.
+**File**: `.obsidian/noesis/belief/{id}.md` or `.obsidian/noesis/decision/{id}.md`
 
 ## 3. Vault Structure
 
 ```
 <vault-root>/
-└── Noesis/
-    ├── noesis-decision-{id}.md
-    ├── noesis-learning-{id}.md
-    ├── noesis-belief-{id}.md
-    └── noesis-pattern-{id}.md
+└── .obsidian/
+    └── noesis/
+        ├── decision/
+        │   └── {id}.md
+        ├── learning/
+        │   └── {id}.md
+        ├── belief/
+        │   └── {id}.md
+        └── <kind>/
+            └── {id}.md
 ```
 
 ## 4. Projection Triggers
 
 | Trigger | What gets projected |
 |---|---|
-| Turn end (eviction) | Evicted beliefs, decisions, hypotheses, learning |
-| Session compaction | Same as turn end + VaultRetry flush |
-| VaultRetry flush | Previously failed pushes |
+| Turn end (turn-end-hook) | Vault flush of the retry buffer (previously-failed pushes). |
+| New artifact push | Individual decision, learning, belief, or pattern pushed to vault. |
+| VaultRetry flush | Previously failed pushes (triggered by turn-end-hook calling vaultStore.flush()). |
+
+> **Compaction does NOT project to vault.** The compaction hook stores its cognitive survivor state in `preserveData.noesis` (see [ARCHITECTURE.md](ARCHITECTURE.md)), not in the Obsidian vault. Only direct tool calls (e.g. `noesis_believe`) and turn-end retry flushing write to vault paths.
 
 ## 5. Error Handling
 
@@ -86,7 +90,7 @@ Minimal frontmatter identical to decisions and learning.
 
 ## 6. What Noesis Never Does
 
-- Read from the Obsidian vault during runtime
+- Read from the Obsidian vault during runtime for cognition (pull/search methods exist for `noesis_vault_search` but are optional and separate from core cognition)
 - Require Obsidian for correctness
 - Create its own note editor or viewer
 - Index or search the vault (Obsidian has built-in search)

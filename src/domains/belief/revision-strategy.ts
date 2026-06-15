@@ -38,6 +38,7 @@ export function supersede(
     if (fact !== undefined && fact.status === "active") {
       fact.status = "superseded";
       fact.supersededBy = newId;
+      fact.updatedAt = new Date().toISOString();
       continue;
     }
 
@@ -46,6 +47,7 @@ export function supersede(
     if (decision !== undefined && decision.status === "active") {
       decision.status = "superseded";
       decision.supersededBy = newId;
+      decision.updatedAt = new Date().toISOString();
     }
   }
 }

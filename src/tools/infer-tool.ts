@@ -35,7 +35,7 @@ export function registerInferTool(pi: ExtensionAPI, runtime: NoesisRuntime): voi
       "reasoning step.",
     parameters: pi.zod.object({
       action: pi.zod.enum(["add_hypothesis", "update_hypothesis", "add_reasoning"]),
-      content: pi.zod.string().max(2000).optional(),
+      content: pi.zod.string().min(1).max(2000).optional(),
       id: pi.zod.string().optional(),
       status: pi.zod.enum(["testing", "confirmed", "refuted", "abandoned"]).optional(),
       evidence: pi.zod.string().max(500).optional(),
@@ -45,13 +45,14 @@ export function registerInferTool(pi: ExtensionAPI, runtime: NoesisRuntime): voi
       tags: pi.zod.array(pi.zod.string()).max(5).optional(),
     }).refine((data) => {
       if (data.action === "add_hypothesis") {
-        return typeof data.content === "string";
+        return typeof data.content === "string" && data.content.length > 0;
       }
       if (data.action === "update_hypothesis") {
-        return typeof data.id === "string" && typeof data.status === "string";
+        return typeof data.id === "string" && data.id.length > 0 &&
+          typeof data.status === "string" && data.status.length > 0;
       }
       if (data.action === "add_reasoning") {
-        return typeof data.content === "string";
+        return typeof data.content === "string" && data.content.length > 0;
       }
       return false;
     }, { message: "Missing required fields for the selected action" }),

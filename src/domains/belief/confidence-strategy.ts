@@ -18,12 +18,13 @@ import { isStaleHours } from "../../shared/time.js";
  * Map a GraphFinding's confidence label to a numeric value.
  *
  * Mapping:
- *   EXTRACTED → 0.9
- *   INFERRED  → 0.7
+ *   EXTRACTED → 1.0
+ *   INFERRED  → inferredConfidence if present, else 0.7
  *   AMBIGUOUS → 0.55
  *
- * If the finding carries an `inferredConfidence` numeric value,
- * the result is Math.max(staticMapping, inferredConfidence).
+ * For EXTRACTED and AMBIGUOUS, an optional `inferredConfidence` value
+ * may raise the result via Math.max. For INFERRED, `inferredConfidence`
+ * is used directly when present.
  *
  * @param finding - The graph finding to evaluate.
  * @returns Numeric confidence in [0.55, 0.95] (or higher if
@@ -34,11 +35,12 @@ export function mapGraphConfidence(finding: GraphFinding): number {
 
   switch (finding.confidence) {
     case "EXTRACTED": {
-      base = 0.9;
+      base = 1.0;
       break;
     }
     case "INFERRED": {
-      base = 0.7;
+      // Use inferredConfidence directly when present; fall back to 0.7
+      base = finding.inferredConfidence !== undefined ? finding.inferredConfidence : 0.7;
       break;
     }
     case "AMBIGUOUS": {
@@ -47,7 +49,8 @@ export function mapGraphConfidence(finding: GraphFinding): number {
     }
   }
 
-  if (finding.inferredConfidence !== undefined) {
+  // For non-INFERRED types, apply Math.max with inferredConfidence if present
+  if (finding.confidence !== "INFERRED" && finding.inferredConfidence !== undefined) {
     base = Math.max(base, finding.inferredConfidence);
   }
 
@@ -59,7 +62,7 @@ export function mapGraphConfidence(finding: GraphFinding): number {
  *
  * If `staleHours` is not provided, the confidence is returned unchanged.
  * Otherwise, if the fact's `updatedAt` is older than `staleHours` hours,
- * the confidence is multiplied by 0.85.
+ * the confidence is reduced by 0.10 (floored at 0.55).
  *
  * The result is always clamped to [0, 1].
  *
@@ -78,7 +81,7 @@ export function applyStalePenalty(
   let adjusted = fact.confidence;
 
   if (isStaleHours(fact.updatedAt, staleHours)) {
-    adjusted *= 0.85;
+    adjusted = Math.max(0.55, adjusted - 0.10);
   }
 
   return Math.max(0, Math.min(1, adjusted));

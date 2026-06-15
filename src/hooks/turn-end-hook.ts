@@ -15,12 +15,21 @@ import { fullCleanup } from "../rendering/state-cleanup.js";
 
 /**
  * Register the turn_end hook that triggers full state cleanup
- * (stale eviction + capacity caps) after every agent turn.
+ * (stale eviction + capacity caps) after every agent turn, then
+ * flushes any previously-failed vault pushes from the retry buffer.
+ *
+ * Vault flush is best-effort: if no vault is configured (NoopVaultStore),
+ * or the VaultStore does not implement flush(), the step is skipped.
  */
 export function registerTurnEndHook(pi: ExtensionAPI, runtime: NoesisRuntime): void {
   pi.on("turn_end", async (_event) => {
     await runtime.stateManager.mutate((state) => {
       fullCleanup(state);
     });
+
+    // Flush the vault retry buffer (OBSIDIAN_CONTRACT.md §4 — turn end projection)
+    if (runtime.vaultStore.flush) {
+      await runtime.vaultStore.flush();
+    }
   });
 }

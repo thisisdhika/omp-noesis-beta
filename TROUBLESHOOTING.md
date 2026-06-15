@@ -3,36 +3,31 @@
 ## Diagnostic Commands
 
 ```bash
-# Check noesis status
-omp noesis status
-
-# Check preamble (dry run)
-omp noesis preamble --dry-run
-
-# Check state file integrity
-omp noesis validate-state
-
 # Force compaction with noesis survivors
 /compact preserve noesis
 
-# Reset noesis state (DANGEROUS)
-omp noesis reset --confirm
+# Check state file integrity
+bun -e "JSON.parse(await Bun.file('.omp/noesis/state.json').text())"
+
+# Check state.json location
+ls -la .omp/noesis/state.json
 ```
+
+> The following commands do NOT exist and are not planned: `omp noesis status`, `omp noesis preamble --dry-run`, `omp noesis validate-state`, `omp noesis reset`. State inspection is done via `noesis_recall` tool during an active session.
 
 ## Symptom Matrix
 
 | Symptom | Likely Cause | Quick Fix | Deep Fix |
 |---|---|---|---|
-| "Graphify not available" in preamble | Graphify not in PATH | `pip install graphify` | Add to system PATH |
-| "Graph may be stale" | Source files newer than graph | `graphify update .` | Enable `autoUpdate: true` |
-| Preamble missing beliefs | Beliefs below 0.75 threshold | Lower `minConfidence` | Verify beliefs have correct confidence |
+| "Preamble missing beliefs" | Beliefs below 0.75 threshold | Lower `minConfidence` in `noesis_recall` call | Verify beliefs have correct confidence or archive low-confidence entries |
+| "Graph may be stale" | Source files newer than graph | `graphify . --update` | Enable `autoUpdate: true` |
 | Agent repeats mistakes | Learning not captured | Check `noesis_recall` for learning | Ensure `autoCaptureFailures: true` |
-| State file corrupted | Disk write interrupted | `omp noesis reset` | Restore from `preserveData.noesis` |
+| State file corrupted | Disk write interrupted | Restore from backup or remove state.json to recreate fresh state | Restore from `preserveData.noesis` if available |
 | Double preamble | Hook precedence bug | Restart session | Check `contextHookFired` flag |
 | Vault not writing | Path not writable | Check permissions | Switch to `backend: "noop"` |
 | Agent never uses noesis | Skills not loaded | Verify `skills/noesis/SKILL.md` exists | Check OMP skill discovery paths |
 | Preamble too large | Too many high-confidence beliefs | Archive old beliefs | Reduce `maxTokens` |
-| Graphify queries timeout | Large codebase or slow LLM | Increase timeout | Use `graphify update .` more frequently |
+| Graphify queries timeout | Large codebase or slow LLM | Increase timeout | Use `graphify . --update` more frequently |
 
 ## Log Locations
 
@@ -51,8 +46,8 @@ omp noesis reset --confirm
 # Check JSON validity
 bun -e "JSON.parse(await Bun.file('.omp/noesis/state.json').text())"
 
-# If invalid, restore from backup or reset
-omp noesis reset --confirm
+# If invalid, remove state.json to recreate fresh state (learning/workflow will be lost)
+rm .omp/noesis/state.json && /noesis:init
 ```
 
 ### Error: "Graphify query failed with exit code 1"
@@ -72,7 +67,7 @@ graphify --version
 
 ```bash
 # Check vault path
-ls .obsidian/noesis/  # or your configured path
+ls .obsidian/noesis/decision/ .obsidian/noesis/learning/  # or your configured path
 
 # Check permissions
 touch .obsidian/noesis/test && rm .obsidian/noesis/test
@@ -95,4 +90,4 @@ cat .omp/noesis/vault-retry.json
 1. Check [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for design details
 2. Check [docs/TESTING_STRATEGY.md](docs/TESTING_STRATEGY.md) for test examples
 3. Open an issue at https://github.com/omp-noesis/extension
-4. Include: `omp noesis status` output, relevant log excerpts, reproduction steps
+4. Include: relevant log excerpts, reproduction steps, output of `ls -la .omp/noesis/`

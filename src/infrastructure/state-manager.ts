@@ -9,7 +9,8 @@
  */
 
 import { join } from "node:path";
-import { type NoesisState, EMPTY_STATE } from "../schema.js";
+import { type NoesisState, NoesisStateSchema, EMPTY_STATE } from "../schema.js";
+
 import { writeAtomic, readJSON } from "./filesystem-store.js";
 import { migrate } from "./migrations.js";
 import { deepClone } from "../shared/clone.js";
@@ -18,10 +19,24 @@ import { ensureNoesisDir } from "../shared/paths.js";
 export class StateManager {
   #state!: NoesisState;
   #statePath: string;
+  #writeLock: Promise<void> = Promise.resolve();
 
   constructor(projectRoot: string) {
     ensureNoesisDir(projectRoot);
     this.#statePath = join(projectRoot, ".omp", "noesis", "state.json");
+  }
+
+  /** Serialize concurrent disk writes via promise-chain mutex. */
+  async #withLock<T>(fn: () => Promise<T>): Promise<T> {
+    const prev = this.#writeLock;
+    let release: () => void;
+    this.#writeLock = new Promise<void>(resolve => { release = resolve; });
+    await prev;
+    try {
+      return await fn();
+    } finally {
+      release!();
+    }
   }
 
   /**
@@ -30,17 +45,26 @@ export class StateManager {
    * and malformed JSON (readJSON throws → caught below).
    */
   async initialize(): Promise<void> {
+    let loaded: unknown;
     try {
-      const loaded = await readJSON(this.#statePath);
-      if (loaded === null) {
-        this.#state = deepClone(EMPTY_STATE);
-        await writeAtomic(this.#statePath, this.#state);
+      loaded = await readJSON(this.#statePath);
+    } catch (err: unknown) {
+      // JSON parse errors are recoverable — rebuild from EMPTY_STATE
+      if (err instanceof SyntaxError) {
+        console.warn("[StateManager] Corrupt state file, rebuilding from EMPTY_STATE", err.message);
+        loaded = null;
       } else {
-        this.#state = migrate(loaded);
+        // I/O errors (permissions, disk failure) — do not destroy existing data
+        console.error("[StateManager] CRITICAL: I/O error reading state — preserving on-disk data", err);
+        throw err;
       }
-    } catch {
+    }
+
+    if (loaded === null) {
       this.#state = deepClone(EMPTY_STATE);
       await writeAtomic(this.#statePath, this.#state);
+    } else {
+      this.#state = migrate(loaded);
     }
   }
 
@@ -57,7 +81,7 @@ export class StateManager {
   async mutate(fn: (state: NoesisState) => void): Promise<NoesisState> {
     fn(this.#state);
     this.#state.lastPersisted = new Date().toISOString();
-    await writeAtomic(this.#statePath, this.#state);
+    await this.#withLock(() => writeAtomic(this.#statePath, this.#state));
     return this.#state;
   }
 
@@ -68,12 +92,15 @@ export class StateManager {
    * writes back atomically.  No-op if the file does not yet exist.
    */
   async checkpointAttention(): Promise<void> {
-    const onDisk = await readJSON(this.#statePath);
-    if (onDisk !== null) {
-      const record = onDisk as Record<string, unknown>;
-      record.attention = this.#state.attention;
-      await writeAtomic(this.#statePath, onDisk);
-    }
+    await this.#withLock(async () => {
+      const onDisk = await readJSON(this.#statePath);
+      if (onDisk !== null) {
+        const migrated = migrate(onDisk);
+        migrated.attention = this.#state.attention;
+        NoesisStateSchema.parse(migrated);
+        await writeAtomic(this.#statePath, migrated);
+      }
+    });
   }
 
   /** Force reload from disk, re-running initialize logic. */

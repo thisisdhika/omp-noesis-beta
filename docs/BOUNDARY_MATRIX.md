@@ -111,7 +111,12 @@ Project optionally: decisions, workflow documents, learning records, state snaps
 | INFERRED 0.75 | **0.75** | Live, preamble-eligible (threshold) |
 | INFERRED 0.65 | **0.65** | Stored, surfaced only when task-relevant |
 | INFERRED 0.55 | **0.55** | Stored, surfaced only when task-relevant |
-| AMBIGUOUS | **never promoted** | Not converted to belief |
+| INFERRED (no value) | **0.70** | Default when inferredConfidence absent |
+| AMBIGUOUS | **0.55** | Stored as low-confidence belief (not auto-promoted from graph, but mapped to 0.55) |
+
+### Stale Penalty
+
+When a graph is stale (>24h since last update), INFERRED belief confidences are reduced by **-0.10** (floored at 0.55). EXTRACTED beliefs are never penalized.
 
 ## 9. Decision Matrix
 

@@ -12,6 +12,7 @@
  * and the state pointer are always preserved.
  */
 
+import { CAPS } from "../schema.js";
 import type { NoesisState } from "../schema.js";
 import { estimateTokens } from "../shared/tokens.js";
 import { escapeXml } from "../shared/text.js";
@@ -32,11 +33,11 @@ function buildAttention(state: NoesisState): string {
   ].join("\n");
 }
 
-/** Build the <beliefs> block — active facts with confidence >= 0.75, max 5. */
+/** Build the <beliefs> block — active facts with confidence >= 0.75, max CAPS.beliefs. */
 function buildBeliefs(state: NoesisState): string {
   const active = state.belief.facts
     .filter((f) => f.status === "active" && f.confidence >= 0.75)
-    .slice(0, 5);
+    .slice(0, CAPS.beliefs);
 
   if (active.length === 0) return "";
 

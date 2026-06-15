@@ -175,45 +175,44 @@ src/infrastructure/
 ### Day 20-21: Attention Tools
 ```
 src/tools/
-  attend-command.ts   — noesis_attend
-  focus-command.ts    — noesis_focus
+  attend-tool.ts   — noesis_attend
+  focus-tool.ts    — noesis_focus
 ```
 
 ### Day 22: Belief Tool
 ```
-src/tools/believe-command.ts
+src/tools/believe-tool.ts
 ```
-
 ### Day 23: Inference Tool
 ```
-src/tools/infer-command.ts
+src/tools/infer-tool.ts
 ```
 
 ### Day 24: Commitment Tool
 ```
-src/tools/commit-command.ts
+src/tools/commit-tool.ts
 ```
 
 ### Day 25: Read Tools
 ```
 src/tools/
-  recall-command.ts       — noesis_recall
-  vault-search-command.ts — noesis_vault_search
+  recall-tool.ts          — noesis_recall
+  vault-search-tool.ts    — noesis_vault_search
 ```
 
 ### Day 26-27: Preamble Hooks
 ```
 src/hooks/
-  context-hook.ts        — Sole live preamble injector
-  before-agent-start.ts  — Minimal safety-net
+  context-hook.ts                   — Sole live preamble injector
+  before-agent-start-hook.ts        — Minimal safety-net
 ```
 
 ### Day 28: Compaction & Turn Hooks
 ```
 src/hooks/
-  compaction-hook.ts   — Survivor + preserveData
-  tool-result-hook.ts  — Learning capture
-  turn-end.ts          — Eviction + vault flush
+  compaction-hook.ts     — Survivor + preserveData
+  tool-result-hook.ts    — Learning capture
+  turn-end-hook.ts       — Eviction + vault flush
 ```
 
 **Acceptance:** All integration tests pass. Double-preamble prevention verified.
@@ -260,12 +259,13 @@ skills/
   noesis/references/belief-patterns.md
   noesis/references/learning-patterns.md
   noesis/references/graphify-patterns.md
-  noesis/references/APPEND_SYSTEM.md
   noesis-belief/SKILL.md
   noesis-learning/SKILL.md
   noesis-workflow/SKILL.md
   noesis-graphify/SKILL.md
 ```
+
+> Note: APPEND_SYSTEM.md lives at project root, not under `skills/`. It is referenced directly by `context-hook.ts`.
 
 ### Day 40: System Prompt Integration
 ```
@@ -301,25 +301,15 @@ SETUP.md
 TROUBLESHOOTING.md
 ```
 
-### Day 44: End-to-End Test
-```
-tests/behavioral/end-to-end.test.ts
-```
-
-### Day 45: Performance Test
-```
-tests/behavioral/performance.test.ts
-```
-
-### Day 46: Security Audit
+### Day 44-45: Security Audit
 ```
 # Check for shell injection, path traversal
 ```
 
-### Day 47: Release
+### Day 46: Release
 ```
 bun test --coverage
 git tag v0.1.0
 ```
 
-**Acceptance:** All 290 tests pass.
+**Acceptance:** All ~507 tests pass.

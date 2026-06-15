@@ -12,6 +12,7 @@
 
 import type { ExtensionAPI } from "@oh-my-pi/pi-coding-agent";
 import type { NoesisRuntime } from "../runtime.js";
+import type { GraphFinding } from "../schema.js";
 import {
   setFocus,
   setGraphQueries,
@@ -29,7 +30,7 @@ export function registerAttendTool(pi: ExtensionAPI, runtime: NoesisRuntime): vo
       "When graphQueries are provided, each query is run against the project " +
       "knowledge graph and the resulting findings are stored.",
     parameters: pi.zod.object({
-      focus: pi.zod.string().max(200),
+      focus: pi.zod.string().min(1).max(200),
       files: pi.zod.array(pi.zod.string()).max(10).optional(),
       graphQueries: pi.zod.array(pi.zod.string()).max(5).optional(),
       priority: pi.zod.enum(["low", "normal", "high", "critical"]).default("normal"),
@@ -38,35 +39,30 @@ export function registerAttendTool(pi: ExtensionAPI, runtime: NoesisRuntime): vo
     async execute(toolCallId, params, signal, onUpdate, ctx) {
       const { focus, priority, files, graphQueries } = params;
 
-      // 1. Write focus + files + graph queries to state
+      // Run graph queries first (if any) and collect all findings
+      let findingsCount = 0;
+      const allFindings: GraphFinding[] = [];
+      if (graphQueries !== undefined && graphQueries.length > 0) {
+        for (const q of graphQueries) {
+          try {
+            const result = await graphifyQuery(runtime.projectRoot, q);
+            allFindings.push(...result);
+            findingsCount += result.length;
+          } catch {
+            // Graphify query failed — non-fatal, skip its findings
+          }
+        }
+      }
+
+      // Single atomic mutation: focus, files, graph queries, and all findings
       await runtime.stateManager.mutate((state) => {
         setFocus(state, focus, priority);
         setFiles(state, files ?? []);
         setGraphQueries(state, graphQueries ?? []);
-      });
-
-      // 2. Run graph queries if provided
-      let findingsCount = 0;
-      if (graphQueries !== undefined && graphQueries.length > 0) {
-        const allFindings: Array<{ query: string; findings: unknown[] }> = [];
-        for (const q of graphQueries) {
-          try {
-            const result = await graphifyQuery(runtime.projectRoot, q);
-            allFindings.push({ query: q, findings: result });
-            findingsCount += result.length;
-
-            // Store findings in state
-            if (result.length > 0) {
-              await runtime.stateManager.mutate((state) => {
-                storeGraphFindings(state, result);
-              });
-            }
-          } catch {
-            // Graphify query failed — non-fatal, continue
-            allFindings.push({ query: q, findings: [] });
-          }
+        if (allFindings.length > 0) {
+          storeGraphFindings(state, allFindings);
         }
-      }
+      });
 
       return {
         content: [

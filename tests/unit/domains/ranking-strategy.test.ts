@@ -3,8 +3,8 @@
 /**
  * Unit tests for the Ranking Strategy (ranking-strategy.ts).
  *
- * Covers rank(), computeRank(), and the getRecency edge cases at lines 56-57
- * (the 0.5 and 0.1 recency branches for entries aged 1-7 days and >7 days).
+ * Covers rank() and computeRank() with position-based recency,
+ * failure multiplier, resolved-fix multiplier, and task relevance.
  */
 
 import { describe, it, expect } from "bun:test";
@@ -41,51 +41,44 @@ function daysAgo(n: number): string {
 // ---------------------------------------------------------------------------
 
 describe("computeRank", () => {
-  it("returns 1.0 for a recent entry (≤ 24h) with default flags", () => {
+  it("returns 1.0 for a default entry with default recency", () => {
     const e = entry({ capturedAt: hoursAgo(1) });
     expect(computeRank(e)).toBe(1.0);
   });
 
-  it("returns 1.5 for a recent failure entry (failureMultiplier applied)", () => {
+  it("returns 2.0 for a failure entry (failureMultiplier applied)", () => {
     const e = entry({ capturedAt: hoursAgo(1) });
-    expect(computeRank(e, true)).toBe(1.5);
+    expect(computeRank(e, true)).toBe(2.0);
   });
 
-  it("returns 2.0 for a recent resolved entry", () => {
-    const e = entry({ capturedAt: hoursAgo(1), status: "resolved" });
+  it("returns 2.0 for an entry with rootCause and fix", () => {
+    const e = entry({ capturedAt: hoursAgo(1), rootCause: "overflow bug", fix: "add bounds check" });
     expect(computeRank(e)).toBe(2.0);
   });
 
-  it("returns 3.0 for a recent resolved failure entry (both multipliers)", () => {
-    const e = entry({ capturedAt: hoursAgo(1), status: "resolved" });
-    expect(computeRank(e, true)).toBe(3.0);
+  it("returns 4.0 for a failure entry with rootCause and fix (both multipliers)", () => {
+    const e = entry({ capturedAt: hoursAgo(1), rootCause: "overflow bug", fix: "add bounds check" });
+    expect(computeRank(e, true)).toBe(4.0);
   });
 
-  it("returns 0.5 for an entry aged between 1 and 7 days", () => {
-    // ~2 days old → hits line 56 (ageMs <= 7*msPerDay → 0.5)
-    const e = entry({ capturedAt: daysAgo(2) });
-    expect(computeRank(e)).toBe(0.5);
+  it("uses explicit recency when provided", () => {
+    const e = entry({ capturedAt: hoursAgo(1) });
+    expect(computeRank(e, false, 0.6)).toBe(0.6);
   });
 
-  it("returns 0.1 for an entry older than 7 days", () => {
-    // ~10 days old → hits line 57 (falls through to 0.1)
-    const e = entry({ capturedAt: daysAgo(10) });
-    expect(computeRank(e)).toBe(0.1);
+  it("uses taskRelevance 1.0 when taskDomain matches toolName", () => {
+    const e = entry({ capturedAt: hoursAgo(1), toolName: "graph" });
+    expect(computeRank(e, false, 1.0, "graph")).toBe(1.0);
   });
 
-  it("returns 0.1 for an entry with an unparseable capturedAt", () => {
-    const e = entry({ capturedAt: "not-a-timestamp" });
-    expect(computeRank(e)).toBe(0.1);
+  it("uses taskRelevance 0.5 when taskDomain differs from toolName", () => {
+    const e = entry({ capturedAt: hoursAgo(1), toolName: "search" });
+    expect(computeRank(e, false, 1.0, "graph")).toBe(0.5);
   });
 
-  it("returns 0.5 for a failure entry aged between 1 and 7 days", () => {
-    const e = entry({ capturedAt: daysAgo(3) });
-    expect(computeRank(e, true)).toBe(0.75);
-  });
-
-  it("returns 0.2 for a resolved entry older than 7 days", () => {
-    const e = entry({ capturedAt: daysAgo(14), status: "resolved" });
-    expect(computeRank(e)).toBe(0.2);
+  it("defaults taskRelevance to 1.0 when taskDomain is not provided", () => {
+    const e = entry({ capturedAt: hoursAgo(1), toolName: "graph" });
+    expect(computeRank(e)).toBe(1.0);
   });
 });
 
@@ -96,9 +89,9 @@ describe("computeRank", () => {
 describe("rank", () => {
   it("returns entries sorted by descending score", () => {
     const entries = [
-      entry({ capturedAt: daysAgo(10) }),  // score 0.1
-      entry({ capturedAt: hoursAgo(1) }),   // score 1.0
-      entry({ capturedAt: daysAgo(2) }),    // score 0.5
+      entry({ capturedAt: daysAgo(10) }),  // position 2, recency 0.6
+      entry({ capturedAt: hoursAgo(1) }),   // position 0, recency 1.0
+      entry({ capturedAt: daysAgo(2) }),    // position 1, recency 0.8
     ];
     const ranked = rank(entries);
     expect(ranked).toHaveLength(3);
@@ -107,11 +100,11 @@ describe("rank", () => {
     expect(ranked[2]!.capturedAt).toBe(entries[0]!.capturedAt);
   });
 
-  it("preserves relative order for entries with equal scores", () => {
-    const now = hoursAgo(1);
+  it("preserves relative order for entries with same capturedAt", () => {
+    const nowTm = hoursAgo(1);
     const entries = [
-      entry({ id: "a", capturedAt: now }),
-      entry({ id: "b", capturedAt: now }),
+      entry({ id: "a", capturedAt: nowTm }),
+      entry({ id: "b", capturedAt: nowTm }),
     ];
     const ranked = rank(entries);
     expect(ranked[0]!.id).toBe("a");
@@ -125,7 +118,7 @@ describe("rank", () => {
     ];
     const isFailure = (e: LearningEntry) => e.id === "fail";
     const ranked = rank(entries, isFailure);
-    // Failure entry gets 1.5 vs 1.0 → sorted first
+    // Failure entry gets 1.0×1.0×2.0×1.0 = 2.0 vs 1.0 → sorted first
     expect(ranked[0]!.id).toBe("fail");
     expect(ranked[1]!.id).toBe("ok");
   });
