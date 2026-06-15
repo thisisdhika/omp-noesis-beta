@@ -10,4 +10,4 @@
 - converted `GraphifyClient` graph operations to async execution and updated callers/tests
 - replaced the naive token estimator with a mixed-content heuristic and added budget coverage for CJK/ASCII cases
 - removed stale tracker gaps that are now closed
-- ran mutation testing and added targeted follow-up tests for belief revision, learning ranking/eviction, and graphify behavior
+- ran mutation testing and added targeted follow-up tests for belief revision, learning ranking/eviction, and graphify behavior; the generated report remains below the configured break threshold and is tracked as a known hardening gap

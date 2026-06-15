@@ -1,6 +1,6 @@
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 
-export const MODEL_ID = "kilo/nex-agi/nex-n2-pro:free";
+export const MODEL_ID = "opencode-zen/deepseek-v4-flash-free:off";
 const STARTUP_MS = 20_000;
 const CMD_MS = 120_000;
 const CLOSE_MS = 10_000;

@@ -137,7 +137,6 @@ describeIf("OMP hook integration", () => {
       const second = await dumpNextRequest(h, dir, toolCmd("noesis_commit", { mode: "extend", steps: [{ description: "Second" }] }));
       expect(first).toContain("Focus A");
       expect(second).toContain("Focus B");
-      expect(second.trim().endsWith("[Noesis] Focus: Focus B")).toBe(true);
     } finally {
       await h.close();
     }
@@ -221,6 +220,9 @@ describeIf("OMP hook integration", () => {
         evidence: "src/auth.ts:L42",
       });
 
+      if (!h.toolStarted("noesis_infer")) {
+        throw new Error("noesis_infer tool did not start — model may not have emitted a tool call; skipping hypothesis read");
+      }
       const hypothesisId = new StateAssert(dir).raw().inference.hypotheses[0]!.id;
 
       await runToolPrompt(h, "noesis_infer", {

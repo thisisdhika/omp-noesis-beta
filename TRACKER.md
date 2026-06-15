@@ -1,20 +1,20 @@
 # Noesis — Test Suite Refactor Complete (2026-06-14)
 
 ## Verification
-- ✅ `npx tsc --noEmit` — 0 errors
-- ✅ `bun test` — 73 pass / 0 fail (8 skipped: require OMP hook lifecycle)
-- ✅ Domain contracts: 39 pass / 0 fail
-- ✅ Property-based: 7 pass / 0 fail
-- ✅ Scenarios: 21 pass / 0 fail
-- ⏭️ `bun run smoke:rpc` — OMP 15.12.4 `get_state` doesn't expose extension tools; register scenario needs rework
+- ✅ `bun run typecheck` — 0 errors
+- ✅ `bun test` — 136 pass / 8 skip / 0 fail
+- ✅ `bun test --coverage` — 136 pass / 8 skip / 0 fail; overall 59.04% functions, 61.15% lines
+- ✅ `bun run smoke:rpc` — 21/21 passed against OMP 15.13.0 with `opencode-go/deepseek-v4-flash:off`
+- ⚠️ `bun run test:mutation` — report generated at `reports/mutation/mutation.html`; score 12.23 remains below configured break threshold 50
 
 ## New Test Structure
 ```
 test/
   _harness/           — MockExtensionAPI, factories, assertions, fixtures (4 files)
-  contracts/          — 12 files, 49 tests
-  properties/         — 2 files, 7 tests (100 random seeds each)
-  scenarios/          — 7 files, 21 tests
+  contracts/          — vault, Graphify async, AGM postulates, belief invariants, preamble budget, and schema/tool parsing contracts
+  properties/         — belief revision and eviction-ordering properties
+  scenarios/          — active coding, repeated failure, dependency degradation, contradictory evidence, and first-time user flows
+  integration/        — real OMP hook integration harness and lifecycle tests
 ```
 
 ## What was done
