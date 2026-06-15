@@ -1,0 +1,98 @@
+# Troubleshooting Runbook
+
+## Diagnostic Commands
+
+```bash
+# Check noesis status
+omp noesis status
+
+# Check preamble (dry run)
+omp noesis preamble --dry-run
+
+# Check state file integrity
+omp noesis validate-state
+
+# Force compaction with noesis survivors
+/compact preserve noesis
+
+# Reset noesis state (DANGEROUS)
+omp noesis reset --confirm
+```
+
+## Symptom Matrix
+
+| Symptom | Likely Cause | Quick Fix | Deep Fix |
+|---|---|---|---|
+| "Graphify not available" in preamble | Graphify not in PATH | `pip install graphify` | Add to system PATH |
+| "Graph may be stale" | Source files newer than graph | `graphify update .` | Enable `autoUpdate: true` |
+| Preamble missing beliefs | Beliefs below 0.75 threshold | Lower `minConfidence` | Verify beliefs have correct confidence |
+| Agent repeats mistakes | Learning not captured | Check `noesis_recall` for learning | Ensure `autoCaptureFailures: true` |
+| State file corrupted | Disk write interrupted | `omp noesis reset` | Restore from `preserveData.noesis` |
+| Double preamble | Hook precedence bug | Restart session | Check `contextHookFired` flag |
+| Vault not writing | Path not writable | Check permissions | Switch to `backend: "noop"` |
+| Agent never uses noesis | Skills not loaded | Verify `skills/noesis/SKILL.md` exists | Check OMP skill discovery paths |
+| Preamble too large | Too many high-confidence beliefs | Archive old beliefs | Reduce `maxTokens` |
+| Graphify queries timeout | Large codebase or slow LLM | Increase timeout | Use `graphify update .` more frequently |
+
+## Log Locations
+
+| Log | Location |
+|---|---|
+| OMP extension logs | `.omp/logs/extensions.log` |
+| Noesis state changes | `.omp/noesis/state.json` (diff in git) |
+| Vault retry buffer | `.omp/noesis/vault-retry.json` |
+| Graphify output | `graphify-out/GRAPH_REPORT.md` |
+
+## Common Errors
+
+### Error: "Noesis state file malformed"
+
+```bash
+# Check JSON validity
+bun -e "JSON.parse(await Bun.file('.omp/noesis/state.json').text())"
+
+# If invalid, restore from backup or reset
+omp noesis reset --confirm
+```
+
+### Error: "Graphify query failed with exit code 1"
+
+```bash
+# Check graph exists
+ls graphify-out/graph.json
+
+# Rebuild if missing
+graphify .
+
+# Check Graphify version
+graphify --version
+```
+
+### Error: "Vault push failed, enqueued to retry"
+
+```bash
+# Check vault path
+ls .obsidian/noesis/  # or your configured path
+
+# Check permissions
+touch .obsidian/noesis/test && rm .obsidian/noesis/test
+
+# Check retry buffer
+cat .omp/noesis/vault-retry.json
+```
+
+## Performance Issues
+
+| Issue | Metric | Threshold | Action |
+|---|---|---|---|
+| Preamble too large | Token count | > 2000 | Trim active beliefs |
+| State file too large | File size | > 100 KB | Archive old beliefs |
+| Graphify slow | Query time | > 30s | Use MCP path or increase timeout |
+| Vault flush slow | Flush time | > 5s | Disable auto-flush |
+
+## Getting Help
+
+1. Check [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for design details
+2. Check [docs/TESTING_STRATEGY.md](docs/TESTING_STRATEGY.md) for test examples
+3. Open an issue at https://github.com/omp-noesis/extension
+4. Include: `omp noesis status` output, relevant log excerpts, reproduction steps

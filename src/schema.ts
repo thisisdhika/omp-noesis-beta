@@ -1,545 +1,520 @@
+"use strict";
+
 /**
- * omp-noesis: Cognitive state schema.
+ * omp-noesis: Cognitive State Schema
+ * Version: 0.1.0
+ * Date: 2026-06-15
  *
- * All types + Zod schemas + EMPTY_STATE factory.
- * This file depends on nothing. Every other module depends on this.
+ * This file defines the exact shape of the noesis cognitive state.
+ * It is the schema that .omp/noesis/state.json, the cognitive preamble,
+ * the compaction survivor set, the seven cognitive tools, and the five OMP hooks all depend on.
  */
 
-import { z } from "zod/v4";
-import { nowISO } from "./shared/time.js";
+import { z } from "zod";
 
 // ============================================================================
-// Constants
+// VERSION & CONSTANTS
 // ============================================================================
 
-/** Current schema version. Bump on breaking changes. */
 export const CURRENT_VERSION = 1;
+export const MAX_PREAMBLE_TOKENS = 2000;
+export const MAX_PREAMBLE_CHARS = 8000; // ~4 chars/token
+
+export const CAPS = {
+  focus: 2, // sentences
+  workflow: 3, // goal + current + next
+  decisions: 5,
+  beliefs: 10,
+  hypotheses: 3,
+  learning: 3,
+  graphQueries: 5,
+  files: 10,
+  workflowSteps: 20,
+  actions: 50,
+  learningEntries: 100,
+  beliefTags: 5,
+  decisionTags: 5,
+  hypothesisTags: 5,
+  alternatives: 3,
+  contentLength: 1000,
+  descriptionLength: 500,
+  evidenceLength: 500,
+  rationaleLength: 1000,
+  rootCauseLength: 1000,
+  fixLength: 1000,
+  focusLength: 200,
+  verificationLength: 200,
+} as const;
 
 // ============================================================================
-// Enums / Literal unions
+// ENUMS
 // ============================================================================
 
-export type BeliefSource = "graph" | "execution" | "user" | "inference" | "vault";
-export const BeliefSourceSchema = z.enum(["graph", "execution", "user", "inference", "vault"]);
+export const BeliefStatusSchema = z.enum(["active", "superseded", "archived"]);
+export type BeliefStatus = z.infer<typeof BeliefStatusSchema>;
 
-export type FactStatus = "active" | "superseded" | "archived";
-export const FactStatusSchema = z.enum(["active", "superseded", "archived"]);
-
-export type DecisionStatus = "active" | "superseded" | "archived";
-export const DecisionStatusSchema = z.enum(["active", "superseded", "archived"]);
-
-export type HypothesisStatus = "testing" | "confirmed" | "refuted" | "abandoned";
 export const HypothesisStatusSchema = z.enum(["testing", "confirmed", "refuted", "abandoned"]);
+export type HypothesisStatus = z.infer<typeof HypothesisStatusSchema>;
 
-export type WorkflowStatus = "draft" | "active" | "done" | "abandoned";
 export const WorkflowStatusSchema = z.enum(["draft", "active", "done", "abandoned"]);
+export type WorkflowStatus = z.infer<typeof WorkflowStatusSchema>;
 
-export type StepStatus = "pending" | "active" | "done" | "skipped";
 export const StepStatusSchema = z.enum(["pending", "active", "done", "skipped"]);
+export type StepStatus = z.infer<typeof StepStatusSchema>;
 
-export type CapabilityLevel = "FULL" | "STALE" | "NO_GRAPH" | "DEGRADED";
+export const PrioritySchema = z.enum(["critical", "high", "normal", "low"]);
+export type Priority = z.infer<typeof PrioritySchema>;
+
+export const BeliefSourceSchema = z.enum(["graph", "execution", "user", "inference"]);
+export type BeliefSource = z.infer<typeof BeliefSourceSchema>;
+
+export const GraphConfidenceSchema = z.enum(["EXTRACTED", "INFERRED", "AMBIGUOUS"]);
+export type GraphConfidence = z.infer<typeof GraphConfidenceSchema>;
+
+export const LearningStatusSchema = z.enum(["captured", "diagnosed", "resolved"]);
+export type LearningStatus = z.infer<typeof LearningStatusSchema>;
+
+export const CapabilityLevelSchema = z.enum(["FULL", "STALE", "NO_GRAPH", "DEGRADED"]);
+export type CapabilityLevel = z.infer<typeof CapabilityLevelSchema>;
 
 // ============================================================================
-// Attention Layer
+// ATTENTION LAYER
 // ============================================================================
+
+export const GraphFindingSchema = z.object({
+  query: z.string(),
+  nodes: z.array(z.string()),
+  relations: z.array(z.string()),
+  confidence: GraphConfidenceSchema,
+  inferredConfidence: z.number().min(0.55).max(0.95).optional(),
+  community: z.string().optional(),
+  godNodes: z.array(z.string()).optional(),
+  surprisingConnections: z.array(z.string()).optional(),
+  rawOutput: z.string().optional(),
+  timestamp: z.string().datetime(),
+});
+export type GraphFinding = z.infer<typeof GraphFindingSchema>;
 
 export const AttentionLayerSchema = z.object({
-  focus: z.string().max(200).default(""),
-  graphQueries: z.array(z.string()).max(5).default([]),
-  files: z.array(z.string()).max(10).default([]),
+  focus: z.string().max(CAPS.focusLength).default(""),
+  priority: PrioritySchema.default("normal"),
+  graphQueries: z.array(z.string()).max(CAPS.graphQueries).default([]),
+  files: z.array(z.string()).max(CAPS.files).default([]),
+  graphFindings: z.array(GraphFindingSchema).default([]),
   contextUsage: z.number().default(0),
-  updatedAt: z.string().default(""),
-  graphFindings: z.array(z.lazy(() => GraphFindingSchema)).optional(),
-  __graphFindings: z.array(z.lazy(() => GraphFindingSchema)).optional(),
+  updatedAt: z.string().datetime(),
 });
-
 export type AttentionLayer = z.infer<typeof AttentionLayerSchema>;
 
 // ============================================================================
-// Belief Layer — Facts
+// BELIEF LAYER
 // ============================================================================
 
 export const BeliefFactSchema = z.object({
-  id: z.string(),
-  content: z.string(),
+  id: z.string().regex(/^bf-[a-z0-9-]+$/),
+  content: z.string().min(1).max(CAPS.contentLength),
   confidence: z.number().min(0).max(1),
   source: BeliefSourceSchema,
-  createdAt: z.string(),
-  updatedAt: z.string(),
-  status: FactStatusSchema,
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+  status: BeliefStatusSchema,
   supersededBy: z.string().optional(),
-  tags: z.array(z.string()).optional(),
+  tags: z.array(z.string().max(50)).max(CAPS.beliefTags).optional(),
   communityScope: z.string().optional(),
-  evidenceNodes: z.array(z.string()).optional(),
+  evidence: z.string().max(CAPS.evidenceLength).optional(),
 });
-
 export type BeliefFact = z.infer<typeof BeliefFactSchema>;
 
-// ============================================================================
-// Belief Layer — Decisions
-// ============================================================================
-
 export const BeliefDecisionSchema = z.object({
-  id: z.string(),
-  content: z.string(),
-  rationale: z.string(),
-  alternatives: z.array(z.string()).optional(),
+  id: z.string().regex(/^bd-[a-z0-9-]+$/),
+  content: z.string().min(1).max(CAPS.contentLength),
+  rationale: z.string().min(1).max(CAPS.rationaleLength),
+  alternatives: z.array(z.string()).max(CAPS.alternatives).optional(),
   source: BeliefSourceSchema,
-  createdAt: z.string(),
-  updatedAt: z.string(),
-  status: DecisionStatusSchema,
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+  status: BeliefStatusSchema,
   supersededBy: z.string().optional(),
-  tags: z.array(z.string()).optional(),
+  tags: z.array(z.string().max(50)).max(CAPS.decisionTags).optional(),
 });
-
 export type BeliefDecision = z.infer<typeof BeliefDecisionSchema>;
-
-// ============================================================================
-// Belief Layer
-// ============================================================================
 
 export const BeliefLayerSchema = z.object({
   facts: z.array(BeliefFactSchema).default([]),
   decisions: z.array(BeliefDecisionSchema).default([]),
 });
-
 export type BeliefLayer = z.infer<typeof BeliefLayerSchema>;
 
 // ============================================================================
-// Inference Layer — Hypothesis
+// INFERENCE LAYER
 // ============================================================================
 
 export const HypothesisSchema = z.object({
-  id: z.string(),
-  content: z.string(),
+  id: z.string().regex(/^hy-[a-z0-9-]+$/),
+  content: z.string().min(1).max(CAPS.contentLength),
   status: HypothesisStatusSchema,
-  evidence: z.string().optional(),
-  createdAt: z.string(),
-  updatedAt: z.string(),
+  evidence: z.string().max(CAPS.evidenceLength).optional(),
+  relatedBeliefId: z.string().optional(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+  tags: z.array(z.string().max(50)).max(CAPS.hypothesisTags).optional(),
 });
-
 export type Hypothesis = z.infer<typeof HypothesisSchema>;
 
-// ============================================================================
-// Inference Layer — Reasoning Step
-// ============================================================================
-
 export const ReasoningStepSchema = z.object({
-  id: z.string(),
-  content: z.string(),
+  id: z.string().regex(/^rs-[a-z0-9-]+$/),
+  content: z.string().min(1).max(CAPS.contentLength * 2),
   relatesTo: z.string().optional(),
-  createdAt: z.string(),
+  createdAt: z.string().datetime(),
 });
-
 export type ReasoningStep = z.infer<typeof ReasoningStepSchema>;
-
-// ============================================================================
-// Inference Layer
-// ============================================================================
 
 export const InferenceLayerSchema = z.object({
   hypotheses: z.array(HypothesisSchema).default([]),
   reasoning: z.array(ReasoningStepSchema).default([]),
 });
-
 export type InferenceLayer = z.infer<typeof InferenceLayerSchema>;
 
 // ============================================================================
-// Commitment Layer — Workflow Step
+// COMMITMENT LAYER
 // ============================================================================
 
 export const WorkflowStepSchema = z.object({
-  id: z.string(),
-  description: z.string(),
+  id: z.string().regex(/^ws-[a-z0-9-]+$/),
+  description: z.string().min(1).max(CAPS.descriptionLength),
   status: StepStatusSchema,
   dependsOn: z.array(z.string()).optional(),
-  verification: z.string().optional(),
-  createdAt: z.string(),
-  updatedAt: z.string(),
+  verification: z.string().max(CAPS.verificationLength).optional(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
 });
-
 export type WorkflowStep = z.infer<typeof WorkflowStepSchema>;
 
-// ============================================================================
-// Commitment Layer — Planned Action
-// ============================================================================
-
-export const PlannedActionSchema = z.object({
-  id: z.string(),
-  content: z.string(),
-  createdAt: z.string(),
-});
-
-export type PlannedAction = z.infer<typeof PlannedActionSchema>;
-
-// ============================================================================
-// Commitment Layer — Workflow
-// ============================================================================
-
 export const WorkflowSchema = z.object({
-  goal: z.string().default(""),
+  id: z.string().regex(/^wf-[a-z0-9-]+$/),
+  goal: z.string().min(1).max(CAPS.descriptionLength),
   status: WorkflowStatusSchema,
-  steps: z.array(WorkflowStepSchema).default([]),
-  createdAt: z.string(),
-  updatedAt: z.string(),
+  steps: z.array(WorkflowStepSchema).max(CAPS.workflowSteps).default([]),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
 });
-
 export type Workflow = z.infer<typeof WorkflowSchema>;
 
-// ============================================================================
-// Commitment Layer
-// ============================================================================
+export const PlannedActionSchema = z.object({
+  id: z.string().regex(/^pa-[a-z0-9-]+$/),
+  content: z.string().min(1).max(CAPS.descriptionLength),
+  priority: PrioritySchema.default("normal"),
+  createdAt: z.string().datetime(),
+});
+export type PlannedAction = z.infer<typeof PlannedActionSchema>;
 
 export const CommitmentLayerSchema = z.object({
-  workflow: WorkflowSchema,
-  actions: z.array(PlannedActionSchema).default([]),
+  workflow: WorkflowSchema.default(() => ({
+    id: generateId("wf"),
+    goal: "",
+    status: "draft",
+    steps: [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  })),
+  actions: z.array(PlannedActionSchema).max(CAPS.actions).default([]),
 });
-
 export type CommitmentLayer = z.infer<typeof CommitmentLayerSchema>;
 
 // ============================================================================
-// Learning Layer — Entry
+// LEARNING LAYER
 // ============================================================================
 
 export const LearningEntrySchema = z.object({
-  id: z.string(),
-  description: z.string().max(500),
-  rootCause: z.string().optional(),
-  fix: z.string().optional(),
+  id: z.string().regex(/^le-[a-z0-9-]+$/),
+  description: z.string().min(1).max(CAPS.descriptionLength),
+  rootCause: z.string().max(CAPS.rootCauseLength).optional(),
+  fix: z.string().max(CAPS.fixLength).optional(),
   skillScope: z.string().optional(),
   toolName: z.string().optional(),
-  capturedAt: z.string(),
-  severity: z.number().optional(),
+  status: LearningStatusSchema.default("captured"),
+  capturedAt: z.string().datetime(),
+  resolvedAt: z.string().datetime().optional(),
+  impact: z.number().min(0).max(1).optional(),
 });
-
 export type LearningEntry = z.infer<typeof LearningEntrySchema>;
 
-// ============================================================================
-// Learning Layer — Summary
-// ============================================================================
-
 export const LearningSummarySchema = z.object({
-  successCount: z.number(),
-  failureCount: z.number(),
-  resolvedCount: z.number(),
+  successCount: z.number().default(0),
+  failureCount: z.number().default(0),
+  resolvedCount: z.number().default(0),
+  diagnosedCount: z.number().default(0),
 });
-
 export type LearningSummary = z.infer<typeof LearningSummarySchema>;
-
-// ============================================================================
-// Learning Layer
-// ============================================================================
 
 export const LearningLayerSchema = z.object({
   successes: z.array(LearningEntrySchema).default([]),
   failures: z.array(LearningEntrySchema).default([]),
-  summary: LearningSummarySchema,
+  summary: LearningSummarySchema.default({ successCount: 0, failureCount: 0, resolvedCount: 0, diagnosedCount: 0 }),
 });
-
 export type LearningLayer = z.infer<typeof LearningLayerSchema>;
 
 // ============================================================================
-// Noesis State (top-level)
+// TOP-LEVEL STATE
 // ============================================================================
 
 export const NoesisStateSchema = z.object({
-  version: z.number(),
-  lastPersisted: z.string(),
+  version: z.literal(CURRENT_VERSION),
+  lastPersisted: z.string().datetime(),
   attention: AttentionLayerSchema,
   belief: BeliefLayerSchema,
   inference: InferenceLayerSchema,
   commitment: CommitmentLayerSchema,
   learning: LearningLayerSchema,
 });
-
 export type NoesisState = z.infer<typeof NoesisStateSchema>;
 
 // ============================================================================
-// Transient types (not serialized to disk)
+// EMPTY STATE FACTORY
 // ============================================================================
 
-export const ConfidenceLabelSchema = z.union([
-  z.literal("EXTRACTED"),
-  z.literal("AMBIGUOUS"),
-  z.string().regex(/^INFERRED(?:\s+\d+(?:\.\d+)?)?$/),
-]);
-
-export const GraphFindingSchema = z.object({
-  nodeName: z.string(),
-  relation: z.string().optional(),
-  confidence: z.number().nullable(),
-  confidenceLabel: ConfidenceLabelSchema,
-  community: z.string().optional(),
-  isGodNode: z.boolean(),
-  isSurprising: z.boolean(),
-  rawSnippet: z.string(),
-});
-
-export type GraphFinding = z.infer<typeof GraphFindingSchema>;
-
-export type AttentionWithTransientFindings = AttentionLayer & {
-  graphFindings?: GraphFinding[];
-  __graphFindings?: GraphFinding[];
-};
-
-export interface StaleReviewNote {
-  beliefId: string;
-  originalConfidence: number;
-  adjustedConfidence: number;
-  message: string;
+export function generateId(prefix: string): string {
+  return `${prefix}-${crypto.randomUUID()}`;
 }
 
+export const EMPTY_STATE: NoesisState = {
+  version: CURRENT_VERSION,
+  lastPersisted: new Date().toISOString(),
+  attention: {
+    focus: "",
+    priority: "normal",
+    graphQueries: [],
+    files: [],
+    graphFindings: [],
+    contextUsage: 0,
+    updatedAt: new Date().toISOString(),
+  },
+  belief: {
+    facts: [],
+    decisions: [],
+  },
+  inference: {
+    hypotheses: [],
+    reasoning: [],
+  },
+  commitment: {
+    workflow: {
+      id: generateId("wf"),
+      goal: "",
+      status: "draft",
+      steps: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+    actions: [],
+  },
+  learning: {
+    successes: [],
+    failures: [],
+    summary: { successCount: 0, failureCount: 0, resolvedCount: 0, diagnosedCount: 0 },
+  },
+};
+
 // ============================================================================
-// Tool Param Schemas
+// TOOL PARAMETER SCHEMAS
 // ============================================================================
 
 export const NoesisAttendParamsSchema = z.object({
-  focus: z.string().optional(),
-  graphQueries: z.array(z.string()).max(5).optional(),
-  files: z.array(z.string()).max(10).optional(),
-  clearGraphFindings: z.boolean().optional(),
+  focus: z.string().max(CAPS.focusLength),
+  files: z.array(z.string()).max(CAPS.files).optional(),
+  graphQueries: z.array(z.string()).max(CAPS.graphQueries).optional(),
+  priority: PrioritySchema.default("normal"),
 });
-
 export type NoesisAttendParams = z.infer<typeof NoesisAttendParamsSchema>;
 
-export const NoesisBelieveFactParamsSchema = z.object({
-  type: z.literal("fact"),
-  content: z.string(),
-  confidence: z.number().min(0).max(1),
-  source: BeliefSourceSchema,
-  tags: z.array(z.string()).optional(),
-  communityScope: z.string().optional(),
-  contradictsIds: z.array(z.string()).optional(),
-});
+export const NoesisBelieveParamsSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("fact"),
+    content: z.string().max(CAPS.contentLength),
+    confidence: z.number().min(0).max(1),
+    source: BeliefSourceSchema,
+    tags: z.array(z.string()).max(CAPS.beliefTags).optional(),
+    contradictsIds: z.array(z.string()).optional(),
+    evidence: z.string().max(CAPS.evidenceLength).optional(),
+  }),
+  z.object({
+    type: z.literal("decision"),
+    content: z.string().max(CAPS.contentLength),
+    rationale: z.string().max(CAPS.rationaleLength),
+    alternatives: z.array(z.string()).max(CAPS.alternatives).optional(),
+    source: BeliefSourceSchema,
+    tags: z.array(z.string()).max(CAPS.decisionTags).optional(),
+    contradictsIds: z.array(z.string()).optional(),
+  }),
+  z.object({
+    type: z.literal("learning"),
+    learningId: z.string(),
+    rootCause: z.string().max(CAPS.rootCauseLength),
+    fix: z.string().max(CAPS.fixLength),
+    confidence: z.number().min(0).max(1).default(0.85),
+    tags: z.array(z.string()).max(CAPS.beliefTags).optional(),
+  }),
+]);
+export type NoesisBelieveParams = z.infer<typeof NoesisBelieveParamsSchema>;
 
-export const NoesisBelieveDecisionParamsSchema = z.object({
-  type: z.literal("decision"),
-  content: z.string(),
-  rationale: z.string(),
-  alternatives: z.array(z.string()).optional(),
-  tags: z.array(z.string()).optional(),
-  contradictsIds: z.array(z.string()).optional(),
-});
+export const NoesisInferParamsSchema = z.discriminatedUnion("action", [
+  z.object({
+    action: z.literal("add_hypothesis"),
+    content: z.string().max(CAPS.contentLength),
+    evidence: z.string().max(CAPS.evidenceLength).optional(),
+    tags: z.array(z.string()).max(CAPS.hypothesisTags).optional(),
+  }),
+  z.object({
+    action: z.literal("update_hypothesis"),
+    id: z.string(),
+    status: HypothesisStatusSchema,
+    evidence: z.string().max(CAPS.evidenceLength).optional(),
+    reasoning: z.string().max(CAPS.rationaleLength).optional(),
+    autoPromote: z.boolean().default(true),
+  }),
+  z.object({
+    action: z.literal("add_reasoning"),
+    content: z.string().max(CAPS.contentLength * 2),
+    relatesTo: z.string().optional(),
+    tags: z.array(z.string()).max(CAPS.hypothesisTags).optional(),
+  }),
+]);
+export type NoesisInferParams = z.infer<typeof NoesisInferParamsSchema>;
 
-export const NoesisBelieveLearningParamsSchema = z.object({
-  type: z.literal("learning"),
-  learningId: z.string(),
-  rootCause: z.string().optional(),
-  fix: z.string().optional(),
-});
-
-export const NoesisBelieveParamsSchema = z.object({
-  type: z.enum(["fact", "decision", "learning"]),
-  content: z.string().optional(),
-  confidence: z.number().min(0).max(1).optional(),
-  source: BeliefSourceSchema.optional(),
-  tags: z.array(z.string()).optional(),
-  communityScope: z.string().optional(),
-  contradictsIds: z.array(z.string()).optional(),
-  rationale: z.string().optional(),
-  alternatives: z.array(z.string()).optional(),
-  learningId: z.string().optional(),
-  rootCause: z.string().optional(),
-  fix: z.string().optional(),
-}).superRefine((value, ctx) => {
-  if (value.type === "fact") {
-    if (value.content === undefined) ctx.addIssue({ code: "custom", path: ["content"], message: "content is required for fact" });
-    if (value.confidence === undefined) ctx.addIssue({ code: "custom", path: ["confidence"], message: "confidence is required for fact" });
-    if (value.source === undefined) ctx.addIssue({ code: "custom", path: ["source"], message: "source is required for fact" });
-    return;
-  }
-  if (value.type === "decision") {
-    if (value.content === undefined) ctx.addIssue({ code: "custom", path: ["content"], message: "content is required for decision" });
-    if (value.rationale === undefined) ctx.addIssue({ code: "custom", path: ["rationale"], message: "rationale is required for decision" });
-    return;
-  }
-  if (value.learningId === undefined) ctx.addIssue({ code: "custom", path: ["learningId"], message: "learningId is required for learning" });
-});
-
-export type NoesisBelieveParams =
-  | z.infer<typeof NoesisBelieveFactParamsSchema>
-  | z.infer<typeof NoesisBelieveDecisionParamsSchema>
-  | z.infer<typeof NoesisBelieveLearningParamsSchema>;
-export type NoesisBelieveFactParams = z.infer<typeof NoesisBelieveFactParamsSchema>;
-export type NoesisBelieveDecisionParams = z.infer<typeof NoesisBelieveDecisionParamsSchema>;
-export type NoesisBelieveLearningParams = z.infer<typeof NoesisBelieveLearningParamsSchema>;
-export type NoesisBelieveToolParams = z.output<typeof NoesisBelieveParamsSchema>;
-
-export const NoesisInferHypothesizeSchema = z.object({
-  action: z.literal("hypothesize"),
-  content: z.string(),
-  evidence: z.string().optional(),
-});
-
-export const NoesisInferReasonSchema = z.object({
-  action: z.literal("reason"),
-  content: z.string(),
-  relatesTo: z.string().optional(),
-});
-
-export const NoesisInferUpdateStatusSchema = z.object({
-  action: z.literal("update-status"),
-  hypothesisId: z.string(),
-  newStatus: HypothesisStatusSchema,
-  evidence: z.string().optional(),
-});
-
-export const NoesisInferConfirmSchema = z.object({
-  action: z.literal("confirm"),
-  hypothesisId: z.string(),
-});
-
-export const NoesisInferParamsSchema = z.object({
-  action: z.enum(["hypothesize", "reason", "update-status", "confirm"]),
-  content: z.string().optional(),
-  evidence: z.string().optional(),
-  relatesTo: z.string().optional(),
-  hypothesisId: z.string().optional(),
-  newStatus: HypothesisStatusSchema.optional(),
-}).superRefine((value, ctx) => {
-  if (value.action === "hypothesize" || value.action === "reason") {
-    if (value.content === undefined) ctx.addIssue({ code: "custom", path: ["content"], message: "content is required" });
-    return;
-  }
-  if (value.hypothesisId === undefined) ctx.addIssue({ code: "custom", path: ["hypothesisId"], message: "hypothesisId is required" });
-  if (value.action === "update-status" && value.newStatus === undefined) {
-    ctx.addIssue({ code: "custom", path: ["newStatus"], message: "newStatus is required for update-status" });
-  }
-});
-
-export type NoesisInferParams =
-  | z.infer<typeof NoesisInferHypothesizeSchema>
-  | z.infer<typeof NoesisInferReasonSchema>
-  | z.infer<typeof NoesisInferUpdateStatusSchema>
-  | z.infer<typeof NoesisInferConfirmSchema>;
-
-export type NoesisInferToolParams = z.output<typeof NoesisInferParamsSchema>;
-
-export const WorkflowStepInputSchema = z.object({
-  description: z.string(),
-  status: StepStatusSchema.optional(),
-  dependsOn: z.array(z.string()).optional(),
-  verification: z.string().optional(),
-});
-
-export const PlannedActionInputSchema = z.object({
-  content: z.string(),
-});
-
-// ============================================================================
-// Tool Result Event (for tool_result hook)
-// ============================================================================
-
-export interface ToolResultEvent {
-  type: "tool_result";
-  toolCallId: string;
-  toolName: string;
-  input: Record<string, unknown>;
-  content: Array<{ type: string; text?: string }>;
-  details?: Record<string, unknown>;
-  isError?: boolean;
-}
-
-export const NoesisCommitParamsSchema = z.object({
-  mode: z.enum(["extend", "replace"]),
-  goal: z.string().optional(),
-  status: WorkflowStatusSchema.optional(),
-  steps: z.array(WorkflowStepInputSchema).optional(),
-  actions: z.array(PlannedActionInputSchema).optional(),
-});
-
+export const NoesisCommitParamsSchema = z.discriminatedUnion("mode", [
+  z.object({
+    mode: z.literal("extend_workflow"),
+    goal: z.string().max(CAPS.descriptionLength).optional(),
+    steps: z.array(z.object({
+      description: z.string().max(CAPS.descriptionLength),
+      dependsOn: z.array(z.string()).optional(),
+      verification: z.string().max(CAPS.verificationLength).optional(),
+    })).max(CAPS.workflowSteps),
+    status: WorkflowStatusSchema.optional(),
+  }),
+  z.object({
+    mode: z.literal("replace_workflow"),
+    goal: z.string().max(CAPS.descriptionLength),
+    steps: z.array(z.object({
+      description: z.string().max(CAPS.descriptionLength),
+      dependsOn: z.array(z.string()).optional(),
+      verification: z.string().max(CAPS.verificationLength).optional(),
+    })).max(CAPS.workflowSteps),
+    status: WorkflowStatusSchema.default("active"),
+  }),
+  z.object({
+    mode: z.literal("update_step"),
+    stepId: z.string(),
+    status: StepStatusSchema,
+    note: z.string().max(CAPS.descriptionLength).optional(),
+  }),
+  z.object({
+    mode: z.literal("add_action"),
+    content: z.string().max(CAPS.descriptionLength),
+    priority: PrioritySchema.default("normal"),
+  }),
+]);
 export type NoesisCommitParams = z.infer<typeof NoesisCommitParamsSchema>;
-export type WorkflowStepInput = z.infer<typeof WorkflowStepInputSchema>;
-export type PlannedActionInput = z.infer<typeof PlannedActionInputSchema>;
 
-// ============================================================================
-// Vault Types
-// ============================================================================
+export const NoesisFocusParamsSchema = z.object({
+  focus: z.string().max(CAPS.focusLength),
+  files: z.array(z.string()).max(CAPS.files).optional(),
+  priority: PrioritySchema.default("normal"),
+});
+export type NoesisFocusParams = z.infer<typeof NoesisFocusParamsSchema>;
 
-export type VaultArtifactKind = "decision" | "belief" | "learning" | "pattern";
-
-export interface VaultArtifact {
-  kind: VaultArtifactKind;
-  projectPath: string;
-  id: string;
-  content: string;
-  metadata: Record<string, unknown>;
-  pushedAt: string;
-}
-
-export interface VaultPullOptions {
-  decisionCap?: number;
-  beliefCap?: number;
-  learningCap?: number;
-  patternCap?: number;
-}
-
-export interface VaultPullResult {
-  decisions: VaultArtifact[];
-  beliefs: VaultArtifact[];
-  learnings: VaultArtifact[];
-  patterns: VaultArtifact[];
-}
+export const NoesisRecallParamsSchema = z.discriminatedUnion("query", [
+  z.object({
+    query: z.literal("active_beliefs"),
+    tagFilter: z.array(z.string()).optional(),
+    minConfidence: z.number().min(0).max(1).default(0.75),
+  }),
+  z.object({
+    query: z.literal("active_decisions"),
+    tagFilter: z.array(z.string()).optional(),
+  }),
+  z.object({
+    query: z.literal("unresolved_hypotheses"),
+    tagFilter: z.array(z.string()).optional(),
+  }),
+  z.object({
+    query: z.literal("relevant_learning"),
+    skillScope: z.string().optional(),
+    limit: z.number().min(1).max(10).default(3),
+  }),
+  z.object({
+    query: z.literal("current_workflow"),
+    includeCompleted: z.boolean().default(false),
+  }),
+  z.object({
+    query: z.literal("full_state_digest"),
+    includeSuperseded: z.boolean().default(false),
+    includeArchived: z.boolean().default(false),
+  }),
+  z.object({
+    query: z.literal("search"),
+    keyword: z.string(),
+    limit: z.number().min(1).max(20).default(10),
+  }),
+]);
+export type NoesisRecallParams = z.infer<typeof NoesisRecallParamsSchema>;
 
 export const NoesisVaultSearchParamsSchema = z.object({
   query: z.string(),
-  kind: z.enum(["decision", "belief", "learning", "pattern", "all"]).optional(),
-  maxResults: z.number().int().positive().max(50).optional(),
+  kind: z.enum(["all", "decision", "learning", "belief", "pattern"]).default("all"),
+  maxResults: z.number().min(1).max(20).default(5),
+  projectPath: z.string().optional(),
 });
-
 export type NoesisVaultSearchParams = z.infer<typeof NoesisVaultSearchParamsSchema>;
 
 // ============================================================================
-// Focus Tool Params
+// VAULT ARTIFACT SCHEMAS
 // ============================================================================
 
-export const NoesisFocusParamsSchema = z.object({
-  goal: z.string().max(500),
-  context: z.string().max(1000).optional(),
-  priority: z.enum(["low", "normal", "high", "urgent"]).optional(),
-  scope: z.string().optional(),
+export const VaultArtifactSchema = z.object({
+  kind: z.enum(["decision", "learning", "belief", "pattern", "session"]),
+  projectPath: z.string(),
+  id: z.string(),
+  pushedAt: z.string().datetime(),
+  metadata: z.record(z.unknown()).optional(),
+  content: z.string(),
 });
+export type VaultArtifact = z.infer<typeof VaultArtifactSchema>;
 
-export type NoesisFocusParams = z.infer<typeof NoesisFocusParamsSchema>;
+export const VaultPullResultSchema = z.object({
+  artifacts: z.array(VaultArtifactSchema),
+  source: z.string(),
+  timestamp: z.string().datetime(),
+});
+export type VaultPullResult = z.infer<typeof VaultPullResultSchema>;
 
 // ============================================================================
-// EMPTY_STATE factory
+// RENDER CONTEXT
 // ============================================================================
 
-export function EMPTY_STATE(): NoesisState {
-  const now = nowISO();
-  return {
-    version: CURRENT_VERSION,
-    lastPersisted: now,
-    attention: {
-      focus: "",
-      graphQueries: [],
-      files: [],
-      contextUsage: 0,
-      updatedAt: now,
-    },
-    belief: {
-      facts: [],
-      decisions: [],
-    },
-    inference: {
-      hypotheses: [],
-      reasoning: [],
-    },
-    commitment: {
-      workflow: {
-        goal: "",
-        status: "draft",
-        steps: [],
-        createdAt: now,
-        updatedAt: now,
-      },
-      actions: [],
-    },
-    learning: {
-      successes: [],
-      failures: [],
-      summary: { successCount: 0, failureCount: 0, resolvedCount: 0 },
-    },
-  };
-}
+export const RenderContextSchema = z.object({
+  capabilityLevel: CapabilityLevelSchema,
+  graphifyVersion: z.string().optional(),
+  graphFreshness: z.object({
+    lastUpdate: z.string().datetime().optional(),
+    isStale: z.boolean(),
+    staleHours: z.number().optional(),
+  }).optional(),
+  staleReviewFlags: z.array(z.string()).optional(),
+  contextHookFired: z.boolean().default(false),
+});
+export type RenderContext = z.infer<typeof RenderContextSchema>;
+
+// ============================================================================
+// TOOL RESULT LEARNING CANDIDATE
+// ============================================================================
+
+export const LearningCandidateSchema = z.object({
+  toolName: z.string(),
+  exitCode: z.number().optional(),
+  isError: z.boolean(),
+  description: z.string().max(CAPS.descriptionLength),
+  significant: z.boolean(), // Determined by significance filter
+  capturedAt: z.string().datetime(),
+});
+export type LearningCandidate = z.infer<typeof LearningCandidateSchema>;
