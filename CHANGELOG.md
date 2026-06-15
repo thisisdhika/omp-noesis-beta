@@ -66,8 +66,8 @@ All notable changes to omp-noesis.
 - `clone` — deep clone with Date/RegExp/Map/Set support
 
 ### Testing
-- **304 tests, 0 failures** across 31 test files
-- Coverage: 74.3% lines, 75.7% functions
+- **402 tests, 0 failures** across 34 test files
+- Coverage: 91.7% lines, 90.1% functions
 - Unit tests for all 5 domain layers, shared utilities, vault stores, rendering pipeline, infrastructure
 - Integration tests for tools, hooks, state flow, Graphify integration, vault system
 - Behavioral tests for compaction survival, learning loop, belief revision, graceful degradation
@@ -85,3 +85,10 @@ All notable changes to omp-noesis.
 #### Belief Contested Marking
 - Implemented Step 5 of AGM supersession algorithm: `getContestedWarnings()` detects hypotheses dependent on superseded beliefs
 - Contested warnings surfaced as `[WARNINGS]` section in cognitive preamble (protected, never dropped during budget enforcement)
+
+#### Comprehensive Test Coverage
+- 36 tool handler integration tests covering all believe/infer/commit/recall variants and error paths
+- 11 hook lifecycle tests (before-agent-start, compaction, context, tool-result, turn-end)
+- 41 unit tests for strategies (confidence, consistency) and state cleanup (evictStale, evictOverCap)
+- 11 Graphify e2e tests (client build/query, parser edge cases, setup CLI checks)
+- All 5 hooks at 100% coverage, all domain strategies at 95%+, all vault stores at 100%
