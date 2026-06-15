@@ -11,7 +11,7 @@ import type { NoesisRuntime } from "../runtime.js";
 import { initCommand } from "./init-command.js";
 
 export function registerCommands(pi: ExtensionAPI, runtime: NoesisRuntime): void {
-  pi.registerCommand("omp noesis init", {
+  pi.registerCommand("/noesis:init", {
     description: "Initialize Noesis cognitive substrate for this project",
     handler: async (_args: string) => {
       await initCommand(pi, {});

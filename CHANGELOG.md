@@ -55,7 +55,7 @@ All notable changes to omp-noesis.
 - Vault detection and auto-configuration
 
 #### Commands
-- `noesis init` — initializes `.omp/noesis/` directory and config
+- `/noesis:init` — initializes `.omp/noesis/` directory and config
 
 #### Shared Utilities
 - `ids` — ULID generation

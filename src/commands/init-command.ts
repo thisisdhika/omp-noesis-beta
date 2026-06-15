@@ -4,7 +4,7 @@
  * omp-noesis: Init Command
  * Version: 0.1.0
  *
- * `omp noesis init` — bootstrap a new noesis cognitive state directory,
+ * `/noesis:init` — bootstrap a new noesis cognitive state directory,
  * write the initial EMPTY_STATE, and optionally set up the Graphify
  * integration for codebase-aware reasoning.
  */

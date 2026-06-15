@@ -26,7 +26,7 @@ bun add @omp-noesis/extension
 ### Step 3: Initialize Noesis
 
 ```bash
-omp noesis init
+/noesis:init
 ```
 
 This creates:

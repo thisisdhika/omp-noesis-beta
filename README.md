@@ -29,7 +29,7 @@ graphify --version   # >= 8.2.0
 bun add @omp-noesis/extension
 
 # 3. Initialize in your project
-omp noesis init
+/noesis:init
 
 # 4. Build the codebase graph
 graphify .
