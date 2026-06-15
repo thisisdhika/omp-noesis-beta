@@ -221,10 +221,10 @@ async function listSubdirectories(dir: string): Promise<string[]> {
  * frontmatter carrying the artifact's metadata.
  */
 export class ObsidianVaultStore implements VaultStore {
-  private readonly projectRoot: string;
+  readonly #projectRoot: string;
 
   constructor(projectRoot: string) {
-    this.projectRoot = projectRoot;
+    this.#projectRoot = projectRoot;
   }
 
   // -----------------------------------------------------------------------
@@ -238,7 +238,7 @@ export class ObsidianVaultStore implements VaultStore {
    * never leave a corrupt file.
    */
   async push(artifact: VaultArtifact): Promise<void> {
-    const dir = join(this.projectRoot, NOESIS_DIR, artifact.kind);
+    const dir = join(this.#projectRoot, NOESIS_DIR, artifact.kind);
     const filename = `${artifact.id}.md`;
     const frontmatter = formatFrontmatter(artifact);
     const content = frontmatter + "\n" + artifact.content;
@@ -257,7 +257,7 @@ export class ObsidianVaultStore implements VaultStore {
    * Returns at most `maxResults` artifacts (newest first by file mtime).
    */
   async pull(kind?: string, maxResults = 10): Promise<VaultPullResult> {
-    const baseDir = join(this.projectRoot, NOESIS_DIR);
+    const baseDir = join(this.#projectRoot, NOESIS_DIR);
     const artifacts: VaultArtifact[] = [];
 
     const kindDirs = kind ? [kind] : await listSubdirectories(baseDir);
@@ -320,7 +320,7 @@ export class ObsidianVaultStore implements VaultStore {
     kind?: string,
     maxResults = 10,
   ): Promise<VaultArtifact[]> {
-    const baseDir = join(this.projectRoot, NOESIS_DIR);
+    const baseDir = join(this.#projectRoot, NOESIS_DIR);
     const searchDir = kind ? join(baseDir, kind) : baseDir;
 
     // Verify the search path exists
@@ -371,7 +371,7 @@ export class ObsidianVaultStore implements VaultStore {
    */
   async validate(): Promise<boolean> {
     try {
-      const s = await stat(join(this.projectRoot, ".obsidian"));
+      const s = await stat(join(this.#projectRoot, ".obsidian"));
       return s.isDirectory();
     } catch {
       return false;

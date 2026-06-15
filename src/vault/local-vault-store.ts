@@ -30,10 +30,10 @@ const MEMORY_FILE = "MEMORY.md";
 
 export class LocalVaultStore implements VaultStore {
   /** Absolute path to MEMORY.md. */
-  private readonly filePath: string;
+  readonly #filePath: string;
 
   constructor(projectRoot: string) {
-    this.filePath = join(projectRoot, MEMORY_FILE);
+    this.#filePath = join(projectRoot, MEMORY_FILE);
   }
 
   // ==========================================================================
@@ -57,7 +57,7 @@ export class LocalVaultStore implements VaultStore {
       artifact.content,
       "",
     ].join("\n");
-    appendFileSync(this.filePath, section, "utf-8");
+    appendFileSync(this.#filePath, section, "utf-8");
   }
 
   /**
@@ -65,13 +65,13 @@ export class LocalVaultStore implements VaultStore {
    * and return the most recent entries first.
    */
   async pull(kind?: string, maxResults = 10): Promise<VaultPullResult> {
-    const artifacts = this.readArtifacts();
+    const artifacts = this.#readArtifacts();
     const filtered = kind
       ? artifacts.filter((a) => a.kind === kind)
       : artifacts;
     return {
       artifacts: filtered.slice(-maxResults).reverse(),
-      source: this.filePath,
+      source: this.#filePath,
       timestamp: new Date().toISOString(),
     };
   }
@@ -85,7 +85,7 @@ export class LocalVaultStore implements VaultStore {
     kind?: string,
     maxResults = 10,
   ): Promise<VaultArtifact[]> {
-    const artifacts = this.readArtifacts();
+    const artifacts = this.#readArtifacts();
     const lowerQuery = query.toLowerCase();
     const matches = artifacts.filter((a) => {
       if (kind !== undefined && a.kind !== kind) return false;
@@ -104,12 +104,12 @@ export class LocalVaultStore implements VaultStore {
    */
   async validate(): Promise<boolean> {
     try {
-      if (!existsSync(this.filePath)) {
-        appendFileSync(this.filePath, "", "utf-8");
+      if (!existsSync(this.#filePath)) {
+        appendFileSync(this.#filePath, "", "utf-8");
       }
       // Confirm both read and write work
-      readFileSync(this.filePath, "utf-8");
-      appendFileSync(this.filePath, "", "utf-8");
+      readFileSync(this.#filePath, "utf-8");
+      appendFileSync(this.#filePath, "", "utf-8");
       return true;
     } catch {
       return false;
@@ -131,10 +131,10 @@ export class LocalVaultStore implements VaultStore {
    *
    * Artifacts are returned in file order (oldest first).
    */
-  private readArtifacts(): VaultArtifact[] {
-    if (!existsSync(this.filePath)) return [];
+  #readArtifacts(): VaultArtifact[] {
+    if (!existsSync(this.#filePath)) return [];
 
-    const text = readFileSync(this.filePath, "utf-8");
+    const text = readFileSync(this.#filePath, "utf-8");
     const lines = text.split("\n");
     const artifacts: VaultArtifact[] = [];
 
@@ -175,7 +175,7 @@ export class LocalVaultStore implements VaultStore {
 
       artifacts.push({
         kind: kindResult.data,
-        projectPath: this.filePath,
+        projectPath: this.#filePath,
         id,
         pushedAt,
         content: contentLines.join("\n"),

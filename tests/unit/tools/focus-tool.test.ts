@@ -1,7 +1,7 @@
 "use strict";
 
 /**
- * Unit tests for focus-command.ts — noesis_focus tool.
+ * Unit tests for focus-tool.ts — noesis_focus tool.
  */
 
 import { describe, it, expect } from "bun:test";
@@ -9,7 +9,7 @@ import { unlinkSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { createMockPi } from "../../helpers/mock-pi.js";
 import { createRuntime, type NoesisRuntime } from "../../../src/runtime.js";
-import { registerFocusTool } from "../../../src/tools/focus-command.js";
+import { registerFocusTool } from "../../../src/tools/focus-tool.js";
 import { EMPTY_STATE } from "../../../src/schema.js";
 import { deepClone } from "../../../src/shared/clone.js";
 import type { ExtensionAPI } from "@oh-my-pi/pi-coding-agent";

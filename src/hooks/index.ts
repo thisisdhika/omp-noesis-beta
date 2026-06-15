@@ -12,10 +12,10 @@
 import type { ExtensionAPI } from "@oh-my-pi/pi-coding-agent";
 import type { NoesisRuntime } from "../runtime.js";
 import { registerContextHook } from "./context-hook.js";
-import { registerBeforeAgentStartHook } from "./before-agent-start.js";
+import { registerBeforeAgentStartHook } from "./before-agent-start-hook.js";
 import { registerCompactionHook } from "./compaction-hook.js";
 import { registerToolResultHook } from "./tool-result-hook.js";
-import { registerTurnEndHook } from "./turn-end.js";
+import { registerTurnEndHook } from "./turn-end-hook.js";
 
 /**
  * Register all Noesis hooks with the given OMP extension API.

@@ -77,24 +77,24 @@ function rowToArtifact(row: VaultArtifactRow): VaultArtifact {
 // ---------------------------------------------------------------------------
 
 export class MnemopiVaultStore implements VaultStore {
-  private db: Database;
+  #db: Database;
 
   constructor(projectRoot: string) {
     const dbPath = join(projectRoot, ".omp", "mnemopi.db");
-    this.db = new Database(dbPath, { create: true });
+    this.#db = new Database(dbPath, { create: true });
 
     // Enable WAL mode for better concurrent-read performance.
-    this.db.run("PRAGMA journal_mode = WAL");
+    this.#db.run("PRAGMA journal_mode = WAL");
 
-    this.ensureSchema();
+    this.#ensureSchema();
   }
 
   // -----------------------------------------------------------------------
   // Schema initialisation
   // -----------------------------------------------------------------------
 
-  private ensureSchema(): void {
-    this.db.run(`
+  #ensureSchema(): void {
+    this.#db.run(`
       CREATE TABLE IF NOT EXISTS vault_artifacts (
         id TEXT PRIMARY KEY,
         kind TEXT NOT NULL,
@@ -104,10 +104,10 @@ export class MnemopiVaultStore implements VaultStore {
         content TEXT NOT NULL
       )
     `);
-    this.db.run(
+    this.#db.run(
       "CREATE INDEX IF NOT EXISTS idx_kind ON vault_artifacts(kind)",
     );
-    this.db.run(
+    this.#db.run(
       "CREATE INDEX IF NOT EXISTS idx_pushed_at ON vault_artifacts(pushed_at)",
     );
   }
@@ -117,7 +117,7 @@ export class MnemopiVaultStore implements VaultStore {
   // -----------------------------------------------------------------------
 
   async push(artifact: VaultArtifact): Promise<void> {
-    const stmt = this.db.query(`
+    const stmt = this.#db.query(`
       INSERT OR REPLACE INTO vault_artifacts
         (id, kind, project_path, pushed_at, metadata, content)
       VALUES (?, ?, ?, ?, ?, ?)
@@ -147,7 +147,7 @@ export class MnemopiVaultStore implements VaultStore {
       params = [maxResults];
     }
 
-    const raw = this.db
+    const raw = this.#db
       .query(PULL_STMTS[stmtKey])
       .all(...params);
     const rows = VaultArtifactRowSchema.array().parse(raw);
@@ -174,7 +174,7 @@ export class MnemopiVaultStore implements VaultStore {
       stmtKey = "searchAll";
       params = [`%${query}%`, maxResults];
     }
-    const raw = this.db
+    const raw = this.#db
       .query(SEARCH_STMTS[stmtKey])
       .all(...params);
     const rows = VaultArtifactRowSchema.array().parse(raw);
@@ -184,7 +184,7 @@ export class MnemopiVaultStore implements VaultStore {
 
   async validate(): Promise<boolean> {
     try {
-      this.db.query("SELECT 1").get();
+      this.#db.query("SELECT 1").get();
       return true;
     } catch {
       return false;
