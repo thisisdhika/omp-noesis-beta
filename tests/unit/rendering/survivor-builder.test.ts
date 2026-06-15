@@ -14,6 +14,7 @@ import { buildSurvivorContext } from "../../../src/rendering/survivor-builder.js
 import { EMPTY_STATE } from "../../../src/schema.js";
 import { populatedState } from "../../helpers/fixtures.js";
 import type { NoesisState } from "../../../src/schema.js";
+import { estimateTokens } from "../../../src/shared/tokens.js";
 
 // =============================================================================
 // buildSurvivorContext — EMPTY_STATE
@@ -129,8 +130,8 @@ describe("buildSurvivorContext budget enforcement", () => {
     }
 
     const result = buildSurvivorContext(state);
-    const estimatedTokens = Math.ceil(result.length / 4);
-    expect(estimatedTokens).toBeLessThanOrEqual(500);
+    const tokenCount = estimateTokens(result);
+    expect(tokenCount).toBeLessThanOrEqual(500);
   });
 });
 

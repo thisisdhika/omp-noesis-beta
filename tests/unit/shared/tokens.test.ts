@@ -8,25 +8,32 @@ describe("estimateTokens", () => {
     expect(estimateTokens("")).toBe(0);
   });
 
-  it("should return 1 for a 1-4 character string", () => {
-    expect(estimateTokens("a")).toBe(1);
-    expect(estimateTokens("abcd")).toBe(1);
+  it("should return 1 for a single word", () => {
+    expect(estimateTokens("hello")).toBe(1);
   });
 
-  it("should return 2 for an 8-character string (ceil)", () => {
-    expect(estimateTokens("12345678")).toBe(2);
+  it("should count words, spaces, and punctuation separately", () => {
+    expect(estimateTokens("hello world")).toBe(3);
   });
 
-  it("should return 2 for a 5-character string (ceil)", () => {
-    expect(estimateTokens("12345")).toBe(2);
+  it("should handle English sentence with contractions", () => {
+    // "Hello, world! I'm here." → Hello , space world ! space I 'm space here .
+    expect(estimateTokens("Hello, world! I'm here.")).toBe(11);
   });
 
-  it("should scale proportionally with length", () => {
-    // 100 chars / 4 = 25
-    expect(estimateTokens("x".repeat(100))).toBe(25);
-    // 101 chars / 4 = 25.25 → ceil → 26
-    expect(estimateTokens("x".repeat(101))).toBe(26);
-    // 400 chars / 4 = 100
-    expect(estimateTokens("x".repeat(400))).toBe(100);
+  it("should handle code snippets", () => {
+    // "function foo() { return 42; }" → function space ( ) space { space return space 42 ; space }
+    expect(estimateTokens("function foo() { return 42; }")).toBe(14);
+  });
+
+  it("should handle mixed markdown-like content", () => {
+    // "# Hello\n\nThis is a `code` block."
+    expect(estimateTokens("# Hello\n\nThis is a `code` block.")).toBe(16);
+  });
+
+  it("should handle longer text with approximate accuracy", () => {
+    const sentence = "The quick brown fox jumps over the lazy dog near the bank of the river.";
+    // 15 words + 14 spaces + 1 period = 30 tokens
+    expect(estimateTokens(sentence)).toBe(30);
   });
 });

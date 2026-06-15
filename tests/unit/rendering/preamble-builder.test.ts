@@ -201,8 +201,45 @@ describe("buildPreamble budget enforcement", () => {
     const result = buildPreamble(state, fullRender);
     expect(result).toContain("[Noesis:");
     expect(result).toContain("State: .omp/noesis/state.json");
-    // The protected sections (indexes 1, 2, 10) are always kept
+    // The protected sections (indexes 1, 2, 3, 11) are always kept
     const estimatedTokens = Math.ceil(result.length / 4);
     expect(estimatedTokens).toBeLessThanOrEqual(MAX_PREAMBLE_TOKENS);
+  });
+});
+
+// =============================================================================
+// buildPreamble — Contested warnings
+// =============================================================================
+
+describe("buildPreamble with contested warnings", () => {
+  it("should include [WARNINGS] section when superseded belief has dependent hypothesis", () => {
+    const state: NoesisState = structuredClone(EMPTY_STATE);
+    state.belief.facts.push({
+      id: "bf-1",
+      content: "Superseded fact",
+      confidence: 0.9,
+      source: "execution",
+      createdAt: "2026-01-01T00:00:00.000Z",
+      updatedAt: "2026-01-01T00:00:00.000Z",
+      status: "superseded",
+    });
+    state.inference.hypotheses.push({
+      id: "hy-1",
+      content: "Testing hypothesis",
+      status: "testing",
+      relatedBeliefId: "bf-1",
+      createdAt: "2026-01-01T00:00:00.000Z",
+      updatedAt: "2026-01-01T00:00:00.000Z",
+    });
+    const result = buildPreamble(state, fullRender);
+    expect(result).toContain("[WARNINGS]");
+    expect(result).toContain("Belief 'Superseded fact' superseded");
+    expect(result).toContain("hypothesis 'Testing hypothesis'");
+  });
+
+  it("should omit [WARNINGS] section when no contested beliefs exist", () => {
+    const state: NoesisState = structuredClone(EMPTY_STATE);
+    const result = buildPreamble(state, fullRender);
+    expect(result).not.toContain("[WARNINGS]");
   });
 });

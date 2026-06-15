@@ -16,6 +16,7 @@ import type {
   BeliefFact,
   BeliefDecision,
   BeliefSource,
+  Hypothesis,
 } from "../../schema.js";
 import { CAPS, generateId } from "../../schema.js";
 import { now } from "../../shared/time.js";
@@ -198,4 +199,56 @@ export function resolveLearning(
     source: "inference",
     tags: ["learning-resolved"],
   });
+}
+
+/**
+ * Detect hypotheses (and decisions) that depend on superseded beliefs.
+ *
+ * When a belief fact is superseded, any hypothesis with `relatedBeliefId`
+ * pointing to it is now contested — its evidence may be invalid. This function
+ * scans every superseded fact and returns human-readable warnings for each
+ * dependent hypothesis found.
+ *
+ * NOTE: BeliefDecision has no `relatedBeliefId` field, so decisions cannot
+ * currently cite other beliefs as evidence. Decision-to-decision propagation
+ * is a known limitation.
+ *
+ * @param state - The Noesis state.
+ * @returns Array of warning strings like "Belief 'X' superseded (bf-abc); hypothesis 'Y' (hy-def) may need review"
+ */
+export function getContestedWarnings(state: NoesisState): string[] {
+  const supersededIds = new Set(
+    state.belief.facts
+      .filter((f) => f.status === "superseded")
+      .map((f) => f.id),
+  );
+
+  const warnings: string[] = [];
+
+  for (const supersededId of supersededIds) {
+    const dependents = state.inference.hypotheses.filter(
+      (h) => h.relatedBeliefId === supersededId,
+    );
+
+    for (const hyp of dependents) {
+      const fact = state.belief.facts.find((f) => f.id === supersededId);
+      /* istanbul ignore next — fact always found since we mapped it above */
+      if (fact === undefined) continue;
+
+      const factContent =
+        fact.content.length > 40
+          ? fact.content.slice(0, 40) + "..."
+          : fact.content;
+      const hypContent =
+        hyp.content.length > 40
+          ? hyp.content.slice(0, 40) + "..."
+          : hyp.content;
+
+      warnings.push(
+        `Belief '${factContent}' superseded (${supersededId}); hypothesis '${hypContent}' (${hyp.id}) may need review`,
+      );
+    }
+  }
+
+  return warnings;
 }

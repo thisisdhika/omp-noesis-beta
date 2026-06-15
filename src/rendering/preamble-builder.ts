@@ -19,6 +19,7 @@ import type {
 import { MAX_PREAMBLE_TOKENS, CAPS } from "../schema.js";
 import { estimateTokens } from "../shared/tokens.js";
 import { truncate, stripMarkdown } from "../shared/text.js";
+import { getContestedWarnings } from "../domains/belief/belief-domain.js";
 
 // ============================================================================
 // SECTION BUILDERS (each returns the section text or empty string)
@@ -41,6 +42,12 @@ function buildCapabilityBlock(render: RenderContext): string {
     default:
       return "[Noesis: UNKNOWN — operating without graph]";
   }
+}
+
+function buildContestedWarnings(state: NoesisState): string {
+  const warnings = getContestedWarnings(state);
+  if (warnings.length === 0) return "";
+  return "[WARNINGS]\n" + warnings.map((w) => `- ${w}`).join("\n");
 }
 
 function buildFocus(state: NoesisState): string {
@@ -163,15 +170,16 @@ interface Section {
 function buildSections(state: NoesisState, render: RenderContext): Section[] {
   return [
     { index: 1, content: buildCapabilityBlock(render), protected: true },
-    { index: 2, content: buildFocus(state), protected: true },
-    { index: 3, content: buildWorkflow(state), protected: false },
-    { index: 4, content: buildActiveDecisions(state), protected: false },
-    { index: 5, content: buildActiveBeliefs(state), protected: false },
-    { index: 6, content: buildUnresolvedHypotheses(state), protected: false },
-    { index: 7, content: buildTopRankedLearning(state), protected: false },
-    { index: 8, content: buildGraphEvidence(state), protected: false },
-    { index: 9, content: buildLowConfidenceSignal(state), protected: false },
-    { index: 10, content: "State: .omp/noesis/state.json", protected: true },
+    { index: 2, content: buildContestedWarnings(state), protected: true },
+    { index: 3, content: buildFocus(state), protected: true },
+    { index: 4, content: buildWorkflow(state), protected: false },
+    { index: 5, content: buildActiveDecisions(state), protected: false },
+    { index: 6, content: buildActiveBeliefs(state), protected: false },
+    { index: 7, content: buildUnresolvedHypotheses(state), protected: false },
+    { index: 8, content: buildTopRankedLearning(state), protected: false },
+    { index: 9, content: buildGraphEvidence(state), protected: false },
+    { index: 10, content: buildLowConfidenceSignal(state), protected: false },
+    { index: 11, content: "State: .omp/noesis/state.json", protected: true },
   ];
 }
 

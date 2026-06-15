@@ -15,6 +15,7 @@ import {
   getActiveFacts,
   getActiveDecisions,
   resolveLearning,
+  getContestedWarnings,
 } from "../../../src/domains/belief/belief-domain.js";
 import type { NoesisState, BeliefFact, BeliefDecision, BeliefSource } from "../../../src/schema.js";
 import { EMPTY_STATE, CAPS } from "../../../src/schema.js";
@@ -283,5 +284,195 @@ describe("resolveLearning", () => {
     expect(() => resolveLearning(state, "nonexistent", "rc", "fix")).toThrow(
       "Learning entry not found: nonexistent",
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// getContestedWarnings
+// ---------------------------------------------------------------------------
+
+describe("getContestedWarnings", () => {
+  it("returns empty array when no superseded facts exist", () => {
+    const state = freshState();
+    state.belief.facts.push({
+      id: "bf-1",
+      content: "Active fact",
+      confidence: 0.9,
+      source: "execution",
+      createdAt: "2026-01-01T00:00:00.000Z",
+      updatedAt: "2026-01-01T00:00:00.000Z",
+      status: "active",
+    });
+    state.inference.hypotheses.push({
+      id: "hy-1",
+      content: "Hypothesis depending on active fact",
+      status: "testing",
+      relatedBeliefId: "bf-1",
+      createdAt: "2026-01-01T00:00:00.000Z",
+      updatedAt: "2026-01-01T00:00:00.000Z",
+    });
+    expect(getContestedWarnings(state)).toEqual([]);
+  });
+
+  it("returns empty array when superseded fact has no dependents", () => {
+    const state = freshState();
+    state.belief.facts.push({
+      id: "bf-1",
+      content: "Superseded fact",
+      confidence: 0.9,
+      source: "execution",
+      createdAt: "2026-01-01T00:00:00.000Z",
+      updatedAt: "2026-01-01T00:00:00.000Z",
+      status: "superseded",
+    });
+    expect(getContestedWarnings(state)).toEqual([]);
+  });
+
+  it("returns warning when superseded fact has one dependent hypothesis", () => {
+    const state = freshState();
+    state.belief.facts.push({
+      id: "bf-1",
+      content: "Test fact for supersession",
+      confidence: 0.9,
+      source: "execution",
+      createdAt: "2026-01-01T00:00:00.000Z",
+      updatedAt: "2026-01-01T00:00:00.000Z",
+      status: "superseded",
+    });
+    state.inference.hypotheses.push({
+      id: "hy-1",
+      content: "Hypothesis depending on fact",
+      status: "testing",
+      relatedBeliefId: "bf-1",
+      createdAt: "2026-01-01T00:00:00.000Z",
+      updatedAt: "2026-01-01T00:00:00.000Z",
+    });
+    const result = getContestedWarnings(state);
+    expect(result).toHaveLength(1);
+    expect(result[0]).toContain("Belief 'Test fact for supersession' superseded");
+    expect(result[0]).toContain("hypothesis 'Hypothesis depending on fact'");
+    expect(result[0]).toContain("bf-1");
+    expect(result[0]).toContain("hy-1");
+  });
+
+  it("returns multiple warnings when superseded fact has multiple dependent hypotheses", () => {
+    const state = freshState();
+    state.belief.facts.push({
+      id: "bf-1",
+      content: "Shared fact",
+      confidence: 0.9,
+      source: "execution",
+      createdAt: "2026-01-01T00:00:00.000Z",
+      updatedAt: "2026-01-01T00:00:00.000Z",
+      status: "superseded",
+    });
+    state.inference.hypotheses.push(
+      {
+        id: "hy-1",
+        content: "First hypothesis",
+        status: "testing",
+        relatedBeliefId: "bf-1",
+        createdAt: "2026-01-01T00:00:00.000Z",
+        updatedAt: "2026-01-01T00:00:00.000Z",
+      },
+      {
+        id: "hy-2",
+        content: "Second hypothesis",
+        status: "testing",
+        relatedBeliefId: "bf-1",
+        createdAt: "2026-01-01T00:00:00.000Z",
+        updatedAt: "2026-01-01T00:00:00.000Z",
+      },
+    );
+    const result = getContestedWarnings(state);
+    expect(result).toHaveLength(2);
+    expect(result[0]).toContain("hy-1");
+    expect(result[1]).toContain("hy-2");
+  });
+
+  it("collects warnings from multiple superseded facts", () => {
+    const state = freshState();
+    state.belief.facts.push(
+      {
+        id: "bf-1",
+        content: "First superseded fact",
+        confidence: 0.9,
+        source: "execution",
+        createdAt: "2026-01-01T00:00:00.000Z",
+        updatedAt: "2026-01-01T00:00:00.000Z",
+        status: "superseded",
+      },
+      {
+        id: "bf-2",
+        content: "Second superseded fact",
+        confidence: 0.8,
+        source: "user",
+        createdAt: "2026-01-01T00:00:00.000Z",
+        updatedAt: "2026-01-01T00:00:00.000Z",
+        status: "superseded",
+      },
+    );
+    state.inference.hypotheses.push(
+      {
+        id: "hy-1",
+        content: "Depends on first",
+        status: "testing",
+        relatedBeliefId: "bf-1",
+        createdAt: "2026-01-01T00:00:00.000Z",
+        updatedAt: "2026-01-01T00:00:00.000Z",
+      },
+      {
+        id: "hy-2",
+        content: "Depends on second",
+        status: "testing",
+        relatedBeliefId: "bf-2",
+        createdAt: "2026-01-01T00:00:00.000Z",
+        updatedAt: "2026-01-01T00:00:00.000Z",
+      },
+    );
+    const result = getContestedWarnings(state);
+    expect(result).toHaveLength(2);
+    expect(result.some((w) => w.includes("bf-1") && w.includes("hy-1"))).toBe(true);
+    expect(result.some((w) => w.includes("bf-2") && w.includes("hy-2"))).toBe(true);
+  });
+
+  it("truncates long content to 40 characters with ellipsis", () => {
+    const state = freshState();
+    const longFactContent = "A very long belief fact content that exceeds forty character limit";
+    state.belief.facts.push({
+      id: "bf-1",
+      content: longFactContent,
+      confidence: 0.9,
+      source: "execution",
+      createdAt: "2026-01-01T00:00:00.000Z",
+      updatedAt: "2026-01-01T00:00:00.000Z",
+      status: "superseded",
+    });
+    state.inference.hypotheses.push({
+      id: "hy-1",
+      content: "Short hypothesis",
+      status: "testing",
+      relatedBeliefId: "bf-1",
+      createdAt: "2026-01-01T00:00:00.000Z",
+      updatedAt: "2026-01-01T00:00:00.000Z",
+    });
+    const result = getContestedWarnings(state);
+    expect(result).toHaveLength(1);
+    expect(result[0]).toContain("Belief 'A very long belief fact content that exc...'");
+    expect(result[0]).toContain("hypothesis 'Short hypothesis'");
+  });
+
+  it("ignores superseded decisions (known limitation)", () => {
+    const state = freshState();
+    state.belief.decisions.push({
+      id: "bd-1",
+      content: "Superseded decision",
+      rationale: "Some rationale",
+      source: "user",
+      createdAt: "2026-01-01T00:00:00.000Z",
+      updatedAt: "2026-01-01T00:00:00.000Z",
+      status: "superseded",
+    });
+    expect(getContestedWarnings(state)).toEqual([]);
   });
 });
