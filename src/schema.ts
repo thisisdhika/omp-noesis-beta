@@ -212,7 +212,7 @@ export const CommitmentLayerSchema = z.object({
   workflow: WorkflowSchema.default(() => ({
     id: generateId("wf"),
     goal: "",
-    status: "draft",
+    status: "draft" as const,
     steps: [],
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -476,7 +476,7 @@ export const VaultArtifactSchema = z.object({
   projectPath: z.string(),
   id: z.string(),
   pushedAt: z.string().datetime(),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
   content: z.string(),
 });
 export type VaultArtifact = z.infer<typeof VaultArtifactSchema>;

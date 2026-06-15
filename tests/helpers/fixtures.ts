@@ -1,0 +1,131 @@
+"use strict";
+
+/**
+ * Test fixtures — reusable test data for omp-noesis unit tests.
+ */
+
+import type { NoesisState, BeliefFact, BeliefDecision, Hypothesis, Workflow, LearningEntry } from "../../src/schema.js";
+import { EMPTY_STATE, generateId } from "../../src/schema.js";
+import { now } from "../../src/shared/time.js";
+
+/** A minimal NoesisState with some data pre-populated for testing. */
+export function populatedState(): NoesisState {
+  const state = structuredClone(EMPTY_STATE);
+
+  // Add a belief fact
+  state.belief.facts.push({
+    id: generateId("bf"),
+    content: "TypeScript strict mode prevents common runtime errors",
+    confidence: 0.9,
+    source: "execution",
+    createdAt: now(),
+    updatedAt: now(),
+    status: "active",
+    tags: ["typescript", "safety"],
+  });
+
+  // Add a belief decision
+  state.belief.decisions.push({
+    id: generateId("bd"),
+    content: "Use Zod for runtime validation",
+    rationale: "Provides type-safe runtime checks beyond TypeScript compile-time checks",
+    source: "user",
+    createdAt: now(),
+    updatedAt: now(),
+    status: "active",
+    tags: ["validation", "architecture"],
+  });
+
+  // Add a hypothesis
+  state.inference.hypotheses.push({
+    id: generateId("hy"),
+    content: "Atomic writes prevent state corruption during concurrent access",
+    status: "testing",
+    createdAt: now(),
+    updatedAt: now(),
+    tags: ["persistence"],
+  });
+
+  // Set up workflow
+  state.commitment.workflow.goal = "Implement cognitive substrate";
+  state.commitment.workflow.status = "active";
+  state.commitment.workflow.steps = [
+    {
+      id: generateId("ws"),
+      description: "Write shared utilities",
+      status: "done",
+      createdAt: now(),
+      updatedAt: now(),
+    },
+    {
+      id: generateId("ws"),
+      description: "Write domain logic",
+      status: "active",
+      dependsOn: [state.commitment.workflow.steps.length > 0 ? state.commitment.workflow.steps[0]!.id : ""],
+      createdAt: now(),
+      updatedAt: now(),
+    },
+  ];
+
+  // Add learning entry
+  state.learning.failures.push({
+    id: generateId("le"),
+    description: "State corruption after unhandled exception during write",
+    status: "captured",
+    capturedAt: now(),
+    toolName: "writeAtomic",
+  });
+
+  return state;
+}
+
+/** A simple belief fact for testing. */
+export function sampleFact(overrides?: Partial<BeliefFact>): BeliefFact {
+  return {
+    id: generateId("bf"),
+    content: "Test fact",
+    confidence: 0.8,
+    source: "execution",
+    createdAt: now(),
+    updatedAt: now(),
+    status: "active",
+    ...overrides,
+  };
+}
+
+/** A simple belief decision for testing. */
+export function sampleDecision(overrides?: Partial<BeliefDecision>): BeliefDecision {
+  return {
+    id: generateId("bd"),
+    content: "Test decision",
+    rationale: "Because it works",
+    source: "user",
+    createdAt: now(),
+    updatedAt: now(),
+    status: "active",
+    ...overrides,
+  };
+}
+
+/** A simple hypothesis for testing. */
+export function sampleHypothesis(overrides?: Partial<Hypothesis>): Hypothesis {
+  return {
+    id: generateId("hy"),
+    content: "Test hypothesis",
+    status: "testing",
+    createdAt: now(),
+    updatedAt: now(),
+    ...overrides,
+  };
+}
+
+/** A simple learning entry for testing. */
+export function sampleLearning(overrides?: Partial<LearningEntry>): LearningEntry {
+  return {
+    id: generateId("le"),
+    description: "Test learning entry",
+    status: "captured",
+    capturedAt: now(),
+    ...overrides,
+  };
+}

@@ -1,0 +1,53 @@
+"use strict";
+
+/**
+ * omp-noesis: Tool Result Hook
+ * Version: 0.1.0
+ *
+ * Captures tool execution outcomes as learning entries in the cognitive
+ * state. Records both failures and successes for later ranking.
+ */
+
+import type { ExtensionAPI } from "@oh-my-pi/pi-coding-agent";
+import type { NoesisRuntime } from "../runtime.js";
+import { addLearning } from "../domains/learning/learning-domain.js";
+
+/** Keywords in tool output that signal failure. */
+const ERROR_KEYWORDS = ["failed", "error", "cannot", "unable", "not found"];
+
+/**
+ * Register the tool_result hook that creates learning entries for
+ * tool execution outcomes.
+ */
+export function registerToolResultHook(pi: ExtensionAPI, runtime: NoesisRuntime): void {
+  pi.on("tool_result", async (event) => {
+    const toolName = event.toolName ?? "unknown";
+    const isError = event.isError === true;
+
+    const hasErrorContent = event.content.some(
+      (block) =>
+        "text" in block && ERROR_KEYWORDS.some((kw) => block.text.toLowerCase().includes(kw)),
+    );
+
+
+    const isFailure = isError || hasErrorContent;
+
+    const candidate = {
+      toolName,
+      isError: isFailure,
+      description: isFailure
+        ? `Tool ${toolName} failed`
+        : `Tool ${toolName} executed successfully`,
+      significant: false,
+      capturedAt: new Date().toISOString(),
+    };
+
+    await runtime.stateManager.mutate((state) => {
+      addLearning(state, {
+        description: candidate.description,
+        toolName: candidate.toolName,
+        isSuccess: !candidate.isError,
+      });
+    });
+  });
+}
