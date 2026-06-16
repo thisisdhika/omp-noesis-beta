@@ -52,6 +52,16 @@ describe("writeAtomic", () => {
     const content = await Bun.file(filePath).json();
     expect(content).toEqual(data);
   });
+
+  it("should write JSON ending with newline", async () => {
+    tempDir = createTempDir();
+    const filePath = join(tempDir.path, "newline.json");
+
+    await writeAtomic(filePath, { test: "data" });
+
+    const raw = await Bun.file(filePath).text();
+    expect(raw.endsWith("\n")).toBe(true);
+  });
 });
 
 describe("readJSON", () => {

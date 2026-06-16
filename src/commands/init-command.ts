@@ -12,7 +12,7 @@
 
 import type { ExtensionAPI } from "@oh-my-pi/pi-coding-agent";
 import { join } from "node:path";
-import { mkdirSync, existsSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, existsSync, readFileSync, writeFileSync, appendFileSync } from "node:fs";
 import { ensureNoesisDir } from "../shared/paths.js";
 import { writeAtomic, fileExists } from "../infrastructure/filesystem-store.js";
 import { checkGraphifyCLI, installGraphifySkill, runGraphifyBuild } from "../infrastructure/graphify-setup.js";
@@ -306,7 +306,7 @@ export async function initCommand(pi: ExtensionAPI, args: InitArgs = {}): Promis
       if (!existing.mcpServers?.graphify) {
         existing.mcpServers = existing.mcpServers || {};
         existing.mcpServers.graphify = mcpConfig.mcpServers.graphify;
-        writeFileSync(mcpConfigPath, JSON.stringify(existing, null, 2), "utf-8");
+        writeFileSync(mcpConfigPath, JSON.stringify(existing, null, 2) + "\n", "utf-8");
         pi.sendMessage({
           customType: "noesis:init-status",
           content: "Added Graphify MCP server to .omp/mcp.json",
@@ -315,7 +315,7 @@ export async function initCommand(pi: ExtensionAPI, args: InitArgs = {}): Promis
         });
       }
     } catch {
-      writeFileSync(mcpConfigPath, JSON.stringify(mcpConfig, null, 2), "utf-8");
+      writeFileSync(mcpConfigPath, JSON.stringify(mcpConfig, null, 2) + "\n", "utf-8");
       pi.sendMessage({
         customType: "noesis:init-status",
         content: "Wrote Graphify MCP config to .omp/mcp.json (replaced invalid JSON)",
@@ -324,13 +324,34 @@ export async function initCommand(pi: ExtensionAPI, args: InitArgs = {}): Promis
       });
     }
   } else {
-    writeFileSync(mcpConfigPath, JSON.stringify(mcpConfig, null, 2), "utf-8");
+    writeFileSync(mcpConfigPath, JSON.stringify(mcpConfig, null, 2) + "\n", "utf-8");
     pi.sendMessage({
       customType: "noesis:init-status",
       content: "Wrote Graphify MCP config to .omp/mcp.json",
       display: true,
       attribution: "agent",
     });
+  }
+
+  // 9a. Ensure .omp/ is in local git exclude (not .gitignore)
+  const excludePath = join('.git', 'info', 'exclude');
+  const excludeDir = join('.git', 'info');
+  if (existsSync('.git')) {
+    try {
+      mkdirSync(excludeDir, { recursive: true });
+      const excludeContent = existsSync(excludePath)
+        ? readFileSync(excludePath, 'utf-8')
+        : '';
+      if (!excludeContent.includes('.omp/')) {
+        if (excludeContent) {
+          appendFileSync(excludePath, '\n.omp/');
+        } else {
+          appendFileSync(excludePath, '.omp/');
+        }
+      }
+    } catch {
+      // .git/info/exclude is best-effort — don't fail init over it
+    }
   }
   // 10. Done
   pi.sendMessage({

@@ -444,5 +444,43 @@ describe("noesis:init", () => {
       expect(existsSync(mcpPath)).toBeFalse();
     });
   });
+  // -----------------------------------------------------------------------
+  // 8. Git exclude file
+  // -----------------------------------------------------------------------
+
+  describe("git exclude", () => {
+    it("adds .omp/ to .git/info/exclude when .git directory exists", async () => {
+      // Create minimal .git structure
+      mkdirSync(join(tmp.path, ".git", "info"), { recursive: true });
+      _enableGraphifyCLI = true;
+
+      await initCommand(castToExtensionAPI(pi), {});
+
+      const excludePath = join(tmp.path, ".git", "info", "exclude");
+      expect(existsSync(excludePath)).toBeTrue();
+      const content = readFileSync(excludePath, "utf-8");
+      expect(content).toContain(".omp/");
+    });
+
+    it("does not duplicate .omp/ entry on re-run", async () => {
+      mkdirSync(join(tmp.path, ".git", "info"), { recursive: true });
+      _enableGraphifyCLI = true;
+
+      await initCommand(castToExtensionAPI(pi), {});
+      await initCommand(castToExtensionAPI(pi), {});
+
+      const excludePath = join(tmp.path, ".git", "info", "exclude");
+      const content = readFileSync(excludePath, "utf-8");
+      const matches = content.match(/\.omp\//g);
+      expect(matches).toHaveLength(1);
+    });
+
+    it("works gracefully when no .git directory exists", async () => {
+      _enableGraphifyCLI = true;
+      const status = await initCommand(castToExtensionAPI(pi), {});
+      expect(status).toBe("initialized-full");
+      // No error thrown — best-effort is silent
+    });
+  });
 });
 

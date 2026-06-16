@@ -37,7 +37,7 @@ export async function writeAtomic(path: string, data: unknown): Promise<void> {
 
   try {
     // Write to temp file
-    await Bun.write(tempPath, JSON.stringify(data, null, 2));
+    await Bun.write(tempPath, JSON.stringify(data, null, 2) + "\n");
 
     // Atomic rename — same filesystem so this is instantaneous.
     // Bun.write already flushes; the rename provides atomicity.
