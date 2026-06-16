@@ -18,6 +18,7 @@ import { writeAtomic, fileExists } from "../infrastructure/filesystem-store.js";
 import { checkGraphifyCLI, installGraphifySkill, runGraphifyBuild } from "../infrastructure/graphify-setup.js";
 import { EMPTY_STATE } from "../schema.js";
 
+
 // ============================================================================
 // SETTINGS YAML TEMPLATE
 // ============================================================================
@@ -28,6 +29,71 @@ const SETTINGS_YAML = `compaction:
   autoContinue: true
   thresholdTokens: 160000
 `;
+
+// ============================================================================
+// RULES.md TEMPLATE — static noesis cognitive substrate instructions
+// ============================================================================
+
+const RULES_MD = `<noesis>
+<identity>Noesis-enhanced agent. Cognitive state persists at .omp/noesis/state.json across turns and compaction.</identity>
+
+<rules>
+1. Task start → noesis_attend. NEVER skip.
+2. Before assuming ignorance → noesis_recall first.
+3. After verifying → noesis_believe type=fact (confidence + source).
+4. After deciding → noesis_believe type=decision (rationale + alternatives).
+5. After fixing failure → noesis_believe type=learning (rootCause + fix).
+6. When planning → noesis_commit.
+7. When testing theories → noesis_infer (add→update cycle).
+8. Quick context switch → noesis_focus (≤200 chars).
+</rules>
+
+<graphify>
+EXTRACTED → 1.0 (believe after verify) | INFERRED → 0.55–0.95 (default 0.70, verify first) | AMBIGUOUS → 0.55 (store, low-confidence)
+Stale graph: -0.10 from INFERRED only (additive, floor 0.55). EXTRACTED never penalized.
+Modes: FULL (normal) | STALE (penalty) | NO_GRAPH (build attempt) | DEGRADED (execution/user only)
+</graphify>
+
+<gotchas>
+- NEVER auto-believe INFERRED graph edges. Verify first.
+- NEVER duplicate OMP plan surface. noesis_commit tracks cognition, not execution.
+- ONLY capture significant events as learning. Not every tool result.
+- Beliefs are NEVER deleted — superseded → archive for audit.
+- ALWAYS noesis_recall before rediscovering. Recall first, read second.
+- Focus ≤200 chars. Long focus wastes preamble budget.
+- noesis_vault_search queries human artifacts. Use noesis_recall for live state.
+</gotchas>
+
+<templates>
+Fact: {mechanism} at {path} {action} {target} using {method}
+Decision: Use {choice} over {alternative} because {rationale}. Rejected: {rejected}
+Learning: {what_failed} when {trigger} | root_cause: {actual_cause} (not symptom) | fix: {exact_fix} verified by {cmd}
+</templates>
+
+<confidence>
+execution/user observed → 1.0 | graph EXTRACTED → 1.0 | graph INFERRED → 0.55–0.95 | graph AMBIGUOUS → 0.55 | agent deduced → 0.5–0.95 | learning resolved → 0.85
+</confidence>
+
+<boundaries>
+noesis: task cognitive state | mnemopi: cross-session memory | hindsight: session summaries | obsidian: human projection (write-only)
+</boundaries>
+
+<compaction>
+State survives via survivor set in compaction context + preserveData.noesis + .omp/noesis/state.json.
+</compaction>
+<graphify-mcp>
+When graph features are available, you can call these MCP tools directly:
+- mcp__graphify__query_graph — BFS/DFS traversal with keyword scoring
+- mcp__graphify__get_node — Full details for a specific node
+- mcp__graphify__get_neighbors — All direct neighbors with edge details
+- mcp__graphify__shortest_path — Shortest path between two concepts
+- mcp__graphify__god_nodes — Most connected nodes
+- mcp__graphify__graph_stats — Node/edge/community counts
+- mcp__graphify__get_community — All nodes in a community
+
+Use these for on-demand graph exploration. The attend-tool handles automated preamble evidence via CLI.
+</graphify-mcp>
+</noesis>`;
 
 // ============================================================================
 // INIT ARGS
@@ -155,106 +221,79 @@ function mergeConfigYaml(existing: string, recommended: string): string {
 export async function initCommand(pi: ExtensionAPI, args: InitArgs = {}): Promise<string> {
   const { force = false, buildGraph = true, skipGraphify = false } = args;
   const projectRoot = process.cwd();
+  const ompDir = join(projectRoot, ".omp");
+  const summary: string[] = [];
 
   // 1. Ensure the .omp/noesis directory exists
   const noesisDir = ensureNoesisDir(projectRoot);
   const statePath = join(noesisDir, "state.json");
 
-  // 2. Check if state.json exists already
-  if (fileExists(statePath)) {
-    if (!force) {
-      pi.sendMessage({
-        customType: "noesis:init-status",
-        content: "state.json already exists -- skipping state init (use --force to overwrite)",
-        display: true,
-        attribution: "agent",
-      });
-    } else {
-      pi.sendMessage({
-        customType: "noesis:init-status",
-        content: "--force set, overwriting existing state.json",
-        display: true,
-        attribution: "agent",
-      });
-      await writeAtomic(statePath, EMPTY_STATE);
-    }
+  // 2. Write state.json
+  const stateExists = fileExists(statePath);
+  if (stateExists && !force) {
+    summary.push("state.json: up-to-date");
   } else {
+    if (stateExists) summary.push("state.json: overwritten");
+    else summary.push("state.json: created");
     await writeAtomic(statePath, EMPTY_STATE);
-    pi.sendMessage({
-      customType: "noesis:init-status",
-      content: "Wrote empty state to .omp/noesis/state.json",
-      display: true,
-      attribution: "agent",
-    });
   }
 
-  // 3. Write/merge .omp/config.yml with recommended compaction settings
-  const ompDir = join(projectRoot, ".omp");
+  // 3. Write/merge .omp/config.yml
   const configPath = join(ompDir, "config.yml");
-
   if (force) {
     mkdirSync(ompDir, { recursive: true });
     writeFileSync(configPath, SETTINGS_YAML, "utf-8");
-    pi.sendMessage({
-      customType: "noesis:init-status",
-      content: "--force set, overwritten .omp/config.yml with recommended settings",
-      display: true,
-      attribution: "agent",
-    });
+    summary.push("config.yml: overwritten");
   } else if (existsSync(configPath)) {
     const existing = readFileSync(configPath, "utf-8");
-    const merged = mergeConfigYaml(existing, SETTINGS_YAML);
-    writeFileSync(configPath, merged, "utf-8");
-    pi.sendMessage({
-      customType: "noesis:init-status",
-      content: "Merged recommended settings into .omp/config.yml",
-      display: true,
-      attribution: "agent",
-    });
+    writeFileSync(configPath, mergeConfigYaml(existing, SETTINGS_YAML), "utf-8");
+    summary.push("config.yml: merged");
   } else {
     mkdirSync(ompDir, { recursive: true });
     writeFileSync(configPath, SETTINGS_YAML, "utf-8");
-    pi.sendMessage({
-      customType: "noesis:init-status",
-      content: "Wrote recommended settings to .omp/config.yml",
-      display: true,
-      attribution: "agent",
-    });
+    summary.push("config.yml: created");
   }
 
-  // 4. Early return if Graphify setup is skipped
+  // 3a. Write .omp/RULES.md
+  const rulesPath = join(ompDir, "RULES.md");
+  if (existsSync(rulesPath) && !force) {
+    summary.push("RULES.md: up-to-date");
+  } else {
+    mkdirSync(ompDir, { recursive: true });
+    writeFileSync(rulesPath, RULES_MD, "utf-8");
+    summary.push("RULES.md: written");
+  }
+
+  // Quick return if graph setup skipped
   if (skipGraphify) {
+    summary.push("Graphify: skipped");
     pi.sendMessage({
       customType: "noesis:init-status",
-      content: "Graphify setup skipped (--skip-graphify) -- noesis initialized without graph awareness",
+      content: summary.join(" | "),
       display: true,
       attribution: "agent",
     });
     return "initialized-degraded-no-graphify";
   }
 
-  // 5. Check if Graphify CLI is available
+  // 4. Check Graphify CLI availability
   const cliCheck = await checkGraphifyCLI();
   if (!cliCheck.installed) {
+    summary.push("Graphify: CLI unavailable");
     pi.sendMessage({
       customType: "noesis:init-status",
-      content: "Graphify CLI not found -- graph features unavailable. Install via `pip install graphify` or `bun install -g graphify`",
+      content: summary.join(" | "),
       display: true,
       attribution: "agent",
     });
     return "initialized-degraded-no-cli";
   }
 
-  // 6. Install the Graphify skill definition
-  const skillPath = await installGraphifySkill(projectRoot);
-  pi.sendMessage({
-    customType: "noesis:init-status",
-    content: "Installed Graphify skill to .omp/skills/graphify/",
-    display: true,
-    attribution: "agent",
-  });
+  // 5. Install Graphify skill
+  await installGraphifySkill(projectRoot);
+  summary.push("Graphify skill: installed");
 
-  // 7. Send LLM-visible message about Graphify skill
+  // 6. Send LLM-visible Graphify skill intro (steer, not TUI noise)
   pi.sendMessage({
     customType: "noesis:graphify-skill",
     content: "The Graphify skill has been installed to .omp/skills/graphify/. You can use skill://graphify to query the project knowledge graph for codebase-aware reasoning about file relationships, architecture, and dependencies.",
@@ -262,36 +301,26 @@ export async function initCommand(pi: ExtensionAPI, args: InitArgs = {}): Promis
     attribution: "agent",
   }, { deliverAs: "steer" });
 
-  // 8. Build the project knowledge graph (unless opted out)
+  // 7. Build the project knowledge graph (unless opted out)
   if (buildGraph) {
     pi.sendMessage({
       customType: "noesis:init-status",
-      content: "Building project knowledge graph...",
+      content: `Building project knowledge graph${summary.length ? " (" + summary.join(", ") + ")" : ""}...`,
       display: true,
       attribution: "agent",
     });
     const buildResult = await runGraphifyBuild(projectRoot);
     if (buildResult.success) {
-      pi.sendMessage({
-        customType: "noesis:init-status",
-        content: `Graph build complete -- ${buildResult.output.split("\n").filter(Boolean).length} output lines`,
-        display: true,
-        attribution: "agent",
-      });
+      summary.push("Graph: built");
     } else {
-      pi.sendMessage({
-        customType: "noesis:init-status",
-        content: `Graph build reported errors:\n${buildResult.output}`,
-        display: true,
-        attribution: "agent",
-      });
+      summary.push("Graph: build errors");
     }
   }
 
-  // 9. Write MCP config for Graphify server (if Python available)
+  // 8. Write MCP config
   const mcpConfigPath = join(ompDir, "mcp.json");
   const mcpConfig = {
-    "$schema": "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/src/config/mcp-schema.json",
+    $schema: "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/src/config/mcp-schema.json",
     mcpServers: {
       graphify: {
         command: "python3",
@@ -299,41 +328,28 @@ export async function initCommand(pi: ExtensionAPI, args: InitArgs = {}): Promis
       },
     },
   };
-
+  let mcpAction = "written";
   if (existsSync(mcpConfigPath)) {
     try {
       const existing = JSON.parse(readFileSync(mcpConfigPath, "utf-8"));
-      if (!existing.mcpServers?.graphify) {
+      if (existing.mcpServers?.graphify) {
+        mcpAction = "already configured";
+      } else {
         existing.mcpServers = existing.mcpServers || {};
         existing.mcpServers.graphify = mcpConfig.mcpServers.graphify;
         writeFileSync(mcpConfigPath, JSON.stringify(existing, null, 2) + "\n", "utf-8");
-        pi.sendMessage({
-          customType: "noesis:init-status",
-          content: "Added Graphify MCP server to .omp/mcp.json",
-          display: true,
-          attribution: "agent",
-        });
+        mcpAction = "added";
       }
     } catch {
       writeFileSync(mcpConfigPath, JSON.stringify(mcpConfig, null, 2) + "\n", "utf-8");
-      pi.sendMessage({
-        customType: "noesis:init-status",
-        content: "Wrote Graphify MCP config to .omp/mcp.json (replaced invalid JSON)",
-        display: true,
-        attribution: "agent",
-      });
+      mcpAction = "replaced";
     }
   } else {
     writeFileSync(mcpConfigPath, JSON.stringify(mcpConfig, null, 2) + "\n", "utf-8");
-    pi.sendMessage({
-      customType: "noesis:init-status",
-      content: "Wrote Graphify MCP config to .omp/mcp.json",
-      display: true,
-      attribution: "agent",
-    });
   }
+  summary.push(`MCP: ${mcpAction}`);
 
-  // 9a. Ensure .omp/ is in local git exclude (not .gitignore)
+  // 8a. Ensure .omp/ is in local git exclude (best-effort)
   const excludePath = join('.git', 'info', 'exclude');
   const excludeDir = join('.git', 'info');
   if (existsSync('.git')) {
@@ -343,20 +359,17 @@ export async function initCommand(pi: ExtensionAPI, args: InitArgs = {}): Promis
         ? readFileSync(excludePath, 'utf-8')
         : '';
       if (!excludeContent.includes('.omp/')) {
-        if (excludeContent) {
-          appendFileSync(excludePath, '\n.omp/');
-        } else {
-          appendFileSync(excludePath, '.omp/');
-        }
+        appendFileSync(excludePath, (excludeContent ? '\n' : '') + '.omp/');
       }
     } catch {
-      // .git/info/exclude is best-effort — don't fail init over it
+      // best-effort
     }
   }
-  // 10. Done
+
+  // 9. Done — single status message
   pi.sendMessage({
     customType: "noesis:init-status",
-    content: "Noesis initialized! Restart TUI to activate graph features.",
+    content: summary.join(" | "),
     display: true,
     attribution: "agent",
   });

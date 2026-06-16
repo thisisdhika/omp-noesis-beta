@@ -193,12 +193,13 @@ describe("noesis:init", () => {
       expect(existsSync(statePath(tmp.path))).toBeTrue();
       expect(existsSync(configPath(tmp.path))).toBeTrue();
 
-      // Should have sent a "skipping" / "already exists" status message
+      // Should have sent a "up-to-date" / skip status message
       const msgs = sentMessages(pi);
       const skipMsg = msgs.find(
         (m) =>
           m.message.customType === "noesis:init-status" &&
-          m.message.content.toLowerCase().includes("already exists")
+          (m.message.content.toLowerCase().includes("up-to-date") ||
+           m.message.content.toLowerCase().includes("skipping"))
       );
       expect(skipMsg).toBeDefined();
     });
