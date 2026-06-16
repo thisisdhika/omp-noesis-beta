@@ -68,27 +68,6 @@ describe("graphify-parser edge cases", () => {
       expect(findings[0]!.relations).toEqual(["A→B", "C→?", "?→D", "direct-edge"]);
     });
 
-    it("should handle links as objects with source/target", () => {
-      const findings = parseQueryOutput(
-        JSON.stringify({
-          results: [
-            {
-              nodes: ["X", "Y"],
-              query: "q",
-              confidence: "EXTRACTED",
-              links: [
-                { source: "X", target: "Y" },
-                { source: "Z" },
-                "bare-link",
-              ],
-            },
-          ],
-        }),
-      );
-      expect(findings).toHaveLength(1);
-      expect(findings[0]!.relations).toEqual(["X→Y", "Z→?", "bare-link"]);
-    });
-
     it("should handle relations as string array", () => {
       const findings = parseQueryOutput(
         JSON.stringify({
@@ -106,7 +85,7 @@ describe("graphify-parser edge cases", () => {
       expect(findings[0]!.relations).toEqual(["A→B", "B→C"]);
     });
 
-    it("should return empty relations when no edges, links, or relations present", () => {
+    it("should return empty relations when no edges or relations present", () => {
       const findings = parseQueryOutput(
         JSON.stringify({
           results: [{ nodes: ["A"], query: "q", confidence: "EXTRACTED" }],

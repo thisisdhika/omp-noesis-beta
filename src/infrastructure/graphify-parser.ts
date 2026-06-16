@@ -60,7 +60,7 @@ function toGraphConfidence(value: string): GraphConfidence {
 /**
  * Extract relation strings from a raw finding record.
  *
- * Preference order: `edges` → `links` → `relations`.  Edges and links
+ * Preference order: `edges` → `relations`.  Edges
  * are serialised as `"source→target"` strings.  If none of these keys
  * exist an empty array is returned.
  *
@@ -76,13 +76,6 @@ function extractRelations(raw: Record<string, unknown>): string[] {
     });
   }
 
-  if (Array.isArray(raw.links)) {
-    return raw.links.map((l: unknown) => {
-      if (typeof l === "string") return l;
-      if (!isRecord(l)) return "?→?";
-      return `${String(l.source ?? "?")}→${String(l.target ?? "?")}`;
-    });
-  }
 
   if (Array.isArray(raw.relations)) {
     return raw.relations.filter((r): r is string => typeof r === "string");

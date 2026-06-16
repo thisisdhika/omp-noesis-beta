@@ -4,7 +4,7 @@
  * Smoke suite: Hook integration.
  *
  * Verifies that the core noesis lifecycle hooks fire correctly:
- *   1. context hook — updates attention.contextUsage
+ *   1. context hook — updates attention state
  *   2. tool_result hook — captures failed commands as learning entries
  *   3. turn_end hook — persists state between sessions
  *   4. before_agent_start hook — sets attention.updatedAt
@@ -55,8 +55,7 @@ export async function runHookIntegration(): Promise<SuiteResult> {
         );
         await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
 
-        // Second prompt triggers the context hook which updates
-        // attention.contextUsage.
+        // Second prompt triggers the context hook which updates attention state
         await ctx.prompt("What do you know about this project?");
         // Give async hooks a moment to finish writing state.
         const { promise: pause, resolve: unpause } = Promise.withResolvers<void>();
@@ -66,11 +65,6 @@ export async function runHookIntegration(): Promise<SuiteResult> {
         const state = await ctx.readState();
         if (!state) throw new Error("State was not persisted");
 
-        if (state.attention.contextUsage <= 0) {
-          throw new Error(
-            `Expected contextUsage > 0 after context hook fired, got ${state.attention.contextUsage}`,
-          );
-        }
       } finally {
         await ctx.dispose();
       }

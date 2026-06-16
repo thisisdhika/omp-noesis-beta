@@ -37,7 +37,6 @@ describe("EMPTY_STATE", () => {
     expect(attn.graphQueries).toEqual([]);
     expect(attn.files).toEqual([]);
     expect(attn.graphFindings).toEqual([]);
-    expect(attn.contextUsage).toBe(0);
     expect(attn.updatedAt).toEqual(expect.any(String));
   });
 

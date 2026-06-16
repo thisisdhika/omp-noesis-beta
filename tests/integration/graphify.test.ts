@@ -58,23 +58,6 @@ describe("Graphify Integration", () => {
       expect(findings[0]!.confidence).toBe("INFERRED");
     });
 
-    it("parses valid JSON with links key (legacy)", () => {
-      const raw = JSON.stringify({
-        results: [
-          {
-            query: "test",
-            nodes: ["X"],
-            links: ["X->Y"],
-            confidence: "AMBIGUOUS",
-          },
-        ],
-      });
-      const findings = parseQueryOutput(raw);
-      expect(findings.length).toBe(1);
-      expect(findings[0]!.relations).toEqual(["X->Y"]);
-      expect(findings[0]!.confidence).toBe("AMBIGUOUS");
-    });
-
     it("returns empty array for invalid JSON", () => {
       const findings = parseQueryOutput("not json at all");
       expect(findings).toEqual([]);

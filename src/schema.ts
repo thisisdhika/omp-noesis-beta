@@ -101,7 +101,6 @@ export const AttentionLayerSchema = z.object({
   graphQueries: z.array(z.string()).max(CAPS.graphQueries).default([]),
   files: z.array(z.string()).max(CAPS.files).default([]),
   graphFindings: z.array(GraphFindingSchema).default([]),
-  contextUsage: z.number().default(0),
   updatedAt: z.string().datetime(),
 });
 export type AttentionLayer = z.infer<typeof AttentionLayerSchema>;
@@ -285,7 +284,6 @@ export const EMPTY_STATE: NoesisState = {
     graphQueries: [],
     files: [],
     graphFindings: [],
-    contextUsage: 0,
     updatedAt: new Date().toISOString(),
   },
   belief: {

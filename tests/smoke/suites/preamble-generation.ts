@@ -145,18 +145,17 @@ export async function runPreambleGeneration(): Promise<SuiteResult> {
       const state = orEmpty(await ctx.readState());
 
       // With >20 beliefs the state should show evidence of preamble
-      // processing — either contextUsage has increased or the timestamp
-      // was updated (the preamble generator had to select ≤2000 tokens).
+      // processing — either the timestamp was updated (the preamble
+      // generator had to select ≤2000 tokens).
       assertBeliefCount(state, 20);
 
       // Verify at least one of the tracking signals changed from defaults
-      const usageChanged = state.attention.contextUsage > 0;
       const recentUpdate =
         new Date(state.attention.updatedAt).getTime() >
         Date.now() - 300_000;
-      if (!usageChanged && !recentUpdate) {
+      if (!recentUpdate) {
         throw new Error(
-          `Expected contextUsage > 0 or a recent updatedAt after creating >20 beliefs. Got contextUsage=${state.attention.contextUsage}, updatedAt=${state.attention.updatedAt}`,
+          `Expected a recent updatedAt after creating >20 beliefs. Got updatedAt=${state.attention.updatedAt}`,
         );
       }
     } catch (e) {

@@ -80,7 +80,6 @@ describe("tool registration", () => {
     expect(pi._getTool("noesis_commit")).toBeTruthy();
     expect(pi._getTool("noesis_recall")).toBeTruthy();
     expect(pi._getTool("noesis_attend")).toBeTruthy();
-    expect(pi._getTool("noesis_vault_search")).toBeTruthy();
   });
 
   it("registers each tool by its expected name", async () => {
@@ -92,7 +91,6 @@ describe("tool registration", () => {
       "noesis_infer",
       "noesis_commit",
       "noesis_recall",
-      "noesis_vault_search",
     ];
     for (const name of names) {
       expect(pi._getTool(name)).toBeTruthy();
@@ -215,23 +213,6 @@ describe("noesis_recall", () => {
     expect(result.isError).toBe(false);
     expect(result.details.count).toBeGreaterThanOrEqual(1);
     expect(result.content[0]!.text).toContain("Memory limit is 512MB");
-  });
-});
-
-describe("noesis_vault_search", () => {
-  it("returns placeholder indicating vault search is unavailable", async () => {
-    const { pi } = await setup();
-    const execute = toolExecutor(pi, "noesis_vault_search");
-
-    const result = await execute({
-      query: "search term",
-      kind: "all",
-      maxResults: 5,
-    });
-
-    expect(result.isError).toBe(false);
-    expect(result.details.available).toBe(false);
-    expect(result.content[0]!.text).toContain("not yet available");
   });
 });
 
