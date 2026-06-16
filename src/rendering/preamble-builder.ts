@@ -156,6 +156,21 @@ function buildLowConfidenceSignal(state: NoesisState): string {
   return `Low-confidence beliefs: ${count}`;
 }
 
+function buildMcpSection(render: RenderContext): string {
+  if (!render.hasMcpGraphify) return "";
+  return [
+    "<graphify-mcp>",
+    "- mcp__graphify__query_graph — BFS/DFS traversal with keyword scoring",
+    "- mcp__graphify__get_node — Full details for a specific node",
+    "- mcp__graphify__get_neighbors — All direct neighbors with edge details",
+    "- mcp__graphify__shortest_path — Shortest path between two concepts",
+    "- mcp__graphify__god_nodes — Most connected nodes",
+    "- mcp__graphify__graph_stats — Node/edge/community counts",
+    "- mcp__graphify__get_community — All nodes in a community",
+    "</graphify-mcp>",
+  ].join("\n");
+}
+
 
 // ============================================================================
 // SECTION REGISTRY
@@ -180,6 +195,7 @@ function buildSections(state: NoesisState, render: RenderContext): Section[] {
     { index: 9, content: buildGraphEvidence(state), protected: false },
     { index: 10, content: buildLowConfidenceSignal(state), protected: false },
     { index: 11, content: "State: .omp/noesis/state.json", protected: true },
+    { index: 12, content: buildMcpSection(render), protected: false },
   ];
 }
 

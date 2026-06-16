@@ -4,7 +4,7 @@
  * Integration test: Graphify client, parser, and setup.
  */
 import { describe, it, expect, beforeAll, afterAll } from "bun:test";
-import { cpSync, mkdirSync } from "node:fs";
+import { cpSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { parseQueryOutput } from "../../src/infrastructure/graphify-parser.js";
 import { detectCapability, query, build } from "../../src/infrastructure/graphify-client.js";
@@ -13,6 +13,13 @@ import type { CapabilityLevel } from "../../src/schema.js";
 import { createTempDir } from "../helpers/temp-dir.js";
 
 const VALID_CAPABILITIES: CapabilityLevel[] = ["FULL", "STALE", "NO_GRAPH", "DEGRADED"];
+
+/** Create a temp .omp/mcp.json for testing MCP config detection. */
+function createMcpConfig(dir: string, config: object): void {
+  const ompDir = join(dir, ".omp");
+  mkdirSync(ompDir, { recursive: true });
+  writeFileSync(join(ompDir, "mcp.json"), JSON.stringify(config, null, 2));
+}
 
 describe("Graphify Integration", () => {
   describe("graphify-parser", () => {
@@ -254,6 +261,55 @@ describe("Graphify Integration", () => {
       const result = await runGraphifyBuild(testDir);
       expect(result.success).toBe(true);
     }, 180_000);
+  });
+
+  describe("MCP config detection", () => {
+    it("detectCapability returns FULL when CLI available, graph exists, and MCP config present", async () => {
+      const tmp = createTempDir();
+      try {
+        createMcpConfig(tmp.path, {
+          mcpServers: {
+            graphify: {
+              command: "python3",
+              args: ["-m", "graphify.serve", "graphify-out/graph.json"],
+            },
+          },
+        });
+
+        // Create fresh graph file so existence + mtime checks pass
+        const graphDir = join(tmp.path, "graphify-out");
+        mkdirSync(graphDir, { recursive: true });
+        writeFileSync(join(graphDir, "graph.json"), "{}");
+
+        const capability = await detectCapability(tmp.path);
+        // When CLI is installed and graph is fresh (< 24h), should be FULL.
+        // When CLI is unavailable, detectCapability returns DEGRADED.
+        expect(capability).toBe(
+          Bun.which("graphify") ? "FULL" : "DEGRADED",
+        );
+      } finally {
+        tmp.cleanup();
+      }
+    });
+
+    it("detectCapability works normally when MCP config absent", async () => {
+      const tmp = createTempDir();
+      try {
+        // Create fresh graph file but no .omp/mcp.json
+        const graphDir = join(tmp.path, "graphify-out");
+        mkdirSync(graphDir, { recursive: true });
+        writeFileSync(join(graphDir, "graph.json"), "{}");
+
+        const capability = await detectCapability(tmp.path);
+        // Same outcome as with MCP config — detectCapability is currently
+        // MCP-agnostic, so MCP config presence/absence has no effect.
+        expect(capability).toBe(
+          Bun.which("graphify") ? "FULL" : "DEGRADED",
+        );
+      } finally {
+        tmp.cleanup();
+      }
+    });
   });
 
   describe("checkGraphifyCLI", () => {

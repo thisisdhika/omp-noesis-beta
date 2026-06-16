@@ -15,6 +15,7 @@ import { runRealWorldDeveloper } from "./suites/real-world-developer.ts";
 import { runInferenceLifecycle } from "./suites/inference-lifecycle.ts";
 import { runVaultSearch } from "./suites/vault-search.ts";
 import { runEdgeCases } from "./suites/edge-cases.ts";
+import { runMcpIntegration } from "./suites/mcp-integration.ts";
 
 const suites: Array<() => Promise<SuiteResult>> = [
   runBeliefLifecycle,
@@ -32,6 +33,7 @@ const suites: Array<() => Promise<SuiteResult>> = [
   runErrorRecovery,
   runMalformedInputs,
   runRealWorldDeveloper,
+  runMcpIntegration,
   runEdgeCases,
 ];
 

@@ -12,12 +12,13 @@ Traditional code coverage measures lines executed. Product coverage measures beh
 
 ## 2. Three Layers
 
-| Layer | Scope | Target | Count |
-|---|---|---|---|
-| **Unit** | Domain logic, pure functions, strategies | 100% of branches | ~250 tests |
-| **Integration** | Tool + hook wiring, persistence, Graphify client | 100% of paths | ~140 tests |
-| **Behavioral** | Agent simulation, compaction survival, learning | 100% of behaviors | ~117 tests |
-| **Total** | — | **300%** | **~507 tests** |
+ | Layer | Scope | Target | Count |
+ |---|---|---|---|
+ | **Unit** | Domain logic, pure functions, strategies | 100% of branches | ~250 tests |
+ | **Integration** | Tool + hook wiring, persistence, Graphify client | 100% of paths | ~140 tests |
+ | **Behavioral** | Agent simulation, compaction survival, learning | 100% of behaviors | ~117 tests |
+ | **MCP** | MCP config detection, init, context hook integration | 100% of MCP paths | ~10 tests |
+ | **Total** | — | **300%** | **~517 tests** |
 
 ## 3. Unit Tests (`tests/unit/`)
 
@@ -302,3 +303,42 @@ bun test tests/behavioral/compaction-survival.test.ts
 | Integration | ≥ 90% | 100% of integration paths |
 | Behavioral | N/A (tests product, not code) | 100% of product behaviors |
 | Overall | ≥ 90% | 300% (3 layers × 100%) |
+## 9. MCP Integration Testing
+
+### Architecture
+
+MCP (Model Context Protocol) is the primary integration for LLM graph queries. The `attend` tool continues to use CLI for automated preamble evidence.
+
+### Test Coverage
+
+| Test Layer | MCP Coverage | Description |
+|---|---|---|
+| Unit | MCP config detection | Verify `hasMcpGraphify()` detects config correctly |
+| Integration | Init command MCP writing | Verify `/noesis:init` writes `.omp/mcp.json` |
+| Integration | Context hook MCP detection | Verify preamble includes MCP tool hints |
+| Smoke | MCP config lifecycle | End-to-end MCP config creation and detection |
+
+### MCP Test Scenarios
+
+| Scenario | Layer | Validation |
+|---|---|---|
+| Init writes MCP config | Integration | `.omp/mcp.json` created with graphify entry |
+| Init preserves existing config | Integration | Existing graphify entry not overwritten |
+| Init merges into existing config | Integration | Graphify entry added to existing MCP config |
+| Init handles invalid JSON | Integration | Invalid `.omp/mcp.json` overwritten |
+| Context detects MCP config | Integration | Preamble includes MCP tool hints |
+| MCP config missing | Integration | Preamble does not include MCP hints |
+| MCP config in smoke test | Smoke | End-to-end MCP lifecycle |
+
+### Running MCP Tests
+
+```bash
+# Unit tests
+bun test tests/unit
+
+# Integration tests (includes MCP)
+bun test tests/integration
+
+# Smoke test (includes MCP)
+bun run tests/smoke/run.ts
+```

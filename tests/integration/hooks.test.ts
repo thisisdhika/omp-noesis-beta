@@ -7,6 +7,8 @@
  */
 
 import { describe, it, expect, beforeEach } from "bun:test";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 import { cleanPersistedState } from "../helpers/fixtures.js";
 import { createMockPi, toExtensionAPI, type MockPi } from "../helpers/mock-pi.js";
 import { createRuntime, type NoesisRuntime } from "../../src/runtime.js";
@@ -212,6 +214,60 @@ describe("context execution", () => {
     const preambleText = result.messages[0]!.content[0]!.text;
     expect(preambleText).toContain("Focus:");
     expect(preambleText).toContain("Implement user authentication flow");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Context MCP detection
+// ---------------------------------------------------------------------------
+
+describe("context MCP detection", () => {
+  it("includes hasMcpGraphify in renderContext when MCP config exists", async () => {
+    // Create MCP config in project root .omp dir
+    const ompDir = join(runtime.projectRoot, ".omp");
+    mkdirSync(ompDir, { recursive: true });
+    const mcpConfig = {
+      mcpServers: {
+        graphify: {
+          command: "python3",
+          args: ["-m", "graphify.serve", "graphify-out/graph.json"],
+        },
+      },
+    };
+    writeFileSync(join(ompDir, "mcp.json"), JSON.stringify(mcpConfig, null, 2));
+
+    // Trigger context hook
+    const event = { messages: [] };
+    const handler = pi._getHooks("context")[0]!;
+    const result = (await handler(event, {})) as {
+      messages: Array<{ content: Array<{ text: string }> }>;
+    };
+
+    // Verify preamble contains MCP tool hints
+    const preamble = result.messages[0]!.content[0]!.text;
+    expect(preamble).toContain("mcp__graphify__query_graph");
+
+    // Clean up MCP config
+    const mcpPath = join(ompDir, "mcp.json");
+    try {
+      const { unlinkSync, existsSync } = await import("node:fs");
+      if (existsSync(mcpPath)) unlinkSync(mcpPath);
+    } catch {
+      // best-effort cleanup
+    }
+  });
+
+  it("includes hasMcpGraphify=false when MCP config missing", async () => {
+    // No MCP config created
+    const event = { messages: [] };
+    const handler = pi._getHooks("context")[0]!;
+    const result = (await handler(event, {})) as {
+      messages: Array<{ content: Array<{ text: string }> }>;
+    };
+
+    // Verify preamble does not contain MCP tool hints
+    const preamble = result.messages[0]!.content[0]!.text;
+    expect(preamble).not.toContain("mcp__graphify__query_graph");
   });
 });
 
