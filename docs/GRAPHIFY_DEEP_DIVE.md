@@ -51,16 +51,21 @@ Noesis treats Graphify as an **oracle** — it asks questions and gets answers. 
 ## 3. Architecture: The Complete Data Flow
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                         AGENT TURN                                   │
+┌──────────────────────────────────────────────────────────────────────┐
+│                         AGENT TURN (MCP-First)                       │
 │                                                                       │
 │  1. Agent calls noesis_attend(graphQueries: ["What imports auth?"])  │
 │     │                                                                 │
 │  2. attend-tool.ts iterates queries, calls graphifyQuery()           │
 │     │                                                                 │
-│  3. graphify-client.ts spawns:                                       │
-│     `graphify query "What imports auth?" --graph graphify-out/graph.json` │
-│     (30s timeout, stdout pipe)                                        │
+│  3. graphify-client.ts checks MCP availability:                      │
+│     ├── MCP server running? → call mcp__graphify__query_graph()     │
+│     │   (OMP manages MCP server lifecycle — starts on first query,   │
+│     │    persists for session, no custom MCP client needed)           │
+│     └── MCP unavailable → fallback to CLI:                           │
+│         `graphify query "What imports auth?" --graph ...`            │
+│         (30s timeout, stdout pipe — primarily for attend-tool        │
+│          automated preamble evidence)                                 │
 │     │                                                                 │
 │  4. graphify-parser.ts parses JSON → GraphFinding[]                  │
 │     │                                                                 │
@@ -80,7 +85,7 @@ Noesis treats Graphify as an **oracle** — it asks questions and gets answers. 
 │  8. turn-end-hook.ts: fullCleanup()                                  │
 │     - evictOverCap() trims graphFindings to CAPS.graphQueries (5)   │
 │     - Findings NOT in survivor set → lost after compaction           │
-└─────────────────────────────────────────────────────────────────────┘
+└──────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -89,39 +94,44 @@ Noesis treats Graphify as an **oracle** — it asks questions and gets answers. 
 
 ### 4.1 Infrastructure Layer
 
-#### `src/infrastructure/graphify-client.ts` — CLI Wrapper
+#### `src/infrastructure/graphify-client.ts` — MCP + CLI Client
 
-**Purpose:** Single entry point for all Graphify CLI interactions.
+**Purpose:** Single entry point for all Graphify queries. Uses MCP as primary integration, with CLI fallback for attend-tool automated queries.
 
 **Functions:**
 
 | Function | What It Does | Timeout | Error Handling |
 |----------|-------------|---------|----------------|
-| `detectCapability(projectRoot)` | Checks CLI availability + graph freshness → capability level | None (fast checks) | Returns "DEGRADED" if CLI missing, "STALE" if stat fails |
-| `query(projectRoot, question)` | Spawns `graphify query` CLI, returns parsed findings | 30s | Returns `[]` on any error |
+| `detectCapability(projectRoot)` | Checks MCP availability + CLI + graph freshness → capability level | None (fast checks) | Returns "DEGRADED" if both unavailable, "STALE" if stat fails |
+| `query(projectRoot, question)` | MCP call via `mcp__graphify__query_graph`; falls back to CLI `graphify query` | 30s | Returns `[]` on any error |
 | `build(projectRoot)` | Delegates to `runGraphifyBuild()` | 120s | Returns `{ success: false, output: errorMessage }` |
+
+**MCP-First Query Execution:**
+```
+1. Check if MCP server is available (OMP manages lifecycle)
+2. If MCP available → call tool("mcp__graphify__query_graph", { question, mode: "bfs", depth: 3 })
+3. Parse structured JSON response → GraphFinding[]
+4. If MCP unavailable → fallback to CLI:
+   a. validateGraphPath() → null? → return []
+   b. Bun.spawn(["graphify", "query", question, "--graph", graphPath])
+      - cwd: projectRoot, stdout: "pipe", timeout: 30000ms
+   c. Read stdout as text
+   d. parseQueryOutput(raw) → GraphFinding[]
+5. Any error → return []
+```
 
 **Capability Detection Logic:**
 ```
 1. Bun.which("graphify") → null? → DEGRADED
-2. validateGraphPath(projectRoot) → null? → NO_GRAPH
-3. stat(graphPath).mtimeMs → age > 24h? → STALE : FULL
-4. stat() throws → STALE (safe fallback)
+2. Check MCP tool availability → adds MCP badge to capability
+3. validateGraphPath(projectRoot) → null? → NO_GRAPH
+4. stat(graphPath).mtimeMs → age > 24h? → STALE : FULL
+5. stat() throws → STALE (safe fallback)
 ```
-
-**Query Execution:**
-```
-1. validateGraphPath() → null? → return []
-2. Bun.spawn(["graphify", "query", question, "--graph", graphPath])
-   - cwd: projectRoot
-   - stdout: "pipe"
-   - timeout: 30000ms
-3. Read stdout as text
-4. parseQueryOutput(raw) → GraphFinding[]
-5. Any error → return []
-```
-
 **Critical Design Decisions:**
+- MCP is the primary query path — no subprocess overhead, in-memory queries
+- CLI fallback for attend-tool automated queries when MCP unavailable
+- OMP manages MCP server lifecycle — no custom MCP client needed
 - Never uses `exec` or shell — always `Bun.spawn` (no injection risk)
 - Returns empty array on failure, never throws (caller never crashes)
 - 30s timeout prevents hung queries on large codebases
@@ -552,11 +562,12 @@ The agent decides whether to trust the finding based on the confidence value.
 
 1. **Noesis queries Graphify; never builds, replaces, or wraps it as a user tool**
 2. **Graph evidence is surfaced as candidates, not auto-committed** — agent must call `noesis_believe`
-3. **CLI only for v1; MCP is future enhancement**
+3. **MCP primary, CLI fallback** — LLM uses MCP tools; attend-tool uses CLI for automated queries
 4. **Confidence is always evidence-grounded for graph sources**
 5. **Stale graphs get confidence penalties, not query refusals**
 6. **DEGRADED mode is graceful: rest of noesis still works**
 7. **All Graphify commands use Bun.spawn, never shell**
+8. **OMP manages MCP server lifecycle** — starts on first query, persists for session, no custom MCP client needed
 
 ---
 
@@ -569,14 +580,15 @@ graphify --version           # CLI detection
 graphify .                   # First-time build (via init)
 graphify . --no-viz          # First-time build without visualization
 graphify . --update          # Incremental update (manual)
-graphify query "..." --graph graphify-out/graph.json   # Primary query
+graphify query "..." --graph graphify-out/graph.json   # CLI fallback query
+python -m graphify.serve graphify-out/graph.json       # MCP server (managed by OMP)
 ```
 
 ### Never Used
 
 ```bash
 graphify . --obsidian        # Obsidian export handled separately
-graphify serve               # MCP is future enhancement
+graphify serve               # Now used via MCP integration (managed by OMP)
 graphify global              # Cross-project is future
 graphify prs                 # Out of scope
 graphify watch               # OMP handles file watching
@@ -601,14 +613,14 @@ Graph evidence is stored in `attention.graphFindings`, rendered in preamble, but
 
 **Impact:** Agent must commit findings as beliefs before they're lost.
 
-### 3. CLI Overhead
+### 3. CLI Overhead (Mitigated by MCP)
 
-Each query spawns a subprocess:
+MCP resolves the subprocess overhead for LLM-visible queries. However, the CLI fallback path (used by attend-tool for automated preamble evidence) still spawns a subprocess per query:
 - 30s timeout per query
 - Sequential execution (not parallel)
 - Cold start for each invocation
 
-**Impact:** Multiple queries add up. MCP would be faster (in-process).
+**Impact:** Multiple queries on the CLI fallback path still add up.
 
 ### 4. 2-Finding Limit
 
@@ -644,20 +656,16 @@ JSON.parse rejects BOM-prefixed output. Parser returns `[]` for BOM-prefixed gra
 
 ## 12. Future Enhancements (from GRAPHIFY_CONTRACT.md)
 
-> **Note:** These features are not yet implemented. The current integration uses CLI only.
+> **Note:** MCP integration is now the primary query path. Cross-Project Graphs and Real-Time Updates remain future enhancements.
 
 
-### MCP Server Path
+### Server Invocation
 
 ```bash
 python -m graphify.serve graphify-out/graph.json
 ```
 
-Provides structured JSON output via MCP protocol. Would eliminate subprocess overhead and enable:
-- In-process queries
-- Streaming results
-- Connection pooling
-- No timeout issues
+Started lazily by OMP on first graph query. Persists for the session. No custom MCP client needed — LLM calls MCP tools directly via OMP infrastructure.
 
 ### Cross-Project Graphs
 
@@ -773,23 +781,23 @@ CAPS.files = 10          // Max file references in attention
 ## 15. Summary: How Graphify Fits in Noesis
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                    Noesis                            │
-│                                                      │
-│  ┌──────────┐    ┌──────────┐    ┌──────────┐      │
-│  │ Attention│◄───│ Graphify │───►│  Belief  │      │
-│  │ (ephemeral) │ │ (CLI)    │    │ (durable) │      │
-│  └──────────┘    └──────────┘    └──────────┘      │
-│       │               │               │              │
-│       │               │               │              │
-│       ▼               ▼               ▼              │
+┌──────────────────────────────────────────────────────┐
+│                      Noesis                           │
+│                                                       │
+│  ┌──────────┐    ┌────────────────┐    ┌──────────┐ │
+│  │ Attention│◄───│ Graphify       │───►│  Belief  │ │
+│  │ (ephemeral)│ │ ├── MCP (primary)│    │ (durable)│ │
+│  └──────────┘    │ └── CLI (fallback)│  └──────────┘ │
+│       │          └────────────────┘        │          │
+│       │               │                    │          │
+│       ▼               ▼                    ▼          │
 │  ┌──────────┐    ┌──────────┐    ┌──────────┐      │
 │  │ Preamble │    │ Survivor │    │ Learning │      │
 │  │ (render) │    │ (compact)│    │ (ranked) │      │
 │  └──────────┘    └──────────┘    └──────────┘      │
-└─────────────────────────────────────────────────────┘
+└──────────────────────────────────────────────────────┘
 
-Flow: Agent → noesis_attend → graphify CLI → parser → attention → preamble → agent → noesis_believe → belief → compaction survival
+Flow: Agent → noesis_attend → graphify MCP (primary) / CLI (fallback) → parser → attention → preamble → agent → noesis_believe → belief → compaction survival
 ```
 
 **Graphify is the perception input. Noesis is the cognitive engine.**
@@ -797,69 +805,69 @@ Flow: Agent → noesis_attend → graphify CLI → parser → attention → prea
 ---
 
 ## 16. The MCP Server — What We Should Be Using
+> **Status:** Primary integration path. CLI is the fallback for attend-tool automated queries.
 
-> **Status:** Future enhancement. Current integration uses CLI only.
+### Architecture: MCP-First
 
+Graphify's MCP server (`python -m graphify.serve`) is the **primary** way the LLM queries the knowledge graph. OMP manages the MCP server lifecycle:
+- **Lazy start:** Server starts on first graph query via `noesis_attend`
+- **Session persistence:** Server stays running for the OMP session
+- **No custom client:** LLM calls MCP tools directly via OMP's MCP infrastructure
 
-### Current: CLI Integration
+The CLI fallback (`graphify query ...`) is retained for attend-tool automated queries that run as preamble evidence before the LLM turn. This ensures basic graph evidence is always available even if MCP is unavailable.
 
-```typescript
-// Each query spawns a new process
-Bun.spawn(["graphify", "query", question, "--graph", graphPath], {
-  cwd: projectRoot,
-  stdout: "pipe",
-  timeout: 30000,
-});
+### MCP Tools Available to the LLM
+
+The following MCP tools are exposed by the Graphify MCP server and callable directly by the LLM via `mcp__graphify__<tool_name>`:
+
+| MCP Tool | LLM Name | Description |
+|----------|----------|-------------|
+| `query_graph` | `mcp__graphify__query_graph` | BFS/DFS traversal with keyword scoring — primary query tool |
+| `get_node` | `mcp__graphify__get_node` | Full details for a specific node by name |
+| `get_neighbors` | `mcp__graphify__get_neighbors` | All direct neighbors with edge details for a node |
+| `shortest_path` | `mcp__graphify__shortest_path` | Shortest path between two concepts |
+| `god_nodes` | `mcp__graphify__god_nodes` | Most connected nodes (hub detection) |
+| `graph_stats` | `mcp__graphify__graph_stats` | Node/edge/community counts |
+| `get_community` | `mcp__graphify__get_community` | All nodes in a named community |
+
+**Primary query flow (LLM → MCP):**
+```
+1. LLM calls mcp__graphify__query_graph({
+     question: "What imports auth.ts?",
+     mode: "bfs",
+     depth: 3,
+     token_budget: 2000,
+   })
+2. MCP server queries in-memory graph → returns structured JSON
+3. graphify-parser.ts parses JSON → GraphFinding[]
+4. Finding enters attention.graphFindings → rendered in preamble
 ```
 
-**Problems:**
-- 30s timeout per query
-- New process per query (no state reuse)
-- Only `query` tool available
-
-### Better: MCP Server
-
-Graphify provides an MCP server (`python -m graphify.serve`) that exposes:
-
-| Tool | Description |
-|------|-------------|
-| `query_graph` | BFS/DFS traversal with keyword scoring |
-| `get_node` | Full details for a specific node |
-| `get_neighbors` | All direct neighbors with edge details |
-| `get_community` | All nodes in a community |
-| `god_nodes` | Most connected nodes |
-| `graph_stats` | Node/edge/community counts |
-| `shortest_path` | Shortest path between two concepts |
-
-**Advantages:**
-- Persistent server (no process spawn overhead)
-- Sub-second queries (in-memory graph)
-- Structured output (not raw JSON parsing)
-- Multiple query strategies (BFS vs DFS)
-- Token budget control
-
-### Recommended v2 Architecture
-
-```typescript
-// Start MCP server once per session
-const mcpProcess = Bun.spawn([
-  "python", "-m", "graphify.serve",
-  "graphify-out/graph.json"
-], {
-  ipc: true,  // For MCP protocol
-});
-
-// Query via MCP (structured, fast)
-const result = await mcpClient.call("query_graph", {
-  question: "What imports auth.ts?",
-  mode: "bfs",
-  depth: 3,
-  token_budget: 2000,
-});
+**Fallback query flow (attend-tool → CLI):**
+```
+1. attend-tool calls graphifyQuery(projectRoot, question)
+2. graphify-client.ts: MCP unavailable? → fallback to CLI
+3. Bun.spawn(["graphify", "query", question, "--graph", graphPath])
+4. Parse stdout → GraphFinding[]
 ```
 
-### Migration Path
+### Advantages of MCP over CLI
 
-1. **v1 (current):** CLI integration — works, but slow
-2. **v1.1:** Add MCP server detection — prefer MCP over CLI when available
-3. **v2:** Full MCP integration — persistent server, structured queries, caching
+| Aspect | MCP | CLI |
+|--------|-----|-----|
+| Query time | Sub-second (in-memory) | Up to 30s (subprocess) |
+| Process overhead | Zero (persistent) | New process per query |
+| Available tools | 7 tools (query, node, neighbors, path, etc.) | 1 tool (query only) |
+| Output | Structured JSON | Unstructured stdout |
+| Lifecycle | Managed by OMP | Per-invocation |
+
+### Lifecycle: OMP Management
+
+OMP handles the MCP server lifecycle transparently:
+1. **Detection:** On first `noesis_attend(graphQueries)`, OMP checks if MCP server is available
+2. **Start:** If unavailable, OMP starts `python -m graphify.serve graphify-out/graph.json`
+3. **Query:** LLM calls MCP tools directly; attend-tool uses CLI fallback for preamble evidence
+4. **Session:** Server persists for the entire OMP session
+5. **Teardown:** OMP terminates the MCP server at session end
+
+No custom MCP client is needed — the LLM calls MCP tools directly via OMP's MCP infrastructure using the `mcp__graphify__*` naming convention.

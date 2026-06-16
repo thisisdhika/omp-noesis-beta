@@ -15,7 +15,6 @@ Noesis adds a structured, durable, and formally principled cognitive layer to OM
 - **Compaction Survival** — Typed cognitive state survives OMP compaction
 - **Learning Loops** — Failure → root cause → fix → prevention
 - **Smart-Zone Protection** — ≤2000-token bounded preamble
-- **Ultra-Skills** — Cognitive-state-enhanced agent skills
 
 ## Quick Start
 
@@ -23,7 +22,6 @@ Noesis adds a structured, durable, and formally principled cognitive layer to OM
 # 1. Prerequisites
 bun --version        # >= 1.3.0
 omp --version        # >= 15.6.0
-graphify --version   # >= 0.3.0
 
 # 2. Install noesis
 omp install omp-noesis
@@ -34,7 +32,7 @@ omp install omp-noesis
 # 4. Verify
 omp doctor
 ls .omp/noesis/state.json
-ls graphify-out/graph.json
+ls .omp/config.yml
 ```
 
 ## Architecture
@@ -42,12 +40,12 @@ ls graphify-out/graph.json
 ```
 ┌─────────────────────────────────────────┐
 │              Oh My Pi                   │
-│  ┌─────────┐ ┌─────────┐ ┌─────────┐ │
-│  │  Hooks   │ │ Tools   │ │ Skills  │ │
-│  └────┬────┘ └────┬────┘ └────┬────┘ │
-└───────┼───────────┼───────────┼───────┘
-        │           │           │
-┌───────▼───────────▼───────────▼───────┐
+│  ┌─────────┐         ┌─────────┐  │
+│  │  Hooks   │         │ Tools   │  │
+│  └────┬────┘         └────┬────┘  │
+└───────┼───────────────────┼───────┘
+        │                   │        
+┌───────▼───────────────────▼───────┐
 │           omp-noesis v0.1.0             │
 │  ┌─────────┐ ┌─────────┐ ┌─────────┐     │
 │  │Attention│ │ Belief  │ │Inference│     │
@@ -70,6 +68,7 @@ ls graphify-out/graph.json
 | [docs/BOUNDARY_MATRIX.md](docs/BOUNDARY_MATRIX.md) | System ownership matrix |
 | [docs/GRAPHIFY_CONTRACT.md](docs/GRAPHIFY_CONTRACT.md) | Graphify integration contract |
 | [docs/OBSIDIAN_CONTRACT.md](docs/OBSIDIAN_CONTRACT.md) | Projection contract |
+| [docs/GRAPHIFY_DEEP_DIVE.md](docs/GRAPHIFY_DEEP_DIVE.md) | Graphify integration deep dive |
 | [docs/TESTING_STRATEGY.md](docs/TESTING_STRATEGY.md) | Testing methodology |
 
 ## License

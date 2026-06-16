@@ -4,9 +4,10 @@
 > **Date:** 2026-06-15  
 > **Status:** Finalized
 
-## 1. Integration Philosophy
-
 Graphify is the required perception substrate. Noesis queries Graphify but never builds, replaces, or wraps it as a user tool.
+
+MCP (Model Context Protocol) is the primary integration path for LLM-to-Graphify queries. The CLI serves as a fallback for automated queries (attend-tool preamble evidence) and for graphs built outside a running MCP session. OMP manages the MCP server lifecycle — no custom client is needed.
+
 
 ## 2. Availability Detection
 
@@ -16,6 +17,8 @@ Graphify is the required perception substrate. Noesis queries Graphify but never
 3. Check freshness: mtime of graph vs most recent source file
 4. Set capability: FULL | STALE | NO_GRAPH | DEGRADED
 ```
+
+MCP tools are the primary query path for LLM graph queries. CLI commands below serve as the fallback for attend-tool automated queries and for OMP-orchestrated build/update operations.
 
 ## 3. CLI Commands Used
 
@@ -30,7 +33,7 @@ graphify query "..." --graph graphify-out/graph.json   # Primary query
 ## 4. Commands Never Used
 
 - `graphify . --obsidian` (Obsidian export handled separately)
-- `graphify serve` (MCP is future enhancement)
+- `graphify serve` (MCP server launched by OMP directly, not via CLI)
 - `graphify global` (Cross-project is future)
 - `graphify prs` (Out of scope)
 - `graphify watch` (OMP handles file watching)
@@ -75,7 +78,7 @@ these fields when committing beliefs.
 
 ```
 1. TRIGGER: Agent calls noesis_attend with graphQueries
-2. QUERY: Run graphify query with 30s timeout via graphify-client.query()
+2. QUERY: MCP tool call first; CLI fallback if MCP unavailable, with 30s timeout via graphify-client.query()
    Note: No capability check or auto-update for stale graphs.
    Agent must manually run `graphify . --update` if needed.
 3. PARSE: parseQueryOutput extracts structured findings (nodes, relations,
@@ -87,8 +90,7 @@ these fields when committing beliefs.
 ```
 ## 8. Retrieval-Before-Read Policy (Future — v2)
 
-> **Note:** This policy is not yet implemented. Current behavior: the agent calls
-> `noesis_attend(graphQueries)`, which runs sequential CLI queries and stores
+> `noesis_attend(graphQueries)`, which runs MCP queries (or CLI fallback) and stores
 > findings in attention. There is no automatic enforcement of "query graph before
 > reading files" — that discipline is left to the agent's judgment.
 >
@@ -108,20 +110,41 @@ these fields when committing beliefs.
 | JSON parse failure | `parseQueryOutput` returns `[]` (silent empty findings) |
 | Unknown confidence value | Normalised to `"AMBIGUOUS"` |
 | All findings invalid (mixed input) | Valid findings kept; invalid entries silently skipped |
+| MCP server fails to start | Init-command or runtime startup → error logged; falls back to CLI queries |
+| MCP tool call fails | Configurable retry logic; after max retries → CLI fallback |
+| MCP connection lost | OMP detects disconnection; next query triggers reconnection; CLI fallback during reconnection |
 
-## 10. MCP Server Path (Future)
+## 10. MCP Integration
 
-```bash
-python -m graphify.serve graphify-out/graph.json
-```
+MCP (Model Context Protocol) is the primary query interface for LLM-to-Graphify queries.
 
-Provides structured JSON output. v1 uses CLI; MCP is future enhancement.
+### Server Lifecycle (managed by OMP)
+
+- MCP server starts lazily on first graph query
+- Server command: `python -m graphify.serve graphify-out/graph.json`
+- Server persists for the session; OMP manages reconnection on failure
+- No custom MCP client needed — LLM tools call MCP tools directly
+
+### Query Flow
+
+1. LLM makes MCP tool call to graphify query
+2. If MCP unavailable → CLI fallback via `graphify query "..." --graph graphify-out/graph.json`
+3. Results in structured JSON regardless of path
+
+### CLI Fallback
+
+The CLI remains the fallback for:
+- attend-tool preamble evidence queries (automated, no LLM in loop)
+- Graph build/update operations
+- Detection and capability checks
+- MCP server startup failures
+
 
 ## 11. Design Rules
 
 1. Noesis queries Graphify; never builds, replaces, or wraps it.
 2. Graph evidence is surfaced as candidates, not auto-committed.
-3. CLI only for v1; MCP is future enhancement.
+3. MCP is primary query path; CLI is fallback for automated and build operations.
 4. Confidence is always evidence-grounded for graph sources.
 5. Stale graphs get confidence penalties, not query refusals.
 6. DEGRADED mode is graceful: rest of noesis still works.

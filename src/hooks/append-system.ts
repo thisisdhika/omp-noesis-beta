@@ -69,6 +69,18 @@ noesis: task cognitive state | mnemopi: cross-session memory | hindsight: sessio
 <compaction>
 State survives via survivor set in compaction context + preserveData.noesis + .omp/noesis/state.json.
 </compaction>
+<graphify-mcp>
+When graph features are available, you can call these MCP tools directly:
+- mcp__graphify__query_graph — BFS/DFS traversal with keyword scoring
+- mcp__graphify__get_node — Full details for a specific node
+- mcp__graphify__get_neighbors — All direct neighbors with edge details
+- mcp__graphify__shortest_path — Shortest path between two concepts
+- mcp__graphify__god_nodes — Most connected nodes
+- mcp__graphify__graph_stats — Node/edge/community counts
+- mcp__graphify__get_community — All nodes in a community
+
+Use these for on-demand graph exploration. The attend-tool handles automated preamble evidence via CLI.
+</graphify-mcp>
 </noesis>`;
 
 // ============================================================================

@@ -204,7 +204,7 @@ describe("noesis_believe integration", () => {
 - Simulate full agent sessions with turn sequences
 - Test compaction survival as black-box property
 - Test learning loop effectiveness
-- Test skill loading and APPEND_SYSTEM effectiveness
+- Test APPEND_SYSTEM injection via before_agent_start hook
 
 ### Example Matrix
 
@@ -224,7 +224,6 @@ describe("noesis_believe integration", () => {
 |---|---|---|
 | Graphify Grounding | Agent queries Graphify → commits belief → survives compaction | Belief content matches graph output |
 | Smart Zone | Agent accumulates 50 beliefs → preamble stays ≤2000 tokens | Token count verified |
-| Skill Effectiveness | Agent with noesis skill vs. agent without | Task completion rate, token efficiency |
 
 ### Sample Test
 
@@ -237,7 +236,6 @@ describe("Product: Learning Loop prevents repeated failures", () => {
     const sim = new AgentSimulator({
       projectRoot: "/tmp/test-project",
       loadNoesis: true,
-      loadSkills: ["noesis", "noesis-learning"]
     });
 
     // Session 1: Agent encounters build failure

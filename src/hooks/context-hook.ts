@@ -14,8 +14,22 @@ import type { NoesisRuntime } from "../runtime.js";
 import type { CapabilityLevel, RenderContext } from "../schema.js";
 import { buildPreamble } from "../rendering/preamble-builder.js";
 import { detectCapability } from "../infrastructure/graphify-client.js";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 
 /** Module-level cache: detect once and reuse across turns. */
+
+/** Check if MCP config has graphify server entry. */
+function hasMcpGraphify(projectRoot: string): boolean {
+  const mcpPath = join(projectRoot, ".omp", "mcp.json");
+  if (!existsSync(mcpPath)) return false;
+  try {
+    const config = JSON.parse(readFileSync(mcpPath, "utf-8"));
+    return !!config.mcpServers?.graphify;
+  } catch {
+    return false;
+  }
+}
 let _capability: CapabilityLevel | null = null;
 
 /**
@@ -30,9 +44,12 @@ export function registerContextHook(pi: ExtensionAPI, runtime: NoesisRuntime): v
       _capability = await detectCapability(runtime.projectRoot);
     }
 
+    const hasMcp = hasMcpGraphify(runtime.projectRoot);
+
     const renderContext: RenderContext = {
       capabilityLevel: _capability,
       contextHookFired: true,
+      hasMcpGraphify: hasMcp,
     };
 
 

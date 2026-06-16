@@ -44,7 +44,7 @@ This creates:
 - `.omp/noesis/` directory
 - `.omp/noesis/state.json` with initial empty cognitive state
 
-> Note: Noesis does NOT create a `.omp/config.yml`. Configuration is injected by OMP via the extension API.
+> The init command also creates `.omp/config.yml` with recommended compaction settings (enabled, strategy: context-full, thresholdTokens: 160000). Existing config is deep-merged — your non-compaction keys are preserved.
 
 ### Step 4: Verify
 
@@ -59,11 +59,20 @@ ls .omp/noesis/state.json
 ls graphify-out/graph.json
 ```
 
-## Configuration (Planned Feature)
+## Configuration
 
-The full YAML configuration system is a future enhancement. Noesis currently reads all settings from the OMP extension API at load time. Settings such as `autoUpdate`, `staleThresholdHours`, `maxTokens`, and `vault.backend` are planned for a `.omp/config.yml`-based configuration file.
+Noesis uses a project-level `.omp/config.yml` for compaction settings. The `/noesis:init` command creates or updates this file with recommended defaults.
 
-For now, vault backend selection is automatic via heuristic detection (see [vault-detector.ts](src/vault/vault-detector.ts)):
+**Default compaction settings:**
+```yaml
+compaction:
+  enabled: true
+  strategy: context-full
+  autoContinue: true
+  thresholdTokens: 160000
+```
+
+Vault backend selection is automatic via heuristic detection (see [vault-detector.ts](src/vault/vault-detector.ts)):
 - `.obsidian/` directory exists → `"obsidian"`
 - `MEMORY.md` file exists → `"local"`
 - `.omp/mnemopi.db` file exists → `"mnemopi"`
@@ -107,7 +116,7 @@ Mnemopi backend is detected automatically when `.omp/mnemopi.db` exists.
 
 1. Start an OMP session
 2. The extension loads automatically from `~/.omp/plugins/` — no manual config needed
-3. The cognitive preamble will appear in the first LLM call
+3. The Noesis system prompt is injected via the before_agent_start hook (always present). The cognitive preamble (beliefs, workflow, learning) appears in the LLM context each turn.
 4. Use `noesis_attend`, `noesis_focus`, `noesis_believe`, `noesis_commit`, `noesis_infer`, `noesis_recall`, and `noesis_vault_search` as needed
 
 ## Troubleshooting

@@ -765,3 +765,112 @@ MCP Server (persistent):
 4. Add circuit breaker (3-failure threshold)
 5. Add retry with backoff (2 retries, exponential)
 6. Add metrics (queries, successes, failures, avgDuration)
+
+---
+
+## 10. MCP Integration
+
+### 10.1 MCP as Primary Integration for LLM Graph Queries
+
+The Model Context Protocol (MCP) server is the **primary integration surface** for LLM graph queries. Instead of spawning a new CLI process per query (the current approach), the LLM calls MCP tools directly through OMP's MCP gateway.
+
+| Aspect | CLI (Legacy) | MCP (Primary) |
+|--------|--------------|---------------|
+| Process model | Spawns new process per query | Persistent server, zero overhead |
+| Latency | 30s timeout per query | Sub-second |
+| Tools available | `query` only | `query_graph`, `get_node`, `get_neighbors`, `shortest_path`, `god_nodes`, `graph_stats` |
+| Result format | JSON string (must parse) | Structured tool response |
+| Streaming | No | Yes (NDJSON) |
+
+**Best Practice:** "Use MCP as the primary integration for LLM-driven graph queries. The persistent server eliminates subprocess overhead, provides structured tool calls instead of string parsing, and enables rich query types (BFS, DFS, node lookup, shortest path) beyond simple text queries."
+
+**Verdict:** ✅ MCP is the correct pattern. The LLM can call specific graph tools (`get_node`, `get_neighbors`, `shortest_path`) with structured parameters, getting back typed responses without parsing CLI output.
+
+### 10.2 CLI as Fallback for attend-tool Automated Queries
+
+The attend-tool's preamble generation performs automated graph queries that don't need the full MCP tool surface. These queries are:
+- **Predefined** — the same question runs on every turn (e.g., "What changed recently?")
+- **Non-interactive** — no exploration, just fetch
+- **Low-risk** — preamble evidence is ephemeral, not durable
+
+For these cases, the CLI is a **simpler, lighter fallback**:
+
+```
+MCP available   → Use MCP `query_graph` tool
+MCP unavailable → Use CLI `graphify query`
+CLI unavailable → DEGRADED (no graph features)
+```
+
+**Best Practice (AWS Well-Architected):** "Maintain fallback orders in a central tool registry. When the primary integration fails, degrade to a simpler mechanism rather than failing entirely."
+
+**Verdict:** ✅ CLI fallback is correct for automated preamble queries. The attend-tool doesn't need the full MCP toolset — it just fetches a text summary for display.
+
+### 10.3 OMP Manages MCP Server Lifecycle
+
+OMP manages the MCP server process lifecycle transparently:
+
+| Phase | Action |
+|-------|--------|
+| **Discovery** | OMP detects Graphify capability (CLI available, MCP config present) |
+| **Lazy start** | First graph query triggers MCP server launch; no startup cost if graph is never used |
+| **Session persistence** | Server stays alive for the entire agent session |
+| **Session end** | OMP terminates the MCP server process on session cleanup |
+| **Recovery** | If MCP server crashes, OMP falls back to CLI and logs the event |
+
+```typescript
+// OMP lifecycle hooks (conceptual)
+onFirstGraphQuery → spawnMcpServer()       // Lazy start
+onSessionEnd      → killMcpServer()         // Clean shutdown
+onMcpCrash        → logEvent(); useCliFallback()  // Graceful degradation
+```
+
+**Best Practice (MCP Specification):** "The host (OMP) is responsible for managing the MCP server lifecycle — spawning, monitoring, and terminating the server process. Servers should be long-lived, persisting for the duration of the client session."
+
+**Verdict:** ✅ OMP follows the MCP lifecycle specification. Lazy start avoids wasted resources when graph features aren't used. Session-scoped persistence matches the MCP design.
+
+### 10.4 No Custom MCP Client Needed
+
+The LLM calls MCP tools **directly** through OMP's built-in MCP gateway. There is no custom MCP client, adapter layer, or protocol bridging:
+
+- **Standard MCP tool definitions** are injected into the system prompt
+- **OMP's hook system** (`append-system.ts`, `context-hook.ts`) registers the tool schemas
+- **Transport handling** (stdio or HTTP SSE) is managed by OMP, not the agent
+- **No custom protocol parsing** — the LLM calls tools by name with typed parameters
+
+```typescript
+// OMP registers MCP tools as standard agent tools
+// No custom client needed — the LLM invokes them directly
+tools: [
+  {
+    name: "query_graph",
+    description: "Query the knowledge graph using BFS/DFS traversal",
+    inputSchema: {
+      type: "object",
+      properties: {
+        question: { type: "string" },
+        mode: { type: "string", enum: ["bfs", "dfs"] },
+        depth: { type: "number", maximum: 6 },
+      },
+    },
+  },
+  // ... get_node, get_neighbors, shortest_path, etc.
+]
+```
+
+**Best Practice (OMP Harness Design):** "Treat MCP tools as first-class agent tools. Register them in the system prompt with full JSON Schema definitions. The LLM calls them natively — no adapter, no custom client, no serialization layer."
+
+**Verdict:** ✅ No custom MCP client is the correct approach. OMP's MCP gateway makes graph tools available as standard tool calls, keeping the integration surface minimal and maintainable.
+
+### 10.5 Best Practices for MCP Tool Usage
+
+| Practice | Recommendation | Rationale |
+|----------|---------------|-----------|
+| **Prefer specific tools** | Use `get_node` / `get_neighbors` over generic `query_graph` | Structured responses are faster and more precise than text summaries |
+| **Depth limits** | Cap BFS/DFS depth at 3-4 hops | Deeper traversals return too many nodes and degrade relevance |
+| **Entry points first** | Use `god_nodes` to find starting nodes, then explore with `get_neighbors` | Avoids scanning the entire graph for query-relevant nodes |
+| **Cache hot nodes** | Store frequently accessed node IDs in working memory | Reduces redundant MCP calls for core project entities |
+| **Use `graph_stats` for freshness** | Check `graph_stats` before querying to verify staleness | Avoids querying a stale graph when `--update` is needed |
+| **Stream large results** | Request NDJSON streaming for queries expecting 50+ nodes | Avoids response truncation and token budget issues |
+| **Handle disconnects** | Expect `McpError` on server restart; retry with CLI fallback | MCP server may restart during long sessions |
+
+**Verdict:** ✅ Following these best practices maximizes MCP's advantages — speed, precision, and structured data — while maintaining robustness through the CLI fallback path. The key insight is that MCP and CLI serve different query profiles: MCP for interactive exploration, CLI for automated background tasks.

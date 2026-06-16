@@ -288,10 +288,54 @@ export async function initCommand(pi: ExtensionAPI, args: InitArgs = {}): Promis
     }
   }
 
-  // 9. Done
+  // 9. Write MCP config for Graphify server (if Python available)
+  const mcpConfigPath = join(ompDir, "mcp.json");
+  const mcpConfig = {
+    "$schema": "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/src/config/mcp-schema.json",
+    mcpServers: {
+      graphify: {
+        command: "python3",
+        args: ["-m", "graphify.serve", "graphify-out/graph.json"],
+      },
+    },
+  };
+
+  if (existsSync(mcpConfigPath)) {
+    try {
+      const existing = JSON.parse(readFileSync(mcpConfigPath, "utf-8"));
+      if (!existing.mcpServers?.graphify) {
+        existing.mcpServers = existing.mcpServers || {};
+        existing.mcpServers.graphify = mcpConfig.mcpServers.graphify;
+        writeFileSync(mcpConfigPath, JSON.stringify(existing, null, 2), "utf-8");
+        pi.sendMessage({
+          customType: "noesis:init-status",
+          content: "Added Graphify MCP server to .omp/mcp.json",
+          display: true,
+          attribution: "agent",
+        });
+      }
+    } catch {
+      writeFileSync(mcpConfigPath, JSON.stringify(mcpConfig, null, 2), "utf-8");
+      pi.sendMessage({
+        customType: "noesis:init-status",
+        content: "Wrote Graphify MCP config to .omp/mcp.json (replaced invalid JSON)",
+        display: true,
+        attribution: "agent",
+      });
+    }
+  } else {
+    writeFileSync(mcpConfigPath, JSON.stringify(mcpConfig, null, 2), "utf-8");
+    pi.sendMessage({
+      customType: "noesis:init-status",
+      content: "Wrote Graphify MCP config to .omp/mcp.json",
+      display: true,
+      attribution: "agent",
+    });
+  }
+  // 10. Done
   pi.sendMessage({
     customType: "noesis:init-status",
-    content: "Noesis initialized!",
+    content: "Noesis initialized! Restart TUI to activate graph features.",
     display: true,
     attribution: "agent",
   });

@@ -25,7 +25,7 @@ ls -la .omp/noesis/state.json
 | State file corrupted | Disk write interrupted | Restore from backup or remove state.json to recreate fresh state | Restore from `preserveData.noesis` if available |
 | Double preamble | Hook precedence bug | Restart session | Check `contextHookFired` flag |
 | Vault not writing | Path not writable | Check permissions | Switch to `backend: "noop"` |
-| Agent never uses noesis | Skills not loaded | Verify `skills/noesis/SKILL.md` exists | Check OMP skill discovery paths |
+| Agent never uses noesis | System prompt hook not firing | Check `before_agent_start` hook registration in extension logs | Verify extension loaded via `omp doctor` |
 | Preamble too large | Too many high-confidence beliefs | Archive old beliefs | Reduce `maxTokens` |
 | Graphify queries timeout | Large codebase or slow LLM | Increase timeout | Use `graphify . --update` more frequently |
 

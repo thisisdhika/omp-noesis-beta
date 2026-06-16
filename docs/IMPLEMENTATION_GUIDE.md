@@ -250,42 +250,26 @@ src/vault/
 
 **Acceptance:** Vault projection is best-effort and never blocks tool success.
 
-## Phase 5: Skills & System Prompt (Week 6)
+## Phase 5: System Prompt Injection (Week 6)
 
-### Day 35-39: Skill Suite
+### Day 35-36: APPEND_SYSTEM Hook
 ```
-skills/
-  noesis/SKILL.md
-  noesis/references/belief-patterns.md
-  noesis/references/learning-patterns.md
-  noesis/references/graphify-patterns.md
-  noesis-belief/SKILL.md
-  noesis-learning/SKILL.md
-  noesis-workflow/SKILL.md
-  noesis-graphify/SKILL.md
+src/hooks/append-system.ts
 ```
+- Compact APPEND_SYSTEM constant (~300 tokens, 71% reduction from original APPEND_SYSTEM.md)
+- `before_agent_start` hook chains: APPEND_SYSTEM + OMP system prompt + capability footer
+- Replaces previous skill-based approach (skills/ directories deleted — redundant shelfware)
 
-> Note: APPEND_SYSTEM.md lives at project root, not under `skills/`. It is referenced directly by `context-hook.ts`.
-
-### Day 40: System Prompt Integration
-```
-src/hooks/context-hook.ts
-```
-- Inject APPEND_SYSTEM content into preamble
-
-### Day 41: Behavioral Tests
+### Day 37: Behavioral Tests
 ```
 tests/behavioral/
   compaction-survival.test.ts
   learning-loop.test.ts
-  graphify-grounding.test.ts
   belief-revision.test.ts
-  smart-zone.test.ts
   graceful-degradation.test.ts
-  skill-effectiveness.test.ts
 ```
 
-**Acceptance:** Agent with skills uses noesis tools correctly.
+**Acceptance:** Agent receives Noesis instructions via system prompt chaining. No skills directories needed.
 
 ## Phase 6: Polish & Ship (Week 7)
 
@@ -312,4 +296,4 @@ bun test --coverage
 git tag v0.1.0
 ```
 
-**Acceptance:** All ~507 tests pass.
+**Acceptance:** All ~555 tests pass.

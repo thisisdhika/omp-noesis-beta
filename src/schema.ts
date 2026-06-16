@@ -350,6 +350,7 @@ export const RenderContextSchema = z.object({
   }).optional(),
   staleReviewFlags: z.array(z.string()).optional(),
   contextHookFired: z.boolean().default(false),
+  hasMcpGraphify: z.boolean().optional(),
 });
 export type RenderContext = z.infer<typeof RenderContextSchema>;
 

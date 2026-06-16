@@ -140,10 +140,20 @@ Thin wrappers over domain logic. Each validates params, calls domain, persists, 
 | Hook | File | Responsibility |
 |---|---|---|
 | `context` | `context-hook.ts` | Sole live preamble injector (read-only) |
-| `before_agent_start` | `before-agent-start-hook.ts` | Safety-net fallback (1-2 sentences) |
+| `before_agent_start` | `append-system.ts` (re-exported via `before-agent-start-hook.ts`) | Primary system prompt injector: chains APPEND_SYSTEM + OMP prompt + capability footer |
 | `session.compacting` | `compaction-hook.ts` | Survivor + preserveData |
 | `tool_result` | `tool-result-hook.ts` | Phase-1 learning capture |
 | `turn_end` | `turn-end-hook.ts` | Eviction + vault flush |
+
+### 3.7a System Prompt Injection (`src/hooks/append-system.ts`)
+
+The `before_agent_start` hook injects the Noesis identity and behavioral rules into the LLM system prompt via chaining:
+
+1. **APPEND_SYSTEM** (~300 tokens) — static Noesis instructions (identity, rules, graphify trust model, gotchas, templates, confidence values, boundaries, compaction survival)
+2. **OMP system prompt** — chained through from `event.systemPrompt` (tools, workflow, skills, context files)
+3. **Capability footer** — one-liner `[Noesis: FULL. State: .omp/noesis/state.json]`
+
+This replaces the previous approach of embedding instructions in SKILL.md files (deleted) which were never auto-injected (`alwaysApply: false`).
 
 ### 3.8 Vault Layer (`src/vault/`)
 
