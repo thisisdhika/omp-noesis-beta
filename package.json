@@ -16,11 +16,11 @@
     ]
   },
   "scripts": {
-    "test": "bun test --coverage",
-    "test:watch": "bun test --watch",
-    "test:unit": "bun test tests/unit",
-    "test:integration": "bun test tests/integration",
-    "test:behavioral": "bun test tests/behavioral",
+    "test": "bun test --isolate --coverage",
+    "test:watch": "bun test --isolate --watch",
+    "test:unit": "bun test --isolate tests/unit",
+    "test:integration": "bun test --isolate tests/integration",
+    "test:behavioral": "bun test --isolate tests/behavioral",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
     "build": "bun build src/index.ts --outdir dist --target bun",
