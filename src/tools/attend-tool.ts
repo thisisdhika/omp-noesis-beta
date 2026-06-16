@@ -44,13 +44,12 @@ export function registerAttendTool(pi: ExtensionAPI, runtime: NoesisRuntime): vo
       const allFindings: GraphFinding[] = [];
       if (graphQueries !== undefined && graphQueries.length > 0) {
         for (const q of graphQueries) {
-          try {
-            const result = await graphifyQuery(runtime.projectRoot, q);
-            allFindings.push(...result);
-            findingsCount += result.length;
-          } catch {
-            // Graphify query failed — non-fatal, skip its findings
+          const result = await graphifyQuery(runtime.projectRoot, q);
+          if (result.error) {
+            console.warn(`[noesis_attend] Graph query "${q}" failed: ${result.error}`);
           }
+          allFindings.push(...result.findings);
+          findingsCount += result.findings.length;
         }
       }
 

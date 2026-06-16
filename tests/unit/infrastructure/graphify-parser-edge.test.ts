@@ -176,6 +176,92 @@ describe("graphify-parser edge cases", () => {
     });
   });
 
+  describe("parseQueryOutput optional fields", () => {
+    it("should extract inferredConfidence when present and valid", () => {
+      const findings = parseQueryOutput(
+        JSON.stringify({
+          findings: [{ nodes: ["A"], confidence: "INFERRED", inferredConfidence: 0.85 }],
+        }),
+      );
+      expect(findings).toHaveLength(1);
+      expect(findings[0]!.inferredConfidence).toBe(0.85);
+    });
+
+    it("should omit inferredConfidence when out of range", () => {
+      const findings = parseQueryOutput(
+        JSON.stringify({
+          findings: [{ nodes: ["A"], confidence: "INFERRED", inferredConfidence: 0.3 }],
+        }),
+      );
+      expect(findings).toHaveLength(1);
+      expect(findings[0]!.inferredConfidence).toBeUndefined();
+    });
+
+    it("should extract community when present", () => {
+      const findings = parseQueryOutput(
+        JSON.stringify({
+          findings: [{ nodes: ["A"], confidence: "EXTRACTED", community: "auth-module" }],
+        }),
+      );
+      expect(findings).toHaveLength(1);
+      expect(findings[0]!.community).toBe("auth-module");
+    });
+
+    it("should extract godNodes when present", () => {
+      const findings = parseQueryOutput(
+        JSON.stringify({
+          findings: [{ nodes: ["A"], confidence: "EXTRACTED", godNodes: ["config.ts", "index.ts"] }],
+        }),
+      );
+      expect(findings).toHaveLength(1);
+      expect(findings[0]!.godNodes).toEqual(["config.ts", "index.ts"]);
+    });
+
+    it("should filter non-string godNodes", () => {
+      const findings = parseQueryOutput(
+        JSON.stringify({
+          findings: [{ nodes: ["A"], confidence: "EXTRACTED", godNodes: ["config.ts", null, 42] }],
+        }),
+      );
+      expect(findings).toHaveLength(1);
+      expect(findings[0]!.godNodes).toEqual(["config.ts"]);
+    });
+
+    it("should extract surprisingConnections when present", () => {
+      const findings = parseQueryOutput(
+        JSON.stringify({
+          findings: [{ nodes: ["A"], confidence: "INFERRED", surprisingConnections: ["deploy.ts"] }],
+        }),
+      );
+      expect(findings).toHaveLength(1);
+      expect(findings[0]!.surprisingConnections).toEqual(["deploy.ts"]);
+    });
+
+    it("should extract rawOutput when present", () => {
+      const findings = parseQueryOutput(
+        JSON.stringify({
+          findings: [{ nodes: ["A"], confidence: "EXTRACTED", rawOutput: "raw text" }],
+        }),
+      );
+      expect(findings).toHaveLength(1);
+      expect(findings[0]!.rawOutput).toBe("raw text");
+    });
+
+    it("should omit all optional fields when not present", () => {
+      const findings = parseQueryOutput(
+        JSON.stringify({
+          findings: [{ nodes: ["A"], confidence: "EXTRACTED" }],
+        }),
+      );
+      expect(findings).toHaveLength(1);
+      expect(findings[0]!.inferredConfidence).toBeUndefined();
+      expect(findings[0]!.community).toBeUndefined();
+      expect(findings[0]!.godNodes).toBeUndefined();
+      expect(findings[0]!.surprisingConnections).toBeUndefined();
+      expect(findings[0]!.rawOutput).toBeUndefined();
+    });
+  });
+
   describe("parseQueryOutput degenerate inputs", () => {
     it("should return empty array when results is not an array", () => {
       const findings = parseQueryOutput(

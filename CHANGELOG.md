@@ -4,6 +4,13 @@ All notable changes to omp-noesis.
 
 ## [0.1.0] — 2026-06-15
 
+### Changed
+- **`noesis:init` user-visible output** — Replaced all `pi.logger.*` calls (file-only logger) with `pi.sendMessage()` for user-visible status messages in the chat UI. All status messages use `display: true` and `attribution: "agent"`.
+- **`noesis:init` project config bootstrap** — Now writes/merges `.omp/config.yml` with recommended compaction settings (`enabled: true, strategy: context-full, autoContinue: true, thresholdTokens: 160000`). Existing config is deep-merged (preserves user keys), deprecated keys (`reserveTokens`, `keepRecentTokens`, `idleThresholdTokens`) are removed. Force mode (`--force`) overwrites entirely.
+- **`noesis:init` Graphify skill awareness** — After installing the Graphify skill, sends an LLM-visible `sendMessage` with `deliverAs: "steer"` telling the agent the skill is available at `skill://graphify` for codebase-aware reasoning.
+- **`noesis:init` return value** — Now returns a status string (`"initialized-full"`, `"initialized-degraded-no-cli"`, `"initialized-degraded-no-graphify"`) for programmatic callers.
+- **MockPi** — Added `sendMessage()` mock and `_getMessages()` test helper.
+
 ### Fixed
 - **Full type safety** — Eliminated all `as any` and `: any` annotations across source and test files. Zero TypeScript diagnostics (`tsc --noEmit` clean). 304 tests pass.
 - **Zod v4 migration** — Upgraded from zod@3 to zod@4 for compatibility with OMP's `TSchema = ZodType | TJsonSchema`. Fixed `z.record()` API change.
@@ -105,4 +112,11 @@ All notable changes to omp-noesis.
 
 #### Coverage Improvements
 - New test files: `focus-resolver.test.ts` (11 tests), `focus-command.test.ts` (6 tests), `vault-detector.test.ts` (4 tests), `schema-defaults.test.ts` (15 tests), `graphify-parser-edge.test.ts` (16 tests), `graphify-setup.test.ts` (5 tests), `ranking-strategy.test.ts` (13 tests), `state-manager-checkpoint.test.ts` (4 tests)
-- Augmented: `preamble-builder.test.ts` (+13), `survivor-builder.test.ts` (+4), `tools.test.ts` (+65), `filesystem-store.test.ts` (+1)
+- Augmented: `preamble-builder.test.ts` (+13), `survivor-builder.test.ts` (+4), `tools.test.ts` (+65), `filesystem-store.test.ts` (+1), `mock-pi.ts` (+15, sendMessage mock)
+
+#### `noesis:init` Command Redesign
+- Replaced `pi.logger.*` with `pi.sendMessage()` for user-visible output (logger goes to file only)
+- Added `.omp/config.yml` bootstrap with deep-merged recommended compaction settings (`thresholdTokens: 160000`)
+- Injects LLM-visible Graphify skill message via `sendMessage({ deliverAs: "steer" })`
+- Returns status string for programmatic callers
+- New test file: `init-command.test.ts` (14 tests, 56 assertions)

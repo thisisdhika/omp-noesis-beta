@@ -1,3 +1,5 @@
 compaction:
   enabled: true
-  strategy: handoff
+  strategy: context-full
+  autoContinue: true
+  thresholdTokens: 160000

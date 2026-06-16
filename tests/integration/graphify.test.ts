@@ -201,9 +201,15 @@ describe("Graphify Integration", () => {
     }, 180_000);
 
     it("query returns findings for a simple question", async () => {
-      const findings = await query(testDir, "What modules are in this project?");
-      expect(Array.isArray(findings)).toBe(true);
-      for (const finding of findings) {
+      const result = await query(testDir, "What modules are in this project?");
+      expect(result).toHaveProperty("findings");
+      expect(Array.isArray(result.findings)).toBe(true);
+      expect(typeof result.duration).toBe("number");
+      if (result.error) {
+        // Non-fatal: graph may not be built yet in some environments
+        return;
+      }
+      for (const finding of result.findings) {
         expect(typeof finding.query).toBe("string");
         expect(Array.isArray(finding.nodes)).toBe(true);
         expect(typeof finding.confidence).toBe("string");

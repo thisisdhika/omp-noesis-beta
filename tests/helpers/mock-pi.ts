@@ -19,6 +19,17 @@ export interface MockPi {
   registerTool(def: Record<string, unknown>): void;
   registerCommand(name: string, opts: Record<string, unknown>): void;
   on(event: string, handler: (...args: unknown[]) => unknown): void;
+  sendMessage(message: {
+    customType: string;
+    content: string;
+    display: boolean;
+    attribution?: string;
+    details?: unknown;
+  }, options?: {
+    triggerTurn?: boolean;
+    deliverAs?: "steer" | "followUp" | "nextTurn";
+  }): void;
+  _getMessages(): Array<unknown>;
   _toolCount(): number;
   _getTool(name: string): Record<string, unknown> | undefined;
   _getHooks(event: string): Array<(...args: unknown[]) => unknown>;
@@ -39,6 +50,7 @@ export function castToExtensionAPI(pi: MockPi): ExtensionAPI {
 export function createMockPi(): MockPi {
   const tools: Map<string, unknown> = new Map();
   const hooks: Map<string, Array<(...args: unknown[]) => unknown>> = new Map();
+  const messages: unknown[] = [];
 
   return {
     zod: z,
@@ -66,6 +78,23 @@ export function createMockPi(): MockPi {
     },
 
     // Test helpers
+    sendMessage(message: {
+      customType: string;
+      content: string;
+      display: boolean;
+      attribution?: string;
+      details?: unknown;
+    }, _options?: {
+      triggerTurn?: boolean;
+      deliverAs?: "steer" | "followUp" | "nextTurn";
+    }): void {
+      messages.push({ message, options: _options });
+    },
+
+    _getMessages(): Array<unknown> {
+      return [...messages];
+    },
+
     _getTool(name: string): Record<string, unknown> | undefined {
       return tools.get(name) as Record<string, unknown> | undefined;
     },

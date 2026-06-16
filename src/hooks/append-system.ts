@@ -1,17 +1,28 @@
-# APPEND_SYSTEM — Noesis Cognitive Substrate Instructions
+"use strict";
 
-> **Version:** 0.1.0
-> **Status:** Superseded by inline constant in `src/hooks/append-system.ts`
->
-> This file is the human-readable reference. The token-optimized version
-> (~300 tokens, 70% reduction) is embedded as a TypeScript string constant
-> in `src/hooks/append-system.ts` and injected into every agent turn via
-> the `before_agent_start` hook (chaining, not replacing OMP's system prompt).
+/**
+ * omp-noesis: Append System Hook
+ * Version: 0.1.0
+ *
+ * Injects the Noesis cognitive substrate instructions into the system prompt
+ * before every agent invocation.  Prepends the compact APPEND_SYSTEM block,
+ * chains OMP's own system prompt, and appends a capability footer.
+ *
+ * The APPEND_SYSTEM block is ~300 tokens — a 70% reduction from the original
+ * APPEND_SYSTEM.md by stripping tool schemas (already in the provider's native
+ * tools parameter), removing hedging, and compressing into imperative XML.
+ */
 
-## Compact version (injected into system prompt)
+import type { ExtensionAPI, BeforeAgentStartEvent, BeforeAgentStartEventResult } from "@oh-my-pi/pi-coding-agent";
+import type { NoesisRuntime } from "../runtime.js";
+import { detectCapability } from "../infrastructure/graphify-client.js";
+import type { CapabilityLevel } from "../schema.js";
 
-```xml
-<noesis>
+// ============================================================================
+// COMPACT APPEND SYSTEM (~300 tokens)
+// ============================================================================
+
+const APPEND_SYSTEM = `<noesis>
 <identity>Noesis-enhanced agent. Cognitive state persists at .omp/noesis/state.json across turns and compaction.</identity>
 
 <rules>
@@ -58,39 +69,31 @@ noesis: task cognitive state | mnemopi: cross-session memory | hindsight: sessio
 <compaction>
 State survives via survivor set in compaction context + preserveData.noesis + .omp/noesis/state.json.
 </compaction>
-</noesis>
-```
+</noesis>`;
 
-## Token savings
+// ============================================================================
+// HOOK REGISTRATION
+// ============================================================================
 
-| Metric | Original | Compact | Reduction |
-|--------|----------|---------|-----------|
-| Characters | ~4,200 | ~1,200 | 71% |
-| Estimated tokens | ~1,050 | ~300 | 71% |
-| What was cut | Tool catalog (duplicates OMP's native `tools` API parameter), context budget (enforced by preamble-builder), hedging words, prose descriptions, full sentences | | |
+/**
+ * Register the before_agent_start hook that prepends the compact Noesis
+ * APPEND_SYSTEM block, chains through OMP's system prompt, and appends a
+ * one-line capability footer.
+ *
+ * Chaining (not replacing) is critical: OMP's system prompt carries tool
+ * instructions, workflow rules, and skill listings.  We prepend our identity
+ * block before it and append a status footer after it.
+ */
+export function registerAppendSystemHook(pi: ExtensionAPI, runtime: NoesisRuntime): void {
+  pi.on("before_agent_start", async (event: BeforeAgentStartEvent): Promise<BeforeAgentStartEventResult> => {
+    const capability: CapabilityLevel = await detectCapability(runtime.projectRoot);
 
-## What was kept (high-signal)
-
-- **8 behavioral rules** — when-to-use-which-tool logic (NOT in tool schemas)
-- **7 gotchas** — failure patterns the model would otherwise learn the hard way
-- **Graphify trust model** — confidence mapping + stale penalty
-- **Templates** — fact/decision/learning format for consistent structured state
-- **Confidence values** — source → confidence mapping
-- **Memory boundaries** — prevents category confusion
-- **Compaction survival** — reassures the model its state persists
-
-## Injection mechanism
-
-The compact XML is injected via `src/hooks/append-system.ts` using OMP's
-`before_agent_start` extension hook:
-
-```
-APPEND_SYSTEM (static, ~300 tokens)
-  ↓ prepended
-OMP system prompt (tools, workflow, skills, context)
-  ↓ appended
-[Noesis: FULL. State: .omp/noesis/state.json] (one-liner footer)
-```
-
-The static APPEND_SYSTEM block is identical every turn → cached by the provider.
-Only the capability one-liner changes per turn.
+    return {
+      systemPrompt: [
+        APPEND_SYSTEM,
+        ...(event.systemPrompt ?? []),
+        `[Noesis: ${capability}. State: .omp/noesis/state.json]`,
+      ],
+    };
+  });
+}

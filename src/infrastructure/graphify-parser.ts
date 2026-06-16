@@ -147,13 +147,34 @@ export function parseQueryOutput(raw: string): GraphFinding[] {
 
   const timestamp = now();
 
-  return items.map((item): GraphFinding => ({
-    query: typeof item.query === "string" ? item.query : "",
-    nodes: Array.isArray(item.nodes) ? item.nodes.filter((n): n is string => typeof n === "string") : [],
-    relations: extractRelations(item),
-    confidence: toGraphConfidence(
-      typeof item.confidence === "string" ? item.confidence : "AMBIGUOUS",
-    ),
-    timestamp,
-  }));
+  return items.map((item): GraphFinding => {
+    const finding: GraphFinding = {
+      query: typeof item.query === "string" ? item.query : "",
+      nodes: Array.isArray(item.nodes) ? item.nodes.filter((n): n is string => typeof n === "string") : [],
+      relations: extractRelations(item),
+      confidence: toGraphConfidence(
+        typeof item.confidence === "string" ? item.confidence : "AMBIGUOUS",
+      ),
+      timestamp,
+    };
+
+    // Extract optional fields if present
+    if (typeof item.inferredConfidence === "number" && item.inferredConfidence >= 0.55 && item.inferredConfidence <= 0.95) {
+      finding.inferredConfidence = item.inferredConfidence;
+    }
+    if (typeof item.community === "string") {
+      finding.community = item.community;
+    }
+    if (Array.isArray(item.godNodes)) {
+      finding.godNodes = item.godNodes.filter((n): n is string => typeof n === "string");
+    }
+    if (Array.isArray(item.surprisingConnections)) {
+      finding.surprisingConnections = item.surprisingConnections.filter((n): n is string => typeof n === "string");
+    }
+    if (typeof item.rawOutput === "string") {
+      finding.rawOutput = item.rawOutput;
+    }
+
+    return finding;
+  });
 }

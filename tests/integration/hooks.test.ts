@@ -89,14 +89,19 @@ describe("hook registration", () => {
 // ---------------------------------------------------------------------------
 
 describe("before_agent_start execution", () => {
-  it("injects Noesis substrate system prompt", async () => {
+  it("injects Noesis substrate system prompt with chaining", async () => {
     const handler = pi._getHooks("before_agent_start")[0]!;
-    const event = {} as Record<string, unknown>;
+    const event = { systemPrompt: ["OMPSystemPrompt"] } as Record<string, unknown>;
     const result = (await handler(event)) as { systemPrompt?: string[] };
 
     expect(result.systemPrompt).toBeDefined();
-    expect(result.systemPrompt!.length).toBeGreaterThanOrEqual(1);
-    expect(result.systemPrompt![0]).toContain("Noesis cognitive substrate");
+    expect(result.systemPrompt!.length).toBeGreaterThanOrEqual(3);
+    // First block: compact APPEND_SYSTEM identity
+    expect(result.systemPrompt![0]).toContain("Noesis-enhanced agent");
+    // Second block: chained OMP system prompt
+    expect(result.systemPrompt![1]).toBe("OMPSystemPrompt");
+    // Last block: capability footer
+    expect(result.systemPrompt![result.systemPrompt!.length - 1]).toContain("Noesis:");
   });
 });
 

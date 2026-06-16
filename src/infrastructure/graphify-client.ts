@@ -55,6 +55,24 @@ export async function detectCapability(
 }
 
 // ============================================================================
+// QUERY RESULT TYPE
+// ============================================================================
+
+/**
+ * Structured result from a graphify query execution.
+ * Carries findings when successful, an error message on failure,
+ * and the wall-clock duration of the operation in milliseconds.
+ */
+export interface QueryResult {
+  /** Parsed graph query findings, empty on error. */
+  findings: GraphFinding[];
+  /** Error message if the query failed or no graph was found. */
+  error?: string;
+  /** Wall-clock duration of the query operation in milliseconds. */
+  duration: number;
+}
+
+// ============================================================================
 // QUERY EXECUTION
 // ============================================================================
 
@@ -66,14 +84,17 @@ export async function detectCapability(
  *
  * @param projectRoot - Absolute path to the project root.
  * @param question - Natural-language query string.
- * @returns Array of parsed GraphFindings (empty on failure or missing graph).
+ * @returns QueryResult with findings array, optional error message, and duration in ms.
  */
 export async function query(
   projectRoot: string,
   question: string,
-): Promise<GraphFinding[]> {
+): Promise<QueryResult> {
+  const start = Date.now();
   const graphPath = validateGraphPath(projectRoot);
-  if (!graphPath) return [];
+  if (!graphPath) {
+    return { findings: [], error: "No graph file found", duration: Date.now() - start };
+  }
 
   try {
     const proc = Bun.spawn(
@@ -86,9 +107,10 @@ export async function query(
     );
 
     const raw = await new Response(proc.stdout).text();
-    return parseQueryOutput(raw);
-  } catch {
-    return [];
+    return { findings: parseQueryOutput(raw), duration: Date.now() - start };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return { findings: [], error: message, duration: Date.now() - start };
   }
 }
 

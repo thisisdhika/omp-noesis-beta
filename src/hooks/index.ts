@@ -12,7 +12,7 @@
 import type { ExtensionAPI } from "@oh-my-pi/pi-coding-agent";
 import type { NoesisRuntime } from "../runtime.js";
 import { registerContextHook } from "./context-hook.js";
-import { registerBeforeAgentStartHook } from "./before-agent-start-hook.js";
+import { registerAppendSystemHook } from "./append-system.js";
 import { registerCompactionHook } from "./compaction-hook.js";
 import { registerToolResultHook } from "./tool-result-hook.js";
 import { registerTurnEndHook } from "./turn-end-hook.js";
@@ -23,7 +23,7 @@ import { registerTurnEndHook } from "./turn-end-hook.js";
  */
 export function registerHooks(pi: ExtensionAPI, runtime: NoesisRuntime): void {
   registerContextHook(pi, runtime);
-  registerBeforeAgentStartHook(pi, runtime);
+  registerAppendSystemHook(pi, runtime);
   registerCompactionHook(pi, runtime);
   registerToolResultHook(pi, runtime);
   registerTurnEndHook(pi, runtime);

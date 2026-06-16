@@ -39,55 +39,75 @@ graphify query "..." --graph graphify-out/graph.json   # Primary query
 
 ```
 Input: queryString
-1. Build: ["graphify", "query", queryString, "--graph", "graphify-out/graph.json"]
-2. Execute: Bun.spawn with timeout 30s
-3. Parse: Extract nodes, relations, confidence, communities
-4. Handle: exitCode 0 → findings; ≠0 → error; timeout → timeout error
+1. Validate graph path exists at graphify-out/graph.json
+   → If not found, return {findings: [], error: "No graph file found", duration}
+2. Build: ["graphify", "query", queryString, "--graph", graphPath]
+3. Execute: Bun.spawn with timeout 30s
+4. Parse: Extract nodes, relations, confidence + optional fields:
+   - inferredConfidence (number, 0.55–0.95)
+   - community (string)
+   - godNodes (string[])
+   - surprisingConnections (string[])
+   - rawOutput (string)
+5. Return: {findings: GraphFinding[], error?: string, duration: number}
+6. Any error (timeout, spawn failure, parse failure) →
+   {findings: [], error: <message>, duration} (structured error, never silent)
 ```
+## 6. Confidence Handling
 
-## 6. Confidence Translation
+The parser preserves Graphify's raw confidence category and optional numeric value.
+No automatic remapping or stale penalty is applied in code — the agent interprets
+these fields when committing beliefs.
 
-| Graphify | Noesis | Stale Penalty (-0.10) |
+| Graphify | Parser Output | Notes |
 |---|---|---|
-| EXTRACTED | 1.0 | None |
-| INFERRED 0.95 | 0.95 | → 0.85 |
-| INFERRED 0.85 | 0.85 | → 0.75 |
-| INFERRED 0.75 | 0.75 | → 0.65 |
-| INFERRED 0.65 | 0.65 | → 0.55 |
-| INFERRED 0.55 | 0.55 | Floor 0.55 |
-| INFERRED (none) | 0.70 | → 0.60 |
-| AMBIGUOUS | 0.55 | None (already at floor) |
+| confidence: "EXTRACTED" | confidence: "EXTRACTED" | Direct pass-through |
+| confidence: "INFERRED" | confidence: "INFERRED" | Direct pass-through |
+| confidence: "AMBIGUOUS" (or unknown) | confidence: "AMBIGUOUS" | Fallback for missing/unrecognized values |
+| inferredConfidence: 0.55–0.95 | inferredConfidence preserved | Optional numeric field, validated to [0.55, 0.95] |
+
+> **Stale penalty (-0.10):** Not implemented in code. The graphify system detects
+> staleness (STALE mode after 24h) and surfaces it via capability level, but no
+> automatic confidence deduction is applied to individual findings. This is a
+> design goal for a future revision.
 
 ## 7. Evidence-to-Belief Pipeline
 
 ```
 1. TRIGGER: Agent calls noesis_attend with graphQueries
-2. DETECT: Check capability level
-3. UPDATE: If stale, run graphify . --update
-4. QUERY: Run graphify query with 30s timeout
-5. PARSE: Extract structured findings
-6. TRANSLATE: Apply confidence mapping, stale penalty, tags
-7. COMMIT: Surface in preamble as ephemeral findings
-   → Agent must call noesis_believe to commit as durable belief
+2. QUERY: Run graphify query with 30s timeout via graphify-client.query()
+   Note: No capability check or auto-update for stale graphs.
+   Agent must manually run `graphify . --update` if needed.
+3. PARSE: parseQueryOutput extracts structured findings (nodes, relations,
+   confidence, timestamp, optional fields)
+4. SURFACE: Findings stored in attention.graphFindings, shown in preamble
+   as "Graph evidence (N): — <query text>"
+5. COMMIT: Agent must call noesis_believe(source="graph") to persist as
+   durable belief fact
 ```
+## 8. Retrieval-Before-Read Policy (Future — v2)
 
-## 8. Retrieval-Before-Read Policy
-
-```
-1. Query Graphify for relevant nodes, relations, communities
-2. Identify god nodes (start here), communities (scope here), key relations (follow these)
-3. Read only high-relevance files
-4. Update beliefs with graph-grounded findings
-```
+> **Note:** This policy is not yet implemented. Current behavior: the agent calls
+> `noesis_attend(graphQueries)`, which runs sequential CLI queries and stores
+> findings in attention. There is no automatic enforcement of "query graph before
+> reading files" — that discipline is left to the agent's judgment.
+>
+> Planned for v2:
+> 1. Query Graphify for relevant nodes, relations, communities
+> 2. Identify god nodes (start here), communities (scope here), key relations (follow these)
+> 3. Read only high-relevance files
+> 4. Update beliefs with graph-grounded findings
 
 ## 9. Error Handling
 
-| Scenario | Behavior |
+| Scenario | Actual Behavior |
 |---|---|
-| DEGRADED | Preamble notes "Graphify not available", no queries |
-| NO_GRAPH | Attempt `graphify .`, if fails → no graph beliefs |
-| Query timeout | Return error, agent decides retry |
-| Parse failure | Preserve rawOutput, surface for agent inspection |
+| Graph file missing | `query()` returns `{findings: [], error: "No graph file found", duration}` |
+| Bun.spawn timeout (30s) | Caught by try/catch → `{findings: [], error: <timeout message>, duration}` |
+| Bun.spawn failure (binary missing) | `detectCapability` returns DEGRADED; query not attempted |
+| JSON parse failure | `parseQueryOutput` returns `[]` (silent empty findings) |
+| Unknown confidence value | Normalised to `"AMBIGUOUS"` |
+| All findings invalid (mixed input) | Valid findings kept; invalid entries silently skipped |
 
 ## 10. MCP Server Path (Future)
 
