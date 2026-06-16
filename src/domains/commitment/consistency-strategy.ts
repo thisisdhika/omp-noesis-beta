@@ -2,6 +2,7 @@
 
 /**
  * Consistency strategies for the commitment layer.
+ * Version: 0.1.0
  * Provides cycle detection and status consistency checks for workflows.
  */
 

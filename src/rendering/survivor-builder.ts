@@ -2,14 +2,13 @@
 
 /**
  * omp-noesis: Survivor Builder
+ * Version: 0.1.0
  *
- * Builds the survivor context — the compact XML payload that survives
- * session compaction when context is trimmed. Contains the agent's
- * current attention, top beliefs, active workflow, and recent learning.
+ * Builds the survivor context — a compact XML payload representing
+ * the essential cognitive state for preservation across compaction.
  *
- * Budget is strictly capped at 500 tokens; if exceeded, sections are
- * evicted bottom-up (learning → beliefs) while attention, workflow,
- * and the state pointer are always preserved.
+ * Sections: attention, beliefs, workflow, learning.
+ * Each section is independently truncated to stay within budget.
  */
 
 import { CAPS } from "../schema.js";

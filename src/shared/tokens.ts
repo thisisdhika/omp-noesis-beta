@@ -2,6 +2,7 @@
 
 /**
  * Approximate BPE token estimator using regex-based pre-tokenization.
+ * Version: 0.1.0
  *
  * Splits text on GPT-family BPE boundaries: contractions ('s, 't, 're, 've, 'm, 'll, 'd),
  * alphabetic words, numbers, punctuation/symbols, and whitespace runs.

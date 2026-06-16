@@ -2,6 +2,7 @@
 
 /**
  * Commitment domain: workflow and action management.
+ * Version: 0.1.0
  *
  * Provides functions to extend or replace the active workflow, update
  * individual step statuses, and add planned actions — all with

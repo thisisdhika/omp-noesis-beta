@@ -2,6 +2,7 @@
 
 /**
  * Inference Domain: Hypothesis management and reasoning tracking.
+ * Version: 0.1.0
  *
  * Provides functions for the hypothesis lifecycle (create, confirm, refute,
  * update) and reasoning step recording within the omp-noesis cognitive

@@ -2,6 +2,7 @@
 
 /**
  * Confidence Strategy — numeric confidence mapping and staleness penalty.
+ * Version: 0.1.0
  *
  * Maps graph confidence levels to numeric values and applies a
  * time-based decay penalty for beliefs that have not been updated

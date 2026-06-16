@@ -2,6 +2,7 @@
 
 /**
  * On-disk retry buffer for failed vault pushes.
+ * Version: 0.1.0
  *
  * All mutations are atomic so partial writes never corrupt the queue.
  * A missing file is treated as an empty queue — no setup required.

@@ -2,6 +2,7 @@
 
 /**
  * Mnemopi vault store — persistent artifact storage backed by Bun.sqlite.
+ * Version: 0.1.0
  *
  * Table and indexes are created automatically on first construction.
  * All public methods are async per the VaultStore contract.

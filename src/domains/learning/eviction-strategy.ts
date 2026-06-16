@@ -2,6 +2,7 @@
 
 /**
  * Eviction strategies for learning entries.
+ * Version: 0.1.0
  *
  * Two policies:
  * 1. Stale eviction — remove unresolved entries beyond a time threshold.

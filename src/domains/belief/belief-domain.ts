@@ -2,13 +2,14 @@
 
 /**
  * Belief Domain — AGM-informed belief management for omp-noesis.
+ * Version: 0.1.0
  *
- * Manages the lifecycle of facts and decisions: creation, retrieval,
- * and resolution-triggered fact generation from learning entries.
- * Revision (supersession) is delegated to revision-strategy.ts to
- * enforce the K*2–K*6 AGM contract.
+ * Provides fact/decision CRUD, confidence-aware retrieval, learning-to-belief
+ * resolution, and AGM K*2–K*6 supersession revision.
  *
- * @module belief-domain
+ * All functions mutate `state` in place (pure synchronous transforms).
+ * The supersession edge is immutable — once a fact is superseded, it cannot
+ * be reactivated.
  */
 
 import type {

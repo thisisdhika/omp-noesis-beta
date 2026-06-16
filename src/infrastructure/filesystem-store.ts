@@ -2,10 +2,10 @@
 
 /**
  * Atomic filesystem operations for JSON state persistence.
- * Uses write-to-temp + rename pattern for crash-safe writes.
+ * Version: 0.1.0
  *
- * All write operations are synchronous at the fsync/rename step but the
- * overall API surface is async to accommodate Bun.write.
+ * writeAtomic uses write-to-temp + rename for crash safety.
+ * readJSON handles missing files gracefully.
  */
 
 import {

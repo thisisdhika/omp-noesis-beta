@@ -2,6 +2,7 @@
 
 /**
  * State cleanup utilities: evict stale entries and enforce capacity caps.
+ * Version: 0.1.0
  *
  * Used by the preamble builder before rendering to keep state size within
  * cognitive budget limits.

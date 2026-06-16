@@ -2,6 +2,7 @@
 
 /**
  * Local vault store backed by a single MEMORY.md file at the project root.
+ * Version: 0.1.0
  *
  * Provides a best-effort, append-only VaultStore implementation suitable
  * for simple local persistence when no external vault (Obsidian, Hindsight,

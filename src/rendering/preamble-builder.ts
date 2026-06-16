@@ -2,13 +2,12 @@
 
 /**
  * omp-noesis: Preamble Builder
+ * Version: 0.1.0
  *
- * Builds the context preamble injected into every agent turn.
- * Sections appear in fixed order; empty sections are omitted.
- * When the assembled preamble exceeds MAX_PREAMBLE_TOKENS (2000),
- * lower-priority sections are dropped bottom-up (section 9, then 8, etc.)
- * while sections 1 (capability), 2 (focus), and 10 (state pointer) are
- * always retained.
+ * Builds the cognitive preamble — a structured XML string injected into
+ * the conversation context at the start of every turn.
+ *
+ * Enforces a character budget and delegates to per-section builders.
  */
 
 import type {
