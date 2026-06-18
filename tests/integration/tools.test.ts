@@ -75,7 +75,7 @@ describe("tool registration", () => {
   it("registers all expected tools by name", async () => {
     const { pi } = await setup();
     expect(pi._getTool("noesis_focus")).toBeTruthy();
-    expect(pi._getTool("noesis_believe")).toBeTruthy();
+    expect(pi._getTool("noesis_believe_fact")).toBeTruthy();
     expect(pi._getTool("noesis_infer")).toBeTruthy();
     expect(pi._getTool("noesis_commit")).toBeTruthy();
     expect(pi._getTool("noesis_recall")).toBeTruthy();
@@ -87,7 +87,7 @@ describe("tool registration", () => {
     const names = [
       "noesis_attend",
       "noesis_focus",
-      "noesis_believe",
+      "noesis_believe_fact",
       "noesis_infer",
       "noesis_commit",
       "noesis_recall",
@@ -118,13 +118,12 @@ describe("noesis_attend", () => {
   });
 });
 
-describe("noesis_believe", () => {
-  it("creates a belief fact when executed with type=fact", async () => {
+describe("noesis_believe_fact", () => {
+  it("creates a belief fact when executed", async () => {
     const { pi, runtime } = await setup();
-    const execute = toolExecutor(pi, "noesis_believe");
+    const execute = toolExecutor(pi, "noesis_believe_fact");
 
     const result = await execute({
-      type: "fact",
       content: "The application uses Bun runtime",
       confidence: 0.9,
       source: "execution",
@@ -194,9 +193,8 @@ describe("noesis_recall", () => {
     const { pi } = await setup();
 
     // Arrange — seed a belief fact
-    const believe = toolExecutor(pi, "noesis_believe");
+    const believe = toolExecutor(pi, "noesis_believe_fact");
     await believe({
-      type: "fact",
       content: "Memory limit is 512MB",
       confidence: 0.8,
       source: "execution",
@@ -220,13 +218,12 @@ describe("noesis_recall", () => {
 // Additional noesis_believe coverage — decision, learning, contradictions
 // ===========================================================================
 
-describe("noesis_believe decision", () => {
-  it("creates a belief decision with type=decision", async () => {
+describe("noesis_believe_decision", () => {
+  it("creates a belief decision when executed", async () => {
     const { pi, runtime } = await setup();
-    const execute = toolExecutor(pi, "noesis_believe");
+    const execute = toolExecutor(pi, "noesis_believe_decision");
 
     const result = await execute({
-      type: "decision",
       content: "Use Bun runtime for production",
       rationale: "Better performance and TypeScript support",
       source: "user",
@@ -245,25 +242,20 @@ describe("noesis_believe decision", () => {
 
   it("returns error when missing rationale for decision", async () => {
     const { pi } = await setup();
-    const execute = toolExecutor(pi, "noesis_believe");
-
-    const result = await execute({
-      type: "decision",
+    const def = pi._getTool("noesis_believe_decision") as Record<string, unknown>;
+    const schema = def.parameters as { safeParse: (d: unknown) => { success: boolean } };
+    const result = schema.safeParse({
       content: "Use Bun runtime",
       source: "user",
     });
-
-    expect(result.isError).toBe(true);
-    expect(result.details.error).toBe("missing_fields");
-    expect(result.content[0]!.text).toContain("Missing required fields");
+    expect(result.success).toBe(false);
   });
 
   it("creates decision with alternatives", async () => {
     const { pi, runtime } = await setup();
-    const execute = toolExecutor(pi, "noesis_believe");
+    const execute = toolExecutor(pi, "noesis_believe_decision");
 
     const result = await execute({
-      type: "decision",
       content: "Adopt Bun as primary runtime",
       rationale: "Best overall fit for the project",
       source: "user",
@@ -279,10 +271,10 @@ describe("noesis_believe decision", () => {
   });
 });
 
-describe("noesis_believe learning", () => {
-  it("resolves learning into belief fact with type=learning", async () => {
+describe("noesis_believe_learning", () => {
+  it("resolves learning into belief fact when executed", async () => {
     const { pi, runtime } = await setup();
-    const execute = toolExecutor(pi, "noesis_believe");
+    const execute = toolExecutor(pi, "noesis_believe_learning");
 
     // Arrange — seed a learning failure entry
     const learningId = "test-learning-1";
@@ -297,7 +289,6 @@ describe("noesis_believe learning", () => {
 
     // Act — promote learning to belief
     const result = await execute({
-      type: "learning",
       learningId,
       rootCause: "Missing export map in package.json",
       fix: "Add exports field to package.json",
@@ -315,43 +306,34 @@ describe("noesis_believe learning", () => {
 
   it("returns error when missing learningId", async () => {
     const { pi } = await setup();
-    const execute = toolExecutor(pi, "noesis_believe");
-
-    const result = await execute({
-      type: "learning",
+    const def = pi._getTool("noesis_believe_learning") as Record<string, unknown>;
+    const schema = def.parameters as { safeParse: (d: unknown) => { success: boolean } };
+    const result = schema.safeParse({
       rootCause: "Missing config",
       fix: "Add config file",
     });
-
-    expect(result.isError).toBe(true);
-    expect(result.details.error).toBe("missing_fields");
-    expect(result.content[0]!.text).toContain("learningId");
+    expect(result.success).toBe(false);
   });
 
   it("returns error when missing rootCause", async () => {
     const { pi } = await setup();
-    const execute = toolExecutor(pi, "noesis_believe");
-
-    const result = await execute({
-      type: "learning",
+    const def = pi._getTool("noesis_believe_learning") as Record<string, unknown>;
+    const schema = def.parameters as { safeParse: (d: unknown) => { success: boolean } };
+    const result = schema.safeParse({
       learningId: "test-l-1",
       fix: "Fix the issue",
     });
-
-    expect(result.isError).toBe(true);
-    expect(result.details.error).toBe("missing_fields");
-    expect(result.content[0]!.text).toContain("rootCause");
+    expect(result.success).toBe(false);
   });
 });
 
-describe("noesis_believe contradictions", () => {
-  it("supersedes contradicting facts when contradictsIds provided", async () => {
+describe("noesis_believe_fact contradictions", () => {
+  it("supersedes contradicting facts when contradicts provided", async () => {
     const { pi, runtime } = await setup();
-    const execute = toolExecutor(pi, "noesis_believe");
+    const execute = toolExecutor(pi, "noesis_believe_fact");
 
     // Arrange — create fact A
     const resultA = await execute({
-      type: "fact",
       content: "The database timeout is 30 seconds",
       confidence: 0.9,
       source: "execution",
@@ -361,11 +343,10 @@ describe("noesis_believe contradictions", () => {
 
     // Act — create fact B that contradicts fact A
     const resultB = await execute({
-      type: "fact",
       content: "The database timeout is 60 seconds",
       confidence: 0.95,
       source: "user",
-      contradictsIds: [factAId],
+      contradicts: [factAId],
     });
     expect(resultB.isError).toBe(false);
     const factBId = resultB.details.id as string;
@@ -384,50 +365,40 @@ describe("noesis_believe contradictions", () => {
   });
 });
 
-describe("noesis_believe errors", () => {
-  it("returns error when type=fact missing content", async () => {
+describe("noesis_believe_fact errors", () => {
+  it("returns error when missing content", async () => {
     const { pi } = await setup();
-    const execute = toolExecutor(pi, "noesis_believe");
-
-    const result = await execute({
-      type: "fact",
+    const def = pi._getTool("noesis_believe_fact") as Record<string, unknown>;
+    const schema = def.parameters as { safeParse: (d: unknown) => { success: boolean } };
+    const result = schema.safeParse({
       confidence: 0.9,
       source: "user",
     });
-
-    expect(result.isError).toBe(true);
-    expect(result.details.error).toBe("missing_fields");
-    expect(result.content[0]!.text).toContain("Missing required fields for fact");
+    expect(result.success).toBe(false);
   });
 
-  it("returns error when type=fact missing confidence", async () => {
+  it("returns error when missing confidence", async () => {
     const { pi } = await setup();
-    const execute = toolExecutor(pi, "noesis_believe");
-
-    const result = await execute({
-      type: "fact",
+    const def = pi._getTool("noesis_believe_fact") as Record<string, unknown>;
+    const schema = def.parameters as { safeParse: (d: unknown) => { success: boolean } };
+    const result = schema.safeParse({
       content: "Some fact without confidence",
       source: "user",
     });
-
-    expect(result.isError).toBe(true);
-    expect(result.details.error).toBe("missing_fields");
-    expect(result.content[0]!.text).toContain("Missing required fields for fact");
+    expect(result.success).toBe(false);
   });
+});
 
-  it("returns error when type=decision missing content", async () => {
+describe("noesis_believe_decision errors", () => {
+  it("returns error when missing content", async () => {
     const { pi } = await setup();
-    const execute = toolExecutor(pi, "noesis_believe");
-
-    const result = await execute({
-      type: "decision",
+    const def = pi._getTool("noesis_believe_decision") as Record<string, unknown>;
+    const schema = def.parameters as { safeParse: (d: unknown) => { success: boolean } };
+    const result = schema.safeParse({
       rationale: "Some rationale without content",
       source: "user",
     });
-
-    expect(result.isError).toBe(true);
-    expect(result.details.error).toBe("missing_fields");
-    expect(result.content[0]!.text).toContain("Missing required fields for decision");
+    expect(result.success).toBe(false);
   });
 });
 
@@ -801,9 +772,8 @@ describe("noesis_recall decisions", () => {
     const { pi } = await setup();
 
     // Arrange — seed a decision
-    const believe = toolExecutor(pi, "noesis_believe");
+    const believe = toolExecutor(pi, "noesis_believe_decision");
     await believe({
-      type: "decision",
       content: "Use Postgres for primary storage",
       rationale: "ACID compliance and ecosystem maturity",
       source: "user",
@@ -999,9 +969,8 @@ describe("noesis_recall digest", () => {
     const { pi, runtime } = await setup();
 
     // Arrange — seed some data across layers
-    const believe = toolExecutor(pi, "noesis_believe");
+    const believe = toolExecutor(pi, "noesis_believe_fact");
     await believe({
-      type: "fact",
       content: "Production uses 4 vCPUs",
       confidence: 0.95,
       source: "execution",
@@ -1035,9 +1004,8 @@ describe("noesis_recall search", () => {
     const { pi } = await setup();
 
     // Arrange — seed data with a keyword
-    const believe = toolExecutor(pi, "noesis_believe");
+    const believe = toolExecutor(pi, "noesis_believe_fact");
     await believe({
-      type: "fact",
       content: "Database connection limit is 100",
       confidence: 0.9,
       source: "execution",
@@ -1075,13 +1043,12 @@ describe("noesis_recall search", () => {
 // Zod refine validator tests
 // ===========================================================================
 
-describe("noesis_believe refine", () => {
+describe("noesis_believe_fact refine", () => {
   it("passes refinement for valid fact", async () => {
     const { pi } = await setup();
-    const def = pi._getTool("noesis_believe") as Record<string, unknown>;
+    const def = pi._getTool("noesis_believe_fact") as Record<string, unknown>;
     const schema = def.parameters as { safeParse: (d: unknown) => { success: boolean } };
     const result = schema.safeParse({
-      type: "fact",
       content: "The sky is blue",
       confidence: 0.9,
       source: "user",
@@ -1091,10 +1058,9 @@ describe("noesis_believe refine", () => {
 
   it("rejects fact without confidence in refine", async () => {
     const { pi } = await setup();
-    const def = pi._getTool("noesis_believe") as Record<string, unknown>;
+    const def = pi._getTool("noesis_believe_fact") as Record<string, unknown>;
     const schema = def.parameters as { safeParse: (d: unknown) => { success: boolean; error?: unknown } };
     const result = schema.safeParse({
-      type: "fact",
       content: "The sky is blue",
       source: "user",
     });
@@ -1103,10 +1069,9 @@ describe("noesis_believe refine", () => {
 
   it("rejects fact without content", async () => {
     const { pi } = await setup();
-    const def = pi._getTool("noesis_believe") as Record<string, unknown>;
+    const def = pi._getTool("noesis_believe_fact") as Record<string, unknown>;
     const schema = def.parameters as { safeParse: (d: unknown) => { success: boolean } };
     const result = schema.safeParse({
-      type: "fact",
       confidence: 0.9,
       source: "user",
     });
@@ -1115,22 +1080,22 @@ describe("noesis_believe refine", () => {
 
   it("rejects fact without source", async () => {
     const { pi } = await setup();
-    const def = pi._getTool("noesis_believe") as Record<string, unknown>;
+    const def = pi._getTool("noesis_believe_fact") as Record<string, unknown>;
     const schema = def.parameters as { safeParse: (d: unknown) => { success: boolean } };
     const result = schema.safeParse({
-      type: "fact",
       content: "Some fact",
       confidence: 0.8,
     });
     expect(result.success).toBe(false);
   });
+});
 
+describe("noesis_believe_decision refine", () => {
   it("passes refinement for valid decision", async () => {
     const { pi } = await setup();
-    const def = pi._getTool("noesis_believe") as Record<string, unknown>;
+    const def = pi._getTool("noesis_believe_decision") as Record<string, unknown>;
     const schema = def.parameters as { safeParse: (d: unknown) => { success: boolean } };
     const result = schema.safeParse({
-      type: "decision",
       content: "Use Bun",
       rationale: "Performance",
       source: "user",
@@ -1140,22 +1105,22 @@ describe("noesis_believe refine", () => {
 
   it("rejects decision without rationale", async () => {
     const { pi } = await setup();
-    const def = pi._getTool("noesis_believe") as Record<string, unknown>;
+    const def = pi._getTool("noesis_believe_decision") as Record<string, unknown>;
     const schema = def.parameters as { safeParse: (d: unknown) => { success: boolean } };
     const result = schema.safeParse({
-      type: "decision",
       content: "Use Bun",
       source: "user",
     });
     expect(result.success).toBe(false);
   });
+});
 
+describe("noesis_believe_learning refine", () => {
   it("passes refinement for valid learning", async () => {
     const { pi } = await setup();
-    const def = pi._getTool("noesis_believe") as Record<string, unknown>;
+    const def = pi._getTool("noesis_believe_learning") as Record<string, unknown>;
     const schema = def.parameters as { safeParse: (d: unknown) => { success: boolean } };
     const result = schema.safeParse({
-      type: "learning",
       learningId: "learn-1",
       rootCause: "Missing config",
       fix: "Add config file",
@@ -1165,10 +1130,9 @@ describe("noesis_believe refine", () => {
 
   it("rejects learning without fix", async () => {
     const { pi } = await setup();
-    const def = pi._getTool("noesis_believe") as Record<string, unknown>;
+    const def = pi._getTool("noesis_believe_learning") as Record<string, unknown>;
     const schema = def.parameters as { safeParse: (d: unknown) => { success: boolean } };
     const result = schema.safeParse({
-      type: "learning",
       learningId: "learn-1",
       rootCause: "Missing config",
     });
@@ -1188,17 +1152,17 @@ describe("noesis_commit refine", () => {
     expect(result.success).toBe(true);
   });
 
-  it("rejects extend_workflow without steps", async () => {
+  it("accepts extend_workflow without steps (no refine — server-side validation)", async () => {
     const { pi } = await setup();
     const def = pi._getTool("noesis_commit") as Record<string, unknown>;
     const schema = def.parameters as { safeParse: (d: unknown) => { success: boolean } };
     const result = schema.safeParse({
       mode: "extend_workflow",
     });
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
   });
 
-  it("rejects extend_workflow with empty steps", async () => {
+  it("accepts extend_workflow with empty steps (no refine — server-side validation)", async () => {
     const { pi } = await setup();
     const def = pi._getTool("noesis_commit") as Record<string, unknown>;
     const schema = def.parameters as { safeParse: (d: unknown) => { success: boolean } };
@@ -1206,7 +1170,7 @@ describe("noesis_commit refine", () => {
       mode: "extend_workflow",
       steps: [],
     });
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
   });
 
   it("passes refinement for valid replace_workflow", async () => {
@@ -1221,7 +1185,7 @@ describe("noesis_commit refine", () => {
     expect(result.success).toBe(true);
   });
 
-  it("rejects replace_workflow without goal", async () => {
+  it("accepts replace_workflow without goal (no refine — server-side validation)", async () => {
     const { pi } = await setup();
     const def = pi._getTool("noesis_commit") as Record<string, unknown>;
     const schema = def.parameters as { safeParse: (d: unknown) => { success: boolean } };
@@ -1229,7 +1193,7 @@ describe("noesis_commit refine", () => {
       mode: "replace_workflow",
       steps: [{ description: "Step 1" }],
     });
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
   });
 
   it("passes refinement for valid update_step", async () => {
@@ -1244,7 +1208,7 @@ describe("noesis_commit refine", () => {
     expect(result.success).toBe(true);
   });
 
-  it("rejects update_step without stepId", async () => {
+  it("accepts update_step without stepId (no refine — server-side validation)", async () => {
     const { pi } = await setup();
     const def = pi._getTool("noesis_commit") as Record<string, unknown>;
     const schema = def.parameters as { safeParse: (d: unknown) => { success: boolean } };
@@ -1252,7 +1216,7 @@ describe("noesis_commit refine", () => {
       mode: "update_step",
       status: "done",
     });
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
   });
 
   it("passes refinement for valid add_action", async () => {
@@ -1266,14 +1230,14 @@ describe("noesis_commit refine", () => {
     expect(result.success).toBe(true);
   });
 
-  it("rejects add_action without content", async () => {
+  it("accepts add_action without content (no refine — server-side validation)", async () => {
     const { pi } = await setup();
     const def = pi._getTool("noesis_commit") as Record<string, unknown>;
     const schema = def.parameters as { safeParse: (d: unknown) => { success: boolean } };
     const result = schema.safeParse({
       mode: "add_action",
     });
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
   });
 });
 
@@ -1289,14 +1253,14 @@ describe("noesis_infer refine", () => {
     expect(result.success).toBe(true);
   });
 
-  it("rejects add_hypothesis without content", async () => {
+  it("accepts add_hypothesis without content (no refine — server-side validation)", async () => {
     const { pi } = await setup();
     const def = pi._getTool("noesis_infer") as Record<string, unknown>;
     const schema = def.parameters as { safeParse: (d: unknown) => { success: boolean } };
     const result = schema.safeParse({
       action: "add_hypothesis",
     });
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
   });
 
   it("passes refinement for valid update_hypothesis", async () => {
@@ -1311,7 +1275,7 @@ describe("noesis_infer refine", () => {
     expect(result.success).toBe(true);
   });
 
-  it("rejects update_hypothesis without id", async () => {
+  it("accepts update_hypothesis without id (no refine — server-side validation)", async () => {
     const { pi } = await setup();
     const def = pi._getTool("noesis_infer") as Record<string, unknown>;
     const schema = def.parameters as { safeParse: (d: unknown) => { success: boolean } };
@@ -1319,7 +1283,7 @@ describe("noesis_infer refine", () => {
       action: "update_hypothesis",
       status: "confirmed",
     });
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
   });
 
   it("passes refinement for valid add_reasoning", async () => {
@@ -1333,14 +1297,14 @@ describe("noesis_infer refine", () => {
     expect(result.success).toBe(true);
   });
 
-  it("rejects add_reasoning without content", async () => {
+  it("accepts add_reasoning without content (no refine — server-side validation)", async () => {
     const { pi } = await setup();
     const def = pi._getTool("noesis_infer") as Record<string, unknown>;
     const schema = def.parameters as { safeParse: (d: unknown) => { success: boolean } };
     const result = schema.safeParse({
       action: "add_reasoning",
     });
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
   });
 });
 

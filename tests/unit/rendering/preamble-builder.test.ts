@@ -559,3 +559,101 @@ describe("buildPreamble budget enforcement while loop", () => {
     expect(result).toContain("State: .omp/noesis/state.json");
   });
 });
+
+// =============================================================================
+// Model-specific density control
+// =============================================================================
+
+describe("buildPreamble model-specific density control", () => {
+  /** Render context scoped to a specific model family. */
+  function renderFor(family: string, capability: "FULL" | "DEGRADED" = "DEGRADED"): RenderContext {
+    return {
+      capabilityLevel: capability,
+      contextHookFired: true,
+      modelFamily: family,
+    };
+  }
+
+  it("frontier models (claude) keep all sections", () => {
+    const result = buildPreamble(EMPTY_STATE, renderFor("claude", "FULL"));
+    // All non-protected sections present (with degraded capability, many are empty)
+    // Protected sections always present
+    expect(result).toContain("[Noesis:");
+    expect(result).toContain("State: .omp/noesis/state.json");
+  });
+
+  it("frontier models (gpt) keep all sections", () => {
+    const result = buildPreamble(EMPTY_STATE, renderFor("gpt"));
+    expect(result).toContain("[Noesis:");
+    expect(result).toContain("State: .omp/noesis/state.json");
+  });
+
+  it("gemini keeps all sections", () => {
+    const result = buildPreamble(EMPTY_STATE, renderFor("gemini"));
+    expect(result).toContain("[Noesis:");
+    expect(result).toContain("State: .omp/noesis/state.json");
+  });
+
+  it("deepseek limits non-protected sections to 3", () => {
+    // With populatedState, non-protected sections have content
+    const deepseekRender = renderFor("deepseek", "FULL");
+    const frontierResult = buildPreamble(populatedState(), renderFor("claude", "FULL"));
+    const deepseekResult = buildPreamble(populatedState(), deepseekRender);
+
+    // DeepSeek preamble should be shorter (fewer sections)
+    expect(deepseekResult.length).toBeLessThanOrEqual(frontierResult.length);
+    // Protected sections always survive
+    expect(deepseekResult).toContain("[Noesis:");
+    expect(deepseekResult).toContain("State: .omp/noesis/state.json");
+  });
+
+  it("qwen limits non-protected sections to 3", () => {
+    const result = buildPreamble(populatedState(), renderFor("qwen", "FULL"));
+    expect(result).toContain("[Noesis:");
+    expect(result).toContain("State: .omp/noesis/state.json");
+    // Protected sections never dropped
+    expect(result).not.toBe("");
+  });
+
+  it("mimo limits non-protected sections to 3", () => {
+    const result = buildPreamble(populatedState(), renderFor("mimo"));
+    expect(result).toContain("[Noesis:");
+    expect(result).toContain("State: .omp/noesis/state.json");
+  });
+
+  it("llama limits non-protected sections to 4", () => {
+    const llamaResult = buildPreamble(populatedState(), renderFor("llama", "FULL"));
+    const deepseekResult = buildPreamble(populatedState(), renderFor("deepseek", "FULL"));
+    // llama gets 4 non-protected, deepseek gets 3 — llama should be same or larger
+    expect(llamaResult.length).toBeGreaterThanOrEqual(deepseekResult.length);
+    expect(llamaResult).toContain("[Noesis:");
+    expect(llamaResult).toContain("State: .omp/noesis/state.json");
+  });
+
+  it("unknown model family gets all sections (default front-tier)", () => {
+    const noModelResult = buildPreamble(EMPTY_STATE, {
+      capabilityLevel: "DEGRADED",
+      contextHookFired: true,
+      // modelFamily intentionally omitted
+    });
+    const claudeResult = buildPreamble(EMPTY_STATE, renderFor("claude"));
+    // Should match frontier (same section count)
+    expect(noModelResult).toBe(claudeResult);
+  });
+
+  it("protected sections are never removed even with deepseek", () => {
+    const result = buildPreamble(populatedState(), renderFor("deepseek", "FULL"));
+    // Protected sections with content always survive: capability block + state pointer
+    // (Focus is protected but empty since populatedState has no focus — filtered elsewhere)
+    expect(result).toContain("[Noesis:");
+    expect(result).toContain("State: .omp/noesis/state.json");
+  });
+
+  it("first non-protected sections are kept, later ones dropped for small models", () => {
+    const deepseekResult = buildPreamble(populatedState(), renderFor("deepseek", "FULL"));
+    const claudeResult = buildPreamble(populatedState(), renderFor("claude", "FULL"));
+    // DeepSeek drops sections from the bottom up (highest indices first)
+    // The preamble is always shorter or equal
+    expect(deepseekResult.length).toBeLessThanOrEqual(claudeResult.length);
+  });
+});

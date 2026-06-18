@@ -60,7 +60,7 @@ export async function runCompactionSurvival(): Promise<SuiteResult> {
       await ctx.prompt(
         'Use the believe tool to record: fact "The project is built with TypeScript" with confidence 0.95, source "execution", tags ["test"]',
       );
-      await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+      await ctx.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
 
       // Flood context to trigger compaction
       await floodContext(ctx, 5);
@@ -94,7 +94,7 @@ export async function runCompactionSurvival(): Promise<SuiteResult> {
       await ctx.prompt(
         'Use the believe tool to record: fact "Codebase favours functional programming patterns" with confidence 0.85, source "execution", tags ["test"]',
       );
-      await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+      await ctx.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
 
       // Compaction
       await floodContext(ctx, 5);
@@ -138,7 +138,7 @@ export async function runCompactionSurvival(): Promise<SuiteResult> {
       await ctx.prompt(
         'Use the believe tool to record: decision "Enforce strict TypeScript configuration" with rationale "Strict mode catches more category errors at compile time", source "user", tags ["test"]',
       );
-      await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+      await ctx.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
 
       const state = orEmpty(await ctx.readState());
       assertFactExists(state);
@@ -169,7 +169,7 @@ export async function runCompactionSurvival(): Promise<SuiteResult> {
       await ctx.prompt(
         'Use the believe tool to record: fact "Reload integrity marker" with confidence 0.9, source "execution", tags ["test"]',
       );
-      await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+      await ctx.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
 
       // Verify the belief was persisted to the state file and can be read
       // back — this proves the serialisation/deserialisation round-trip.

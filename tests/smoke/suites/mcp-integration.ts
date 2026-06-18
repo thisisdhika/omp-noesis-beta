@@ -138,12 +138,12 @@ export async function runMcpIntegration(): Promise<SuiteResult> {
       const ctx = await createSmokeContext();
       try {
         // The system prompt includes MCP tool hints from append-system.ts.
-        // The agent should be able to call noesis_believe normally.
+        // The agent should be able to call noesis_believe_fact normally.
         await ctx.prompt(
           "Record that Graphify MCP tools are available for graph queries. " +
           "Use confidence 0.9, source execution, tag it mcp.",
         );
-        await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+        await ctx.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
 
         const state = await ctx.readState();
         if (!state) throw new Error("State was not persisted");

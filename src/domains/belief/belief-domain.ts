@@ -25,7 +25,7 @@ import { supersede } from "./revision-strategy.js";
 
 /**
  * Create a new belief fact and add it to state.
- * If `contradictsIds` is provided, existing facts/decisions with those ids
+ * If `contradicts` is provided, existing facts/decisions with those ids
  * are superseded via AGM revision.
  *
  * @param state - The Noesis state to mutate.
@@ -40,7 +40,7 @@ export function addFact(
     source: BeliefSource;
     tags?: string[];
     evidence?: string;
-    contradictsIds?: string[];
+    contradicts?: string[];
   },
 ): BeliefFact {
   const timestamp = now();
@@ -62,8 +62,8 @@ export function addFact(
     fact.evidence = params.evidence;
   }
 
-  if (params.contradictsIds !== undefined && params.contradictsIds.length > 0) {
-    supersede(state, fact.id, params.contradictsIds);
+  if (params.contradicts !== undefined && params.contradicts.length > 0) {
+    supersede(state, fact.id, params.contradicts);
   }
 
   state.belief.facts.push(fact);
@@ -72,7 +72,7 @@ export function addFact(
 
 /**
  * Create a new belief decision and add it to state.
- * If `contradictsIds` is provided, existing facts/decisions are superseded.
+ * If `contradicts` is provided, existing facts/decisions are superseded.
  *
  * @param state - The Noesis state to mutate.
  * @param params - Decision parameters.
@@ -86,7 +86,7 @@ export function addDecision(
     alternatives?: string[];
     source: BeliefSource;
     tags?: string[];
-    contradictsIds?: string[];
+    contradicts?: string[];
   },
 ): BeliefDecision {
   const timestamp = now();
@@ -105,8 +105,8 @@ export function addDecision(
     decision.tags = params.tags;
   }
 
-  if (params.contradictsIds !== undefined && params.contradictsIds.length > 0) {
-    supersede(state, decision.id, params.contradictsIds);
+  if (params.contradicts !== undefined && params.contradicts.length > 0) {
+    supersede(state, decision.id, params.contradicts);
   }
 
   state.belief.decisions.push(decision);

@@ -2,6 +2,51 @@
 
 All notable changes to omp-noesis.
 
+
+## [0.1.1] — 2026-06-18
+
+### Changed — Model-Agnostic Refactor
+
+#### Split Believe Tool (7 → 9 Canonical Tools)
+- **`noesis_believe_fact`** — flat Zod schema with required `content`, `confidence`, `source`; optional `evidence`, `tags`, `contradicts`, `graphFinding`
+- **`noesis_believe_decision`** — required `content`, `rationale`, `source`; optional `alternatives`, `tags`, `contradicts`
+- **`noesis_believe_learning`** — required `learningId`, `rootCause`, `fix`; optional `evidence`, `tags`
+- Removed `.refine()` conditional validation from all three — Zod enforces per-tool required fields directly; no cross-field reasoning needed
+- Motivation: `.refine()` discriminator was the #1 small-model failure mode (DeepSeek, Mimo, Qwen parse schemas as raw text)
+
+#### Simplified Infer & Commit Tools
+- Removed `.refine()` from `noesis_infer` — all fields optional at Zod level; runtime returns clear errors on retry
+- Removed `.refine()` from `noesis_commit` — same pattern; Zod is lenient, execution errors are explicit
+
+#### Expanded Tool Descriptions
+- All 9 tools now carry 4–5 sentence descriptions (what / when / when-not / consequence / alternatives)
+- Critical for DeepSeek which parses schemas as raw Markdown text without structured AST
+
+#### Provider-Aware Schema Adaptation
+- **`src/shared/provider-schema.ts`** — transforms tool JSON Schemas per model family:
+  - DeepSeek: removes `additionalProperties: false`
+  - Mimo/Qwen/Llama: truncates descriptions to ≤200 chars
+- **`src/hooks/provider-request-hook.ts`** — registered on `before_provider_request`; injects `tool_choice: "required"` for small models
+
+#### DeepSeek Strict Mode Compatibility
+- Removed `.min()` / `.max()` from all string and array Zod constraints (DeepSeek strict validation rejects on length defaults)
+- All 7 canonical tool files refactored: each exports `build*Params(pi)` + `execute*(runtime, params)` + `register*Tool(pi, runtime)`
+
+#### API Renames
+- `contradictsIds` → `contradicts` (saves ~5 tokens per call)
+- Aliases: 7 → 9 (`store_memory`→`noesis_believe_fact`, new `store_decision`, `store_learning`)
+
+#### Model Family Detection
+- `src/shared/model-profile.ts` — `ModelFamily`, `detectModelFamily()`, `getProfile()` with per-family profiles
+- Wired into `context-hook.ts` for density control and `preamble-builder.ts` for prompt adaptation
+
+### Fixed
+- `state.attention.pendingEvidence.map` crash — added `deepMergeDefaults` utility; `StateManager.initialize()` deep-merges loaded state
+
+### Testing
+- 931 pass, 12 pre-existing failures (Obsidian + Graphify CLI) across 65 test files
+- New: 31 domain strategy tests, 35 aliases tests, 18 context-hook tests, 23 provider-schema tests, 4 provider-request-hook tests
+
 ## [0.1.0] — 2026-06-15
 
 ### Changed

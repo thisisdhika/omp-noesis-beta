@@ -53,7 +53,7 @@ export async function runHookIntegration(): Promise<SuiteResult> {
         await ctx.prompt(
           "Remember that this project uses TypeScript and Bun as its runtime.",
         );
-        await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+        await ctx.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
 
         // Second prompt triggers the context hook which updates attention state
         await ctx.promptAndWait("What do you know about this project?");
@@ -110,7 +110,7 @@ export async function runHookIntegration(): Promise<SuiteResult> {
       const ctx1 = await createPersistentContext();
       try {
         await ctx1.prompt("Remember that the Sun is a medium-sized star.");
-        await ctx1.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+        await ctx1.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
       } finally {
         // Dispose WITHOUT deleting state.json — the turn_end hook should
         // have persisted it to disk.
@@ -177,7 +177,7 @@ export async function runHookIntegration(): Promise<SuiteResult> {
         await ctx.prompt(
             `Use the believe tool to remember: fact number ${i} — the sky appears blue during the day.`,
           );
-          await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+          await ctx.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
         }
 
         const { promise: pause, resolve: unpause } = Promise.withResolvers<void>();

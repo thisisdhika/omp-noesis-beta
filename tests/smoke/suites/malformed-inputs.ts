@@ -109,7 +109,7 @@ export async function runMalformedInputs(): Promise<SuiteResult> {
       await ctx.prompt(
         "使用believe工具记录一个事实：数据库使用MongoDB。请直接调用believe工具，不要解释。",
       );
-      await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+      await ctx.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
       const state = requireState(
         await ctx.readState(),
         "unicode special chars",
@@ -144,7 +144,7 @@ export async function runMalformedInputs(): Promise<SuiteResult> {
       await ctx.prompt(
         "Gunakan believe tool untuk mencatat: service utama pakai port 3000. Langsung panggil believe, jangan jelaskan.",
       );
-      await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+      await ctx.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
       const state = requireState(
         await ctx.readState(),
         "non-English prompt",

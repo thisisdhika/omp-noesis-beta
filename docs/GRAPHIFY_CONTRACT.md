@@ -84,7 +84,7 @@ these fields when committing beliefs.
 4. SURFACE: Findings stored in attention.graphFindings and attention.pendingEvidence.
    Shown in preamble as "Graph evidence (N): — <query text>".
    Pending evidence entries auto-expire after 3 turns via decayPendingEvidence().
-5. COMMIT: Agent calls noesis_believe(source="graph") to persist as durable belief fact.
+5. COMMIT: Agent calls `noesis_believe_fact(source="graph")` to persist as durable belief fact.
    When committing from graph evidence, pass confidence mapped from the finding's
    confidence label (see §6 Confidence Handling) and include the finding summary
    in the evidence parameter for provenance tracking.

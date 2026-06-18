@@ -48,7 +48,7 @@ async function scenarioBugInvestigation(): Promise<ScenarioResult> {
     await ctx.prompt(
       "hey record that as a fact will you? call it a timeout issue on the auth endpoint, source is execution, confidence like 0.7 since we haven't fully confirmed yet",
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+    await ctx.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
 
     // Turn 4: Ask to create a workflow to fix the bug
     await ctx.prompt(
@@ -101,7 +101,7 @@ async function scenarioLearningFromFailure(): Promise<ScenarioResult> {
     await ctx.prompt(
       "alright so the root cause here is a missing null check before dereference. can you log that as a learning entry with the fix? should be adding a null guard around line 42 in the parser",
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+    await ctx.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
 
     // Verify learning was captured and belief was created
     const state = await ctx.readState();

@@ -13,7 +13,7 @@ import { join } from "node:path";
 export const WORKDIR =
   process.env.SMOKE_WORKDIR || join(tmpdir(), "omp-noesis-smoke-" + Date.now());
 
-export const MODEL = "commandcode/deepseek/deepseek-v4-pro:off";
+export const MODEL = "opencode-zen/deepseek-v4-flash-free";
 
 export const STATE_PATH = join(WORKDIR, ".omp", "noesis", "state.json");
 

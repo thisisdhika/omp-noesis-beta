@@ -14,7 +14,7 @@ Noesis implements K*2 through K*6 at the belief-base level (Hansson 1999).
 
 | Postulate | Meaning | Implementation |
 |---|---|---|
-| **K*2** (Success) | New info always included | Every `noesis_believe` produces an active BeliefFact |
+| Every `noesis_believe_fact` produces an active BeliefFact
 | **K*3** (Inclusion) | Result is subset of expansion | Active set = old set - contradicted + new |
 | **K*4** (Preservation) | Consistent new info → no loss | Non-contradicting belief leaves existing untouched |
 | **K*5** (Consistency) | Result is consistent | Contradicted beliefs superseded before new one accepted |
@@ -98,7 +98,7 @@ B1 (superseded) → B2 (superseded) → B3 (active)
 - **Recall**: Graphify results, file contents, tool outputs, user statements
 - **Commitment**: `active` BeliefFact or BeliefDecision
 
-The gap is intentional: not everything retrieved deserves to be believed. Explicit `noesis_believe` is required.
+The gap is intentional: not everything retrieved deserves to be believed. Explicit use of the believe tools (`noesis_believe_*`) is required.
 
 ## 8. Decision Revision
 

@@ -125,7 +125,7 @@ export async function runEdgeCases(): Promise<SuiteResult> {
         `Use the believe tool to record this fact: "${longContent}".` +
           ` Use type "fact", confidence 0.85, source "user".`,
       );
-      await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+      await ctx.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
 
       const state = await ctx.readState();
       assertNonNull(state, "state after long belief content");
@@ -175,7 +175,7 @@ export async function runEdgeCases(): Promise<SuiteResult> {
           `Use the believe tool to record this fact: "${fact}".` +
             ` Use type "fact", source "user".`,
         );
-        await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+        await ctx.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
       }
 
       const state = await ctx.readState();
@@ -228,7 +228,7 @@ export async function runEdgeCases(): Promise<SuiteResult> {
       // May or may not call the tool — either is fine as long as state
       // remains readable
       try {
-        await ctx.waitForTool("noesis_believe", 15_000);
+        await ctx.waitForTool("noesis_believe_fact", 15_000);
       } catch {
         // Graceful rejection is acceptable
       }

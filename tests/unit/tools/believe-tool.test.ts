@@ -1,8 +1,7 @@
 "use strict";
 
 /**
- * Unit tests for believe-tool.ts — noesis_believe tool.
- * Covers fact, decision, learning execution paths and schema refinement.
+ * Unit tests for believe-tool.ts — noesis_believe_fact, noesis_believe_decision, noesis_believe_learning tools.
  */
 
 import { describe, it, expect } from "bun:test";
@@ -10,7 +9,7 @@ import { unlinkSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { createMockPi, toExtensionAPI } from "../../helpers/mock-pi.js";
 import { createRuntime, type NoesisRuntime } from "../../../src/runtime.js";
-import { registerBelieveTool } from "../../../src/tools/believe-tool.js";
+import { registerBelieveFactTool, registerBelieveDecisionTool, registerBelieveLearningTool } from "../../../src/tools/believe-tool.js";
 import { EMPTY_STATE } from "../../../src/schema.js";
 import { deepClone } from "../../../src/shared/clone.js";
 import type { MockPi } from "../../helpers/mock-pi.js";
@@ -42,7 +41,9 @@ async function setup(): Promise<{ pi: MockPi; runtime: NoesisRuntime }> {
   cleanState();
   const pi = createMockPi();
   const runtime = await createRuntime(toExtensionAPI(pi));
-  registerBelieveTool(toExtensionAPI(pi), runtime);
+  registerBelieveFactTool(toExtensionAPI(pi), runtime);
+  registerBelieveDecisionTool(toExtensionAPI(pi), runtime);
+  registerBelieveLearningTool(toExtensionAPI(pi), runtime);
 
   await runtime.stateManager.mutate((s) => {
     Object.assign(s, deepClone(EMPTY_STATE));
@@ -63,18 +64,16 @@ function toolExecutor(
     return exec!("t-id", params, null, () => {}, {});
   };
 }
-
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
 
-describe("noesis_believe", () => {
+describe("noesis_believe_fact", () => {
   it("records a fact", async () => {
     const { pi, runtime } = await setup();
-    const execute = toolExecutor(pi, "noesis_believe");
+    const execute = toolExecutor(pi, "noesis_believe_fact");
 
     const result = await execute({
-      type: "fact",
       content: "The sky is blue",
       confidence: 0.95,
       source: "user",
@@ -90,12 +89,28 @@ describe("noesis_believe", () => {
     expect(state.belief.facts[0]!.confidence).toBe(0.95);
   });
 
+
+  it("schema refine rejects missing required fields", async () => {
+    const { pi } = await setup();
+    const def = pi._getTool("noesis_believe_fact") as Record<string, unknown> | undefined;
+    expect(def).toBeDefined();
+    const schema = def!.parameters as { parse: (data: unknown) => unknown };
+    expect(schema).toBeDefined();
+
+    // Without content, confidence, or source should fail refinement
+    expect(() => schema.parse({})).toThrow();
+
+    // Partially specified should also fail
+    expect(() => schema.parse({ content: "test" })).toThrow();
+  });
+});
+
+describe("noesis_believe_decision", () => {
   it("records a decision", async () => {
     const { pi, runtime } = await setup();
-    const execute = toolExecutor(pi, "noesis_believe");
+    const execute = toolExecutor(pi, "noesis_believe_decision");
 
     const result = await execute({
-      type: "decision",
       content: "Use TypeScript strict mode",
       rationale: "Catches more errors at compile time",
       source: "user",
@@ -116,9 +131,26 @@ describe("noesis_believe", () => {
     );
   });
 
+
+  it("schema refine rejects missing required fields", async () => {
+    const { pi } = await setup();
+    const def = pi._getTool("noesis_believe_decision") as Record<string, unknown> | undefined;
+    expect(def).toBeDefined();
+    const schema = def!.parameters as { parse: (data: unknown) => unknown };
+    expect(schema).toBeDefined();
+
+    // Without content, rationale, or source should fail refinement
+    expect(() => schema.parse({})).toThrow();
+
+    // Partially specified should also fail
+    expect(() => schema.parse({ content: "test" })).toThrow();
+  });
+});
+
+describe("noesis_believe_learning", () => {
   it("records a learning resolution", async () => {
     const { pi, runtime } = await setup();
-    const execute = toolExecutor(pi, "noesis_believe");
+    const execute = toolExecutor(pi, "noesis_believe_learning");
 
     // First create a learning failure entry
     await runtime.stateManager.mutate((state) => {
@@ -131,81 +163,28 @@ describe("noesis_believe", () => {
     });
 
     const result = await execute({
-      type: "learning",
       learningId: "learn-fix-001",
       rootCause: "Missing null check",
       fix: "Add null guard before dereference",
     });
 
     expect(result.isError).toBe(false);
-    expect(result.content[0]!.text).toContain("Created fact (from learning):");
+    expect(result.content[0]!.text).toContain("Resolved learning learn-fix-001 into fact:");
     expect(result.content[0]!.text).toContain("Missing null check");
   });
 
-  it("returns error for fact with missing fields", async () => {
+
+  it("schema refine rejects missing required fields", async () => {
     const { pi } = await setup();
-    const execute = toolExecutor(pi, "noesis_believe");
-
-    const result = await execute({
-      type: "fact",
-      // no content, confidence, or source
-    });
-
-    expect(result.isError).toBe(true);
-    expect(result.content[0]!.text).toContain("Missing required fields");
-  });
-
-  it("returns error for decision with missing fields", async () => {
-    const { pi } = await setup();
-    const execute = toolExecutor(pi, "noesis_believe");
-
-    const result = await execute({
-      type: "decision",
-      // no content, rationale, or source
-    });
-
-    expect(result.isError).toBe(true);
-    expect(result.content[0]!.text).toContain("Missing required fields");
-  });
-
-  it("returns error for learning with missing fields", async () => {
-    const { pi } = await setup();
-    const execute = toolExecutor(pi, "noesis_believe");
-
-    const result = await execute({
-      type: "learning",
-      // no learningId, rootCause, or fix
-    });
-
-    expect(result.isError).toBe(true);
-    expect(result.content[0]!.text).toContain("Missing required fields");
-  });
-
-
-  // -------------------------------------------------------------------------
-  // Schema refinement test (cover line 66: fallthrough return false)
-  // Uses the actual registered tool's parameters schema, not a copy.
-  // -------------------------------------------------------------------------
-
-  it("schema refine returns false for fact type without required fields", async () => {
-    const { pi } = await setup();
-    // After setup, registerBelieveTool was called, so the schema exists
-    const def = pi._getTool("noesis_believe") as Record<string, unknown> | undefined;
+    const def = pi._getTool("noesis_believe_learning") as Record<string, unknown> | undefined;
     expect(def).toBeDefined();
     const schema = def!.parameters as { parse: (data: unknown) => unknown };
     expect(schema).toBeDefined();
 
-    // Fact without content, confidence, or source should fail refinement
-    expect(() => schema.parse({ type: "fact" })).toThrow();
+    // Without learningId, rootCause, or fix should fail refinement
+    expect(() => schema.parse({})).toThrow();
 
-    // Decision without rationale should also hit fallthrough
-    expect(() =>
-      schema.parse({ type: "decision", content: "test", source: "user" }),
-    ).toThrow();
-
-    // Learning without learningId, rootCause, or fix should hit fallthrough
-    expect(() =>
-      schema.parse({ type: "learning", rootCause: "cause", fix: "fix" }),
-    ).toThrow();
+    // Partially specified should also fail
+    expect(() => schema.parse({ learningId: "test" })).toThrow();
   });
 });

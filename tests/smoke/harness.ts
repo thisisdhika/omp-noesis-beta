@@ -17,6 +17,7 @@ import { spawn, type Subprocess, type FileSink } from "bun";
 import { WORKDIR, MODEL, STATE_PATH, PROMPT_TIMEOUT_MS } from "./config.ts";
 import type { NoesisState } from "../../src/schema.ts";
 import { readFile, unlink } from "node:fs/promises";
+import { mkdirSync } from "node:fs";
 import { accessSync } from "node:fs";
 
 // ---------------------------------------------------------------------------
@@ -26,13 +27,19 @@ import { accessSync } from "node:fs";
 export interface SmokeContext {
   prompt(message: string): Promise<void>;
   /** Send a prompt and wait for the first tool_execution_end event. */
-  promptAndWait(message: string, timeoutMs?: number): Promise<Record<string, unknown>>;
+  promptAndWait(
+    message: string,
+    timeoutMs?: number,
+  ): Promise<Record<string, unknown>>;
   events: Record<string, unknown>[];
   waitForEvent(
     predicate: (e: Record<string, unknown>) => boolean,
     timeoutMs?: number,
   ): Promise<Record<string, unknown>>;
-  waitForTool(name: string, timeoutMs?: number): Promise<Record<string, unknown>>;
+  waitForTool(
+    name: string,
+    timeoutMs?: number,
+  ): Promise<Record<string, unknown>>;
   readState(): Promise<NoesisState | null>;
   dispose(): Promise<void>;
 }
@@ -43,14 +50,9 @@ export interface SmokeContext {
 
 const encoder = new TextEncoder();
 
-type RpcCommand =
-  | { type: "prompt"; message: string }
-  | { type: "abort" };
+type RpcCommand = { type: "prompt"; message: string } | { type: "abort" };
 
-function sendCommand(
-  stdin: FileSink,
-  cmd: RpcCommand,
-): void {
+function sendCommand(stdin: FileSink, cmd: RpcCommand): void {
   stdin.write(encoder.encode(JSON.stringify(cmd) + "\n"));
 }
 
@@ -92,7 +94,16 @@ async function spawnRpcProcess(): Promise<RpcProcess> {
   const extensionPath = resolveExtensionPath();
   const isOmpBin = cliPath === "/opt/homebrew/bin/omp";
 
-  const rpcArgs = ["--mode", "rpc", "--model", MODEL, "--extension", extensionPath];
+  const rpcArgs = [
+    "--mode",
+    "rpc",
+    "--model",
+    MODEL,
+    "--thinking",
+    "minimal",
+    "--extension",
+    extensionPath,
+  ];
   const cmd = isOmpBin ? [cliPath, ...rpcArgs] : ["bun", cliPath, ...rpcArgs];
 
   const proc: Subprocess<"pipe", "pipe", "pipe"> = spawn({
@@ -137,7 +148,11 @@ async function spawnRpcProcess(): Promise<RpcProcess> {
       }
       const tail = buffer.trim();
       if (tail) {
-        try { events.push(JSON.parse(tail)); } catch { /* skip */ }
+        try {
+          events.push(JSON.parse(tail));
+        } catch {
+          /* skip */
+        }
       }
     } catch (e) {
       if (!ready) readyError = e instanceof Error ? e : new Error(String(e));
@@ -147,17 +162,24 @@ async function spawnRpcProcess(): Promise<RpcProcess> {
   // Poll for ready signal
   const deadline = Date.now() + 30_000;
   while (!ready && !readyError && Date.now() < deadline) {
-    await new Promise<void>(r => setTimeout(r, 50));
+    await new Promise<void>((r) => setTimeout(r, 50));
   }
 
   if (readyError) {
     proc.kill();
-    throw new Error(`RPC process failed before ready: ${(readyError as Error).message}`);
+    throw new Error(
+      `RPC process failed before ready: ${(readyError as Error).message}`,
+    );
   }
   if (!ready) {
     proc.kill();
-    const stderrChunk = await proc.stderr.getReader().read().catch(() => null);
-    const stderr = stderrChunk?.value ? decoder.decode(stderrChunk.value) : "(none)";
+    const stderrChunk = await proc.stderr
+      .getReader()
+      .read()
+      .catch(() => null);
+    const stderr = stderrChunk?.value
+      ? decoder.decode(stderrChunk.value)
+      : "(none)";
     throw new Error(`Timeout waiting for RPC ready. Stderr: ${stderr}`);
   }
 
@@ -188,7 +210,10 @@ function buildContext(
       timeoutMs: number = PROMPT_TIMEOUT_MS,
     ): Promise<Record<string, unknown>> {
       sendCommand(stdin, { type: "prompt", message });
-      return this.waitForEvent(e => e.type === "tool_execution_end", timeoutMs);
+      return this.waitForEvent(
+        (e) => e.type === "tool_execution_end",
+        timeoutMs,
+      );
     },
 
     events,
@@ -197,7 +222,8 @@ function buildContext(
       predicate: (e: Record<string, unknown>) => boolean,
       timeoutMs: number = PROMPT_TIMEOUT_MS,
     ): Promise<Record<string, unknown>> {
-      const { promise, resolve, reject } = Promise.withResolvers<Record<string, unknown>>();
+      const { promise, resolve, reject } =
+        Promise.withResolvers<Record<string, unknown>>();
       const deadline = Date.now() + timeoutMs;
       const check = () => {
         const match = events.find(predicate);
@@ -209,7 +235,7 @@ function buildContext(
           reject(
             new Error(
               `Timeout waiting for event after ${timeoutMs}ms. ` +
-                `Events seen: [${events.map(e => e.type).join(", ")}]`,
+                `Events seen: [${events.map((e) => e.type).join(", ")}]`,
             ),
           );
           return;
@@ -220,9 +246,12 @@ function buildContext(
       return promise;
     },
 
-    async waitForTool(name: string, timeoutMs?: number): Promise<Record<string, unknown>> {
+    async waitForTool(
+      name: string,
+      timeoutMs?: number,
+    ): Promise<Record<string, unknown>> {
       return this.waitForEvent(
-        e => e.type === "tool_execution_end" && e.toolName === name,
+        (e) => e.type === "tool_execution_end" && e.toolName === name,
         timeoutMs,
       );
     },
@@ -237,11 +266,27 @@ function buildContext(
     },
 
     async dispose(): Promise<void> {
-      try { sendCommand(stdin, { type: "abort" }); } catch { /* ok */ }
-      try { stdin.end(); } catch { /* ok */ }
-      try { proc.kill(); } catch { /* ok */ }
+      try {
+        sendCommand(stdin, { type: "abort" });
+      } catch {
+        /* ok */
+      }
+      try {
+        stdin.end();
+      } catch {
+        /* ok */
+      }
+      try {
+        proc.kill();
+      } catch {
+        /* ok */
+      }
       if (cleanOnDispose) {
-        try { await unlink(STATE_PATH); } catch { /* ok */ }
+        try {
+          await unlink(STATE_PATH);
+        } catch {
+          /* ok */
+        }
       }
     },
   };
@@ -251,7 +296,12 @@ function buildContext(
  * Create a fresh SmokeContext with a clean state.json.
  */
 export async function createSmokeContext(): Promise<SmokeContext> {
-  try { await unlink(STATE_PATH); } catch { /* ok */ }
+  mkdirSync(WORKDIR, { recursive: true });
+  try {
+    await unlink(STATE_PATH);
+  } catch {
+    /* ok */
+  }
   const { proc, events, stdin, readLoop } = await spawnRpcProcess();
   return buildContext(proc, events, stdin, readLoop, true);
 }
@@ -260,6 +310,7 @@ export async function createSmokeContext(): Promise<SmokeContext> {
  * Create a SmokeContext that PRESERVES existing state.json.
  */
 export async function createPersistentContext(): Promise<SmokeContext> {
+  mkdirSync(WORKDIR, { recursive: true });
   const { proc, events, stdin, readLoop } = await spawnRpcProcess();
   return buildContext(proc, events, stdin, readLoop, false);
 }

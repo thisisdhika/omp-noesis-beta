@@ -13,7 +13,7 @@ import { type NoesisState, NoesisStateSchema, EMPTY_STATE } from "../schema.js";
 
 import { writeAtomic, readJSON } from "./filesystem-store.js";
 import { migrate } from "./migrations.js";
-import { deepClone } from "../shared/clone.js";
+import { deepClone, deepMergeDefaults } from "../shared/clone.js";
 import { ensureNoesisDir } from "../shared/paths.js";
 
 export class StateManager {
@@ -64,7 +64,14 @@ export class StateManager {
       this.#state = deepClone(EMPTY_STATE);
       await writeAtomic(this.#statePath, this.#state);
     } else {
-      this.#state = migrate(loaded);
+      // Deep-merge with EMPTY_STATE so any new schema fields get their defaults.
+      // migrate() only does a shallow spread — without this, fields like
+      // attention.pendingEvidence would be undefined on old state files.
+      const merged = deepMergeDefaults(
+        EMPTY_STATE as unknown as Record<string, unknown>,
+        loaded as Record<string, unknown>,
+      );
+      this.#state = migrate(merged);
     }
   }
 

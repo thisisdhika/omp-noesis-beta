@@ -133,9 +133,9 @@ describe("AGMRevisionStrategy", () => {
 |---|---|---|
 | `noesis_attend` | Graphify query execution | 8 |
 | `noesis_attend` | Capability detection | 6 |
-| `noesis_believe` | Fact persistence + revision | 10 |
-| `noesis_believe` | Decision persistence | 6 |
-| `noesis_believe` | Learning resolution | 8 |
+| `noesis_believe_fact` | Fact persistence + revision | 10 |
+| `noesis_believe_decision` | Decision persistence | 6 |
+| `noesis_believe_learning` | Learning resolution | 8 |
 | `noesis_infer` | Hypothesis lifecycle | 8 |
 | `noesis_commit` | Workflow CRUD | 10 |
 | `noesis_recall` | Query filtering | 8 |
@@ -162,7 +162,7 @@ import { createMockPi } from "../helpers/mock-pi";
 import { createRuntime } from "../../src/runtime";
 import { registerTools } from "../../src/tools";
 
-describe("noesis_believe integration", () => {
+describe("noesis_believe_* integration", () => {
   let tmpDir: string;
   let pi: ReturnType<typeof createMockPi>;
   let runtime: ReturnType<typeof createRuntime>;
@@ -179,8 +179,7 @@ describe("noesis_believe integration", () => {
   });
 
   test("fact belief persists to state.json and survives compaction", async () => {
-    await pi.tools.noesis_believe.execute("tc-1", {
-      type: "fact",
+    await pi.tools.noesis_believe_fact.execute("tc-1", {
       content: "We use Bun runtime",
       confidence: 1.0,
       source: "execution",
@@ -244,8 +243,7 @@ describe("Product: Learning Loop prevents repeated failures", () => {
     await sim.toolCall("bash", { command: "bun build" });
     await sim.toolResult("bash", { exitCode: 1, stderr: "Cannot find module 'zod'" });
 
-    await sim.agentAction("noesis_believe", {
-      type: "learning",
+    await sim.agentAction("noesis_believe_learning", {
       learningId: sim.lastLearningId,
       rootCause: "Missing 'zod' dependency in package.json",
       fix: "Add zod to dependencies and run bun install"

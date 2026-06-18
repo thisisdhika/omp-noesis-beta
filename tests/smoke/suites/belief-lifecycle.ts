@@ -183,17 +183,17 @@ async function scenarioAssessViaRecall(): Promise<ScenarioResult> {
     await ctx.prompt(
       "hey the auth service runs on port 8080, just noting that",
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+    await ctx.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
 
     await ctx.prompt(
       "also PostgreSQL is our primary database now, make a note of that too",
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+    await ctx.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
 
     await ctx.prompt(
       "and we're going with Redis for caching — rationale is it's a fast key-value store and we already have experience with it",
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+    await ctx.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
 
     // Verify beliefs were created
     const preState = await ctx.readState();

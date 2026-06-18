@@ -12,6 +12,8 @@
 import type { ExtensionAPI, ContextEvent, ContextEventResult } from "@oh-my-pi/pi-coding-agent";
 import type { NoesisRuntime } from "../runtime.js";
 import type { CapabilityLevel, RenderContext } from "../schema.js";
+import { detectFamilyFromModel } from "../shared/model-profile.js";
+
 import { buildPreamble } from "../rendering/preamble-builder.js";
 import { detectCapability } from "../infrastructure/graphify-client.js";
 import { existsSync, readFileSync } from "node:fs";
@@ -37,7 +39,7 @@ let _capability: CapabilityLevel | null = null;
  * as the first user message in the conversation.
  */
 export function registerContextHook(pi: ExtensionAPI, runtime: NoesisRuntime): void {
-  pi.on("context", async (event: ContextEvent, _ctx): Promise<ContextEventResult> => {
+  pi.on("context", async (event: ContextEvent, ctx): Promise<ContextEventResult> => {
     const state = runtime.stateManager.read();
     // Detect capability level once and cache it
     if (_capability === null) {
@@ -45,11 +47,13 @@ export function registerContextHook(pi: ExtensionAPI, runtime: NoesisRuntime): v
     }
 
     const hasMcp = hasMcpGraphify(runtime.projectRoot);
+    const modelFamily = detectFamilyFromModel(ctx?.model);
 
     const renderContext: RenderContext = {
       capabilityLevel: _capability,
       contextHookFired: true,
       hasMcpGraphify: hasMcp,
+      modelFamily,
       graphFreshness: {
         isStale: _capability === "STALE",
         staleHours: 24,

@@ -62,7 +62,7 @@ export async function runCrossSessionPersistence(): Promise<SuiteResult> {
         await ctx1.prompt(
           "Use the believe tool to remember that TypeScript has structural typing.",
         );
-        await ctx1.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+        await ctx1.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
       } finally {
         await ctx1.dispose(); // state.json kept on disk
       }
@@ -194,7 +194,7 @@ export async function runCrossSessionPersistence(): Promise<SuiteResult> {
         await ctx1.prompt(
           "Use the believe tool to remember that the project root is called omp-noesis.",
         );
-        await ctx1.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+        await ctx1.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
 
         // Learning (failed bash command)
         await ctx1.prompt(

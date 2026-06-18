@@ -11,7 +11,7 @@ import { unlinkSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { createMockPi, toExtensionAPI } from "../../helpers/mock-pi.js";
 import { createRuntime, type NoesisRuntime } from "../../../src/runtime.js";
-import { registerInferTool } from "../../../src/tools/infer-tool.js";
+import { registerInferTool, buildInferParams } from "../../../src/tools/infer-tool.js";
 import { EMPTY_STATE } from "../../../src/schema.js";
 import { deepClone } from "../../../src/shared/clone.js";
 import type { MockPi } from "../../helpers/mock-pi.js";
@@ -326,50 +326,26 @@ describe("noesis_infer", () => {
   });
 
   // -------------------------------------------------------------------------
-  // Schema refinement test (cover line 56: fallthrough return false)
+  // Schema is lenient — all fields optional, validation is server-side
   // -------------------------------------------------------------------------
 
-  it("schema refine returns false when action condition does not match", () => {
+  it("schema parse accepts all valid action configurations", () => {
     const pi = createMockPi();
 
-    // Recreate the schema from infer-tool to test the refine function.
-    // This exercises line 56: the final `return false` when no action
-    // condition matches.
-    const schema = pi.zod.object({
-      action: pi.zod.enum(["add_hypothesis", "update_hypothesis", "add_reasoning"]),
-      content: pi.zod.string().min(1).max(2000).optional(),
-      id: pi.zod.string().optional(),
-      status: pi.zod.enum(["testing", "confirmed", "refuted", "abandoned"]).optional(),
-      evidence: pi.zod.string().max(500).optional(),
-      reasoning: pi.zod.string().max(1000).optional(),
-      autoPromote: pi.zod.boolean().default(true),
-      relatesTo: pi.zod.string().optional(),
-      tags: pi.zod.array(pi.zod.string()).max(5).optional(),
-    }).refine((data: Record<string, unknown>) => {
-      // Mirrors the source refinement
-      if (data.action === "add_hypothesis") {
-        return typeof data.content === "string" && (data.content as string).length > 0;
-      }
-      if (data.action === "update_hypothesis") {
-        return typeof data.id === "string" && (data.id as string).length > 0 &&
-          typeof data.status === "string" && (data.status as string).length > 0;
-      }
-      if (data.action === "add_reasoning") {
-        return typeof data.content === "string" && (data.content as string).length > 0;
-      }
-      return false; // line 56
-    }, { message: "Missing required fields for the selected action" });
+    // Use the real builder (no .refine())
+    const schema = buildInferParams(pi);
 
-    // add_hypothesis without content should fail refine
-    expect(() => schema.parse({ action: "add_hypothesis" })).toThrow();
+    // add_hypothesis without content now passes (no refine)
+    expect(() => schema.parse({ action: "add_hypothesis" })).not.toThrow();
 
-    // update_hypothesis without id should fail refine
-    expect(() => schema.parse({ action: "update_hypothesis", status: "testing" })).toThrow();
+    // update_hypothesis without id now passes (no refine)
+    expect(() => schema.parse({ action: "update_hypothesis", status: "testing" })).not.toThrow();
 
-    // update_hypothesis without status should fail refine
-    expect(() => schema.parse({ action: "update_hypothesis", id: "test" })).toThrow();
+    // update_hypothesis without status now passes (no refine)
+    expect(() => schema.parse({ action: "update_hypothesis", id: "test" })).not.toThrow();
 
-    // add_reasoning without content should fail refine
-    expect(() => schema.parse({ action: "add_reasoning" })).toThrow();
+    // add_reasoning without content now passes (no refine)
+    expect(() => schema.parse({ action: "add_reasoning" })).not.toThrow();
   });
+
 });

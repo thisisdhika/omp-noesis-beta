@@ -44,7 +44,7 @@ async function scenarioRecallActiveDecisions(): Promise<ScenarioResult> {
     await ctx.prompt(
       "we decided to adopt microservices for the new platform — better scalability and team autonomy. log that as a decision",
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+    await ctx.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
 
     // Verify belief was created
     const preState = await ctx.readState();
@@ -137,13 +137,13 @@ async function scenarioRecallFullStateDigest(): Promise<ScenarioResult> {
     await ctx.prompt(
       "just so you know, the API gateway runs on Kubernetes",
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+    await ctx.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
 
     // Create a decision
     await ctx.prompt(
       "we decided to use PostgreSQL for persistence — ACID compliance and JSON support were the main reasons",
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+    await ctx.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
 
     // Trigger learning via bash failure
     await ctx.prompt(
@@ -188,11 +188,11 @@ async function scenarioRecallWithSearch(): Promise<ScenarioResult> {
     await ctx.prompt(
       "PostgreSQL is our primary database. tag that with database and infrastructure",
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+    await ctx.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
     await ctx.prompt(
       "Redis cache runs on port 6379. tag it with cache and infrastructure",
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+    await ctx.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
 
     // Verify beliefs were created
     const preState = await ctx.readState();
@@ -230,13 +230,13 @@ async function scenarioRecallWithTagFilter(): Promise<ScenarioResult> {
     await ctx.prompt(
       "JWT tokens expire after 1 hour. tag with auth and security",
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+    await ctx.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
 
     // Create a belief without "auth" tag
     await ctx.prompt(
       "log level is set to INFO. tag with logging",
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+    await ctx.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
 
     // Verify beliefs were created
     const preState = await ctx.readState();

@@ -51,7 +51,7 @@ export async function runLearningLoop(): Promise<SuiteResult> {
     await ctx.prompt(
       "ok so I ran `node -e \"throw new Error('DB timeout after 30s')\"` and it crashed as expected. the root cause is the database connection pool being exhausted — we need to increase the pool size and add retry logic. can you log that as a learning entry?",
     );
-      await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+      await ctx.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
       const state = await ctx.readState();
       if (!state) throw new AssertionError("state file not found after prompt");
       const all = [...state.learning.failures, ...state.learning.successes];
@@ -90,7 +90,7 @@ export async function runLearningLoop(): Promise<SuiteResult> {
     await ctx.prompt(
       "find the recent learning entry from that parser crash and diagnose it. root cause is a null pointer in the parser dispatch — needs a null check before dispatch. record that with the believe tool as a learning type",
     );
-      await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+      await ctx.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
       const state = await ctx.readState();
       if (!state) throw new AssertionError("state file not found after escalation prompt");
       assertHasLearning(state, { status: "diagnosed" });
@@ -174,7 +174,7 @@ export async function runLearningLoop(): Promise<SuiteResult> {
     await ctx.prompt(
       "find the learning entry from that failed command and diagnose it. root cause is the script returned non-zero exit code — fix is to handle exit codes properly with error checking",
     );
-      await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+      await ctx.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
       state = await ctx.readState();
       if (!state) throw new AssertionError("state file not found after diagnose prompt");
       assertHasLearning(state, { status: "diagnosed" });
@@ -184,7 +184,7 @@ export async function runLearningLoop(): Promise<SuiteResult> {
     await ctx.prompt(
       "alright we implemented the fix for that exit code issue. find the diagnosed learning entry and mark it as resolved — the fix is 'Exit code check implemented'.",
     );
-      await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+      await ctx.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
       state = await ctx.readState();
       if (!state) throw new AssertionError("state file not found after resolve prompt");
       assertHasLearning(state, { status: "resolved" });

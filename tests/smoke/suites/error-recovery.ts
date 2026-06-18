@@ -51,7 +51,7 @@ export async function runErrorRecovery(): Promise<SuiteResult> {
           'for example, use JSON like {"type":"fact","content":""} or ' +
           '{"type":"fact","confidence":2}. Do not correct the parameters.',
       );
-      await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+      await ctx.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
       await ctx.dispose();
       scenarios.push({
         name: "malformed params rejected",
@@ -86,7 +86,7 @@ export async function runErrorRecovery(): Promise<SuiteResult> {
       await ctx.prompt(
         "Use the believe tool to record a fact: the sky appears blue during daytime.",
       );
-      await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+      await ctx.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
 
       const state = requireState(
         await ctx.readState(),
@@ -166,7 +166,7 @@ export async function runErrorRecovery(): Promise<SuiteResult> {
       await ctx.prompt(
         "Use the believe tool to record a fact: data persists across shutdowns.",
       );
-      await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+      await ctx.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
 
       // Read state BEFORE dispose to verify on-disk persistence
       const state = requireState(

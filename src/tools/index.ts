@@ -13,11 +13,12 @@ import type { ExtensionAPI } from "@oh-my-pi/pi-coding-agent";
 import type { NoesisRuntime } from "../runtime.js";
 import { registerAttendTool } from "./attend-tool.js";
 import { registerFocusTool } from "./focus-tool.js";
-import { registerBelieveTool } from "./believe-tool.js";
+import { registerBelieveFactTool, registerBelieveDecisionTool, registerBelieveLearningTool } from "./believe-tool.js";
 import { registerInferTool } from "./infer-tool.js";
 import { registerCommitTool } from "./commit-tool.js";
 import { registerRecallTool } from "./recall-tool.js";
 import { registerVaultSearchTool } from "./vault-search-tool.js";
+import { registerToolAliases } from "./aliases.js";
 
 /**
  * Register all noesis tools with the extension API.
@@ -29,9 +30,12 @@ import { registerVaultSearchTool } from "./vault-search-tool.js";
 export function registerTools(pi: ExtensionAPI, runtime: NoesisRuntime): void {
   registerAttendTool(pi, runtime);
   registerFocusTool(pi, runtime);
-  registerBelieveTool(pi, runtime);
+  registerBelieveFactTool(pi, runtime);
+  registerBelieveDecisionTool(pi, runtime);
+  registerBelieveLearningTool(pi, runtime);
   registerInferTool(pi, runtime);
   registerCommitTool(pi, runtime);
   registerVaultSearchTool(pi, runtime);
   registerRecallTool(pi, runtime);
+  registerToolAliases(pi, runtime);
 }

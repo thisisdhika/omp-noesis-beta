@@ -68,7 +68,7 @@ describe("addFact", () => {
     expect(fact.evidence).toBeUndefined();
   });
 
-  it("supersedes contradicted facts via contradictsIds", () => {
+  it("supersedes contradicted facts via contradicts", async () => {
     const state = freshState();
     const existing = addFact(state, {
       content: "Old fact",
@@ -80,7 +80,7 @@ describe("addFact", () => {
       content: "New fact",
       confidence: 0.9,
       source: "execution",
-      contradictsIds: [existing.id],
+      contradicts: [existing.id],
     });
 
     // Existing fact should now be superseded
@@ -91,13 +91,13 @@ describe("addFact", () => {
     expect(replacement.status).toBe("active");
   });
 
-  it("handles empty contradictsIds gracefully", () => {
+  it("handles empty contradicts gracefully", () => {
     const state = freshState();
     const fact = addFact(state, {
       content: "No contradictions",
       confidence: 0.7,
       source: "user",
-      contradictsIds: [],
+      contradicts: [],
     });
     expect(fact.status).toBe("active");
     expect(state.belief.facts).toHaveLength(1);
@@ -142,7 +142,7 @@ describe("addDecision", () => {
     expect(decision.tags).toBeUndefined();
   });
 
-  it("supersedes contradicted decisions via contradictsIds", () => {
+  it("supersedes contradicted decisions via contradicts", () => {
     const state = freshState();
     const old = addDecision(state, {
       content: "Old decision",
@@ -154,7 +154,7 @@ describe("addDecision", () => {
       content: "Updated decision",
       rationale: "Better approach",
       source: "user",
-      contradictsIds: [old.id],
+      contradicts: [old.id],
     });
 
     expect(state.belief.decisions.find((d) => d.id === old.id)!.status).toBe("superseded");
@@ -170,7 +170,7 @@ describe("getActiveFacts", () => {
   it("returns only active facts", () => {
     const state = freshState();
     addFact(state, { content: "Active fact", confidence: 0.9, source: "execution" });
-    addFact(state, { content: "Superseded fact", confidence: 0.7, source: "execution", contradictsIds: [state.belief.facts[0]!.id] });
+    addFact(state, { content: "Superseded fact", confidence: 0.7, source: "execution", contradicts: [state.belief.facts[0]!.id] });
 
     const active = getActiveFacts(state);
     expect(active).toHaveLength(1);
@@ -211,7 +211,7 @@ describe("getActiveDecisions", () => {
   it("returns only active decisions", () => {
     const state = freshState();
     addDecision(state, { content: "Active", rationale: "r1", source: "user" });
-    addDecision(state, { content: "Superseded", rationale: "r2", source: "user", contradictsIds: [state.belief.decisions[0]!.id] });
+    addDecision(state, { content: "Superseded", rationale: "r2", source: "user", contradicts: [state.belief.decisions[0]!.id] });
 
     const active = getActiveDecisions(state);
     expect(active).toHaveLength(1);

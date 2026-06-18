@@ -23,13 +23,15 @@ omp-noesis is an Oh My Pi extension that adds a structured cognitive substrate t
 │  │                    omp-noesis v0.1.0                       │  │
 │  │  ┌─────────────────────────────────────────────────────┐  │  │
 │  │  │                  src/index.ts (entry)                │  │  │
-│  │  │  - registerTool(noesis_attend)                      │  │  │
-│  │  │  - registerTool(noesis_believe)                     │  │  │
-│  │  │  - registerTool(noesis_infer)                       │  │  │
-│  │  │  - registerTool(noesis_commit)                      │  │  │
-│  │  │  - registerTool(noesis_focus)                       │  │  │
-│  │  │  - registerTool(noesis_recall)                      │  │  │
-│  │  │  - registerTool(noesis_vault_search)                │  │  │
+│  │  - registerTool(noesis_attend)                       │  │  │
+│  │  - registerTool(noesis_believe_fact)                 │  │  │
+│  │  - registerTool(noesis_believe_decision)              │  │  │
+│  │  - registerTool(noesis_believe_learning)              │  │  │
+│  │  - registerTool(noesis_infer)                         │  │  │
+│  │  - registerTool(noesis_commit)                        │  │  │
+│  │  - registerTool(noesis_focus)                         │  │  │
+│  │  - registerTool(noesis_recall)                        │  │  │
+│  │  - registerTool(noesis_vault_search)                  │  │  │
 │  │  │  - on("context")                                    │  │  │
 │  │  │  - on("session.compacting")                         │  │  │
 │  │  │  - on("tool_result")                                │  │  │
@@ -125,7 +127,9 @@ omp-noesis is an Oh My Pi extension that adds a structured cognitive substrate t
 | Tool | File |
 |---|---|
 | `noesis_attend` | `attend-tool.ts` |
-| `noesis_believe` | `believe-tool.ts` |
+| `noesis_believe_fact` | `believe-tool.ts` |
+| `noesis_believe_decision` | `believe-tool.ts` |
+| `noesis_believe_learning` | `believe-tool.ts` |
 | `noesis_infer` | `infer-tool.ts` |
 | `noesis_commit` | `commit-tool.ts` |
 | `noesis_focus` | `focus-tool.ts` |
@@ -204,13 +208,13 @@ Tool/Context → stateManager.mutate() attention only → mark dirty → checkpo
 ### 5.3 Graph Perception Path
 ```
 noesis_attend → graphifyClient.query/update → parse/translate → attention.graphFindings (ephemeral)
-→ buildPreamble renders once → graphFindings cleared → no durable belief until noesis_believe
+|→ noesis_believe_fact persists it
 ```
 
 ### 5.4 Learning Path
 ```
 tool_result → learning candidate/minimal failure capture → preamble surfaces unresolved learning
-→ agent diagnoses → noesis_believe(type: "learning", learningId, rootCause, fix)
+|→ agent diagnoses → noesis_believe_learning(learningId, rootCause, fix)
 → resolved learning retained + ranked higher
 ```
 

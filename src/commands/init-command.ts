@@ -42,9 +42,9 @@ const RULES_MD = `# Noesis Rules
 - **Before rediscovering:** Call noesis_recall. Recall first, read second.
 
 **After events:**
-- After verifying a fact → noesis_believe type=fact
-- After making a decision → noesis_believe type=decision
-- After fixing a failure → noesis_believe type=learning
+- After verifying a fact → noesis_believe_fact
+- After making a decision → noesis_believe_decision
+- After fixing a failure → noesis_believe_learning
 - When planning work → noesis_commit
 - When testing theories → noesis_infer (add→update cycle)
 - Quick context switch → noesis_focus (max 200 chars)

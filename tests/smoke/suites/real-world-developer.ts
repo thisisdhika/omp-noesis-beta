@@ -52,7 +52,7 @@ async function scenarioDebugCI(): Promise<ScenarioResult> {
       'Record a fact about the fix using the believe tool with type="fact", ' +
         'source="execution", confidence=0.8. Describe what needs to change.',
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+    await ctx.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
 
     // Turn 4: Ask agent to create a workflow tracking the fix
     await ctx.prompt(
@@ -99,7 +99,7 @@ async function scenarioRefactorCodebase(): Promise<ScenarioResult> {
       'Use the believe tool with type="decision" to record a decision about ' +
         'the refactoring approach. Include what module structure you recommend.',
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+    await ctx.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
 
     // Turn 3: Ask agent to create a workflow tracking refactoring steps
     await ctx.prompt(
@@ -154,7 +154,7 @@ async function scenarioProdIncident(): Promise<ScenarioResult> {
       'Record a fact about the incident using the believe tool with type="fact", ' +
         'source="execution", confidence=0.9. Describe the actual root cause.',
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+    await ctx.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
 
     // Turn 4: Ask agent to commit a tracking workflow
     await ctx.prompt(
@@ -203,7 +203,7 @@ async function scenarioCodeReview(): Promise<ScenarioResult> {
       'Use the believe tool with type="decision" to record a finding about ' +
         'a security issue you identified in the auth middleware.',
     );
-    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+    await ctx.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
 
     // Turn 3: Ask agent to record unresolved questions as hypotheses
     await ctx.prompt(

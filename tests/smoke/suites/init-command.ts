@@ -139,7 +139,7 @@ export async function runInitCommand(): Promise<SuiteResult> {
       // Must contain key rules
       expect(content).toContain("noesis_attend");
       expect(content).toContain("noesis_recall");
-      expect(content).toContain("noesis_believe");
+      expect(content).toContain("noesis_believe_fact");
     }));
 
     // 2c. config.yml exists and has compaction settings

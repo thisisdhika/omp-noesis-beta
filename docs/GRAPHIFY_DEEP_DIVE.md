@@ -78,7 +78,7 @@ Noesis treats Graphify as an **oracle** — it asks questions and gets answers. 
 │     - buildPreamble() → buildGraphEvidence() shows top 2 findings    │
 │     - Agent sees: "Graph evidence (2): What imports auth? ..."       │
 │     │                                                                 │
-│  7. Agent calls noesis_believe(type=fact, source="graph")            │
+│  │  7. Agent calls noesis_believe_fact(source="graph")                 │
 │     - Ephemeral finding becomes durable belief                       │
 │     - Confidence from graph confidence mapping                       │
 │     │                                                                 │
@@ -282,7 +282,7 @@ Noesis treats Graphify as an **oracle** — it asks questions and gets answers. 
 3. Update updatedAt timestamp
 ```
 
-**Important:** Findings are **ephemeral** — stored in attention, rendered in preamble, but NOT in survivor set. They're lost after compaction unless committed via `noesis_believe`.
+**Important:** Findings are **ephemeral** — stored in attention, rendered in preamble, but NOT in survivor set. They're lost after compaction unless committed via `noesis_believe_fact`.
 
 
 #### `src/domains/belief/confidence-strategy.ts` — Confidence Mapping
@@ -483,14 +483,14 @@ If graph is >24h old (STALE mode):
 
 ### Belief Source Mapping
 
-When agent calls `noesis_believe(source: "graph")`:
+When agent calls `noesis_believe_fact(source: "graph")`:
 ```
 confidence = graphConfidence * stalenessMultiplier
 ```
 
 The agent decides whether to trust the finding based on the confidence value.
 
-> **Important:** The confidence mapping shown above is a guideline for the agent, not an automatic pipeline. The agent must manually apply this formula when calling `noesis_believe(source: "graph")`. The parser provides the raw confidence values; the agent decides how to translate them into belief confidence.
+agent must manually apply this formula when calling `noesis_believe_fact(source: "graph")`
 
 ---
 
@@ -561,7 +561,7 @@ The agent decides whether to trust the finding based on the confidence value.
 ## 9. Design Rules (from GRAPHIFY_CONTRACT.md)
 
 1. **Noesis queries Graphify; never builds, replaces, or wraps it as a user tool**
-2. **Graph evidence is surfaced as candidates, not auto-committed** — agent must call `noesis_believe`
+2. **Graph evidence is surfaced as candidates, not auto-committed** — agent must call `noesis_believe_fact`
 3. **MCP primary, CLI fallback** — LLM uses MCP tools; attend-tool uses CLI for automated queries
 4. **Confidence is always evidence-grounded for graph sources**
 5. **Stale graphs get confidence penalties, not query refusals**
@@ -608,7 +608,7 @@ Agent must explicitly call `noesis_attend(graphQueries: [...])`. There is no aut
 
 Graph evidence is stored in `attention.graphFindings`, rendered in preamble, but:
 - NOT in survivor set (lost after compaction)
-- Cleared if not committed via `noesis_believe`
+- Cleared if not committed via `noesis_believe_fact`
 - Evicted to max 5 by `turn-end-hook`
 
 **Impact:** Agent must commit findings as beliefs before they're lost.
@@ -703,10 +703,9 @@ Graph findings live in `state.attention.graphFindings`. They're:
 
 ### Belief Layer
 
-Graph evidence becomes durable via `noesis_believe(source: "graph")`:
+Graph evidence becomes durable via `noesis_believe_fact(source: "graph")`:
 ```typescript
-await pi.tools.noesis_believe.execute("tc-1", {
-  type: "fact",
+await pi.tools.noesis_believe_fact.execute("tc-1", {
   content: "auth.ts imports token.ts and session.ts",
   confidence: 1.0,  // From EXTRACTED
   source: "graph",
@@ -797,7 +796,7 @@ CAPS.files = 10          // Max file references in attention
 │  └──────────┘    └──────────┘    └──────────┘      │
 └──────────────────────────────────────────────────────┘
 
-Flow: Agent → noesis_attend → graphify MCP (primary) / CLI (fallback) → parser → attention → preamble → agent → noesis_believe → belief → compaction survival
+Flow: Agent → noesis_attend → graphify MCP (primary) / CLI (fallback) → parser → attention → preamble → agent → noesis_believe_fact → belief → compaction survival
 ```
 
 **Graphify is the perception input. Noesis is the cognitive engine.**

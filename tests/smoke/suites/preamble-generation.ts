@@ -139,7 +139,7 @@ export async function runPreambleGeneration(): Promise<SuiteResult> {
         await ctx.prompt(
           `Use the believe tool to record each of these facts (call the tool separately for each):\n${prompt}`,
         );
-        await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
+        await ctx.waitForTool("noesis_believe_fact", PROMPT_TIMEOUT_MS);
       }
 
       const state = orEmpty(await ctx.readState());

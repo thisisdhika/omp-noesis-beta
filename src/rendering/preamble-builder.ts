@@ -19,6 +19,7 @@ import { MAX_PREAMBLE_TOKENS, CAPS } from "../schema.js";
 import { estimateTokens } from "../shared/tokens.js";
 import { truncate, stripMarkdown } from "../shared/text.js";
 import { getContestedWarnings } from "../domains/belief/belief-domain.js";
+import { getProfile, type ModelFamily } from "../shared/model-profile.js";
 
 // ============================================================================
 // SECTION BUILDERS (each returns the section text or empty string)
@@ -200,7 +201,7 @@ interface Section {
 }
 
 function buildSections(state: NoesisState, render: RenderContext): Section[] {
-  return [
+  const allSections: Section[] = [
     { index: 1, content: buildCapabilityBlock(render), protected: true },
     { index: 2, content: buildContestedWarnings(state), protected: true },
     { index: 3, content: buildFocus(state), protected: true },
@@ -214,6 +215,19 @@ function buildSections(state: NoesisState, render: RenderContext): Section[] {
     { index: 11, content: "State: .omp/noesis/state.json", protected: true },
     { index: 12, content: buildMcpSection(render), protected: false },
   ];
+
+  // Limit non-protected sections for small models
+  const profile = getProfile((render.modelFamily ?? "unknown") as ModelFamily);
+  const nonProtected = allSections.filter(s => !s.protected);
+  if (nonProtected.length > profile.maxNonProtectedSections) {
+    const toRemove = new Set(
+      nonProtected
+        .slice(profile.maxNonProtectedSections)
+        .map(s => s.index)
+    );
+    return allSections.filter(s => !toRemove.has(s.index));
+  }
+  return allSections;
 }
 
 

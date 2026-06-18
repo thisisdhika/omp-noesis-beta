@@ -78,7 +78,7 @@ metadata:
 | New artifact push | Individual decision, learning, belief, or pattern pushed to vault. |
 | VaultRetry flush | Previously failed pushes (triggered by turn-end-hook calling vaultStore.flush()). |
 
-> **Compaction does NOT project to vault.** The compaction hook stores its cognitive survivor state in `preserveData.noesis` (see [ARCHITECTURE.md](ARCHITECTURE.md)), not in the Obsidian vault. Only direct tool calls (e.g. `noesis_believe`) and turn-end retry flushing write to vault paths.
+> **Compaction does NOT project to vault.** The compaction hook stores its cognitive survivor state in `preserveData.noesis` (see [ARCHITECTURE.md](ARCHITECTURE.md)), not in the Obsidian vault. Only direct tool calls (e.g. `noesis_believe_*`) and turn-end retry flushing write to vault paths.
 
 ## 5. Error Handling
 

@@ -45,7 +45,7 @@ describe("belief revision — AGM supersession chain", () => {
       source: "inference",
       tags: ["file-io", "async"],
       evidence: "Node.js 22+ supports promise-based fs API",
-      contradictsIds: [oldFact1.id, oldFact2.id],
+      contradicts: [oldFact1.id, oldFact2.id],
     });
 
     // Reload old facts from state to get updated references
@@ -76,7 +76,7 @@ describe("belief revision — AGM supersession chain", () => {
       content: "V8 garbage collector handles memory automatically",
       confidence: 0.9,
       source: "execution",
-      contradictsIds: [oldFact.id],
+      contradicts: [oldFact.id],
     });
 
     const active = getActiveFacts(state);
@@ -100,7 +100,7 @@ describe("belief revision — AGM supersession chain", () => {
       content: "Second approach: YAML config files",
       confidence: 0.8,
       source: "user",
-      contradictsIds: [fact1.id],
+      contradicts: [fact1.id],
     });
 
     // Track the count before second supersession attempt
@@ -111,7 +111,7 @@ describe("belief revision — AGM supersession chain", () => {
       content: "Final approach: JSON config files with Zod validation",
       confidence: 0.95,
       source: "inference",
-      contradictsIds: [fact1.id, fact2.id],
+      contradicts: [fact1.id, fact2.id],
     });
 
     const supersededCount = state.belief.facts.filter((f) => f.status === "superseded").length;
