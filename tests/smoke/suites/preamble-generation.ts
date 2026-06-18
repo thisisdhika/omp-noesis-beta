@@ -39,7 +39,7 @@ async function createFactBelief(
   confidence = 0.85,
   source = "execution" as const,
 ): Promise<void> {
-  await ctx.prompt(
+  await ctx.promptAndWait(
     `hey record this: "${content}" — confidence is ${confidence}, source is "${source}", tag it test`,
   );
 }
@@ -69,7 +69,7 @@ export async function runPreambleGeneration(): Promise<SuiteResult> {
       // Prompt the agent to use the attend tool — the preamble should
       // already contain the seeded beliefs, and the attend execution
       // should reference / incorporate them.
-    await ctx.prompt(
+    await ctx.promptAndWait(
       'Use the attend tool to set your focus to "understanding project stack" with high priority and show me what you know about the stack.',
     );
 
@@ -183,7 +183,7 @@ export async function runPreambleGeneration(): Promise<SuiteResult> {
 
       // Trigger a learning capture — a failed command should cause the
       // noesis hook to record a learning entry automatically.
-    await ctx.prompt(
+    await ctx.promptAndWait(
       "try this: `cd /nonexistent_directory_xyz` — should fail. then set your focus to 'debugging the latest issue'",
     );
 
@@ -218,14 +218,14 @@ export async function runPreambleGeneration(): Promise<SuiteResult> {
       ctx = await createSmokeContext();
 
       // Create a workflow with explicit steps using the commit tool
-    await ctx.prompt(
+    await ctx.promptAndWait(
       "create a workflow to optimize database query performance. steps: profile slow queries, add missing indexes, review query plans, then deploy the optimisation",
     );
 
       // Now ask the agent to use the attend tool — the preamble should
       // include a summary of the active workflow, and attend should
       // reflect the workflow context.
-    await ctx.prompt(
+    await ctx.promptAndWait(
       "set your focus to 'reviewing query performance' with high priority",
     );
 
@@ -262,7 +262,7 @@ export async function runPreambleGeneration(): Promise<SuiteResult> {
 
       // The preamble should still be generated correctly from an empty
       // state and tools must function.
-    await ctx.prompt(
+    await ctx.promptAndWait(
       "set focus to 'exploring the codebase'",
     );
 

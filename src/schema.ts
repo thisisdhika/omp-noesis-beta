@@ -101,6 +101,12 @@ export const AttentionLayerSchema = z.object({
   graphQueries: z.array(z.string()).max(CAPS.graphQueries).default([]),
   files: z.array(z.string()).max(CAPS.files).default([]),
   graphFindings: z.array(GraphFindingSchema).default([]),
+  pendingEvidence: z.array(z.object({
+    findings: z.array(GraphFindingSchema),
+    query: z.string(),
+    turnAdded: z.number(),
+    turnsRemaining: z.number().default(3),
+  })).default([]),
   updatedAt: z.string().datetime(),
 });
 export type AttentionLayer = z.infer<typeof AttentionLayerSchema>;
@@ -284,6 +290,7 @@ export const EMPTY_STATE: NoesisState = {
     graphQueries: [],
     files: [],
     graphFindings: [],
+    pendingEvidence: [],
     updatedAt: new Date().toISOString(),
   },
   belief: {
@@ -322,7 +329,7 @@ export const VaultArtifactSchema = z.object({
   projectPath: z.string(),
   id: z.string().refine(s => !s.includes('..') && !s.includes('/'), 'Artifact ID must not contain path separators'),
   pushedAt: z.string().datetime(),
-  metadata: z.record(z.string(), z.unknown()).optional(),
+  metadata: z.record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()])).optional(),
   content: z.string(),
 });
 export type VaultArtifact = z.infer<typeof VaultArtifactSchema>;

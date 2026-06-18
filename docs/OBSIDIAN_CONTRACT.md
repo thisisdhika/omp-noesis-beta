@@ -59,6 +59,7 @@ metadata:
 <vault-root>/
 └── .obsidian/
     └── noesis/
+        ├── _INDEX.md           (generated on flush with Dataview queries)
         ├── decision/
         │   └── {id}.md
         ├── learning/
@@ -106,19 +107,41 @@ metadata:
 | **Hindsight** | Session reflection | Internal | Read/write |
 | **Noesis Obsidian** | Human-reviewable projection | Markdown vault | Write-only |
 
+### CompositeVaultStore Architecture
+
+The system uses a composite pattern combining two categories of backends detected automatically at startup:
+
+| Role | Backends | Purpose |
+|---|---|---|
+| **Memory** | Mnemopi / Hindsight / Local | Source of truth for reads and search (pull, search) |
+| **Projection** | Obsidian | Human-reviewable display (push/write only) |
+
+When both a memory and projection backend are detected, `CompositeVaultStore` bridges them:
+pushed artifacts go to both stores in parallel, while reads come exclusively from the memory
+backend. This avoids coupling cognitive state to Obsidian's file structure while keeping the
+vault always up to date for human review.
+
 ## 8. Configuration
 
 ```jsonc
-// .omp/config.yml
+// .omp/config.yml (optional; auto-detection used by default)
 {
   "noesis": {
     "vault": {
-      "backend": "obsidian",  // noop | local | obsidian | mnemopi | hindsight
+      "backend": "obsidian",  // Deprecated — use auto-detection via vault-detector.ts
       "obsidianVaultPath": ".obsidian/noesis/"
     }
   }
 }
 ```
+
+### Auto-Detection (Default)
+
+At startup, the system detects backends independently via `vault-detector.ts`:
+
+- **Memory backend**: checked in priority order — mnemopi (.omp/mnemopi.db) > hindsight (.omp/hindsight/) > local (MEMORY.md) > none
+- **Projection backend**: obsidian (.obsidian/) or none
+- **Composite**: When both a memory and projection backend exist, CompositeVaultStore combines them; otherwise the single detected backend is used directly, and NoopVaultStore provides a no-op fallback
 
 ## 9. Design Rules
 

@@ -34,55 +34,43 @@ const SETTINGS_YAML = `compaction:
 // RULES.md TEMPLATE — static noesis cognitive substrate instructions
 // ============================================================================
 
-const RULES_MD = `<noesis>
-<identity>Noesis-enhanced agent. Cognitive state persists at .omp/noesis/state.json across turns and compaction.</identity>
+const RULES_MD = `# Noesis Rules
 
-<rules>
-1. Task start → noesis_attend. NEVER skip.
-2. Before assuming ignorance → noesis_recall first.
-3. After verifying → noesis_believe type=fact (confidence + source).
-4. After deciding → noesis_believe type=decision (rationale + alternatives).
-5. After fixing failure → noesis_believe type=learning (rootCause + fix).
-6. When planning → noesis_commit.
-7. When testing theories → noesis_infer (add→update cycle).
-8. Quick context switch → noesis_focus (≤200 chars).
-</rules>
+**Always do these FIRST:**
+- **Task start:** Call noesis_attend. ALWAYS. No exceptions.
+- **Before assuming you don't know:** Call noesis_recall.
+- **Before rediscovering:** Call noesis_recall. Recall first, read second.
 
-<graphify>
-EXTRACTED → 1.0 (believe after verify) | INFERRED → 0.55–0.95 (default 0.70, verify first) | AMBIGUOUS → 0.55 (store, low-confidence)
-Stale graph: -0.10 from INFERRED only (additive, floor 0.55). EXTRACTED never penalized.
-Modes: FULL (normal) | STALE (penalty) | NO_GRAPH (build attempt) | DEGRADED (execution/user only)
-</graphify>
+**After events:**
+- After verifying a fact → noesis_believe type=fact
+- After making a decision → noesis_believe type=decision
+- After fixing a failure → noesis_believe type=learning
+- When planning work → noesis_commit
+- When testing theories → noesis_infer (add→update cycle)
+- Quick context switch → noesis_focus (max 200 chars)
 
-<gotchas>
-- NEVER auto-believe INFERRED graph edges. Verify first.
-- NEVER duplicate OMP plan surface. noesis_commit tracks cognition, not execution.
-- ONLY capture significant events as learning. Not every tool result.
-- Beliefs are NEVER deleted — superseded → archive for audit.
-- ALWAYS noesis_recall before rediscovering. Recall first, read second.
-- Focus ≤200 chars. Long focus wastes preamble budget.
-- noesis_vault_search queries human artifacts. Use noesis_recall for live state.
-</gotchas>
+**NEVER:**
+- Auto-believe INFERRED graph edges. Verify first.
+- Duplicate OMP plan surface. noesis_commit = cognition, not execution.
+- Capture every tool result as learning. Only significant events.
+- Delete beliefs. Supersede → archive for audit.
+- Use focus > 200 chars. Wastes preamble budget.
+- Use noesis_recall for vault queries — use noesis_vault_search for human artifacts.
 
-<templates>
-Fact: {mechanism} at {path} {action} {target} using {method}
-Decision: Use {choice} over {alternative} because {rationale}. Rejected: {rejected}
-Learning: {what_failed} when {trigger} | root_cause: {actual_cause} (not symptom) | fix: {exact_fix} verified by {cmd}
-</templates>
+**Templates:**
+- Fact: {mechanism} at {path} {action} {target} using {method}
+- Decision: Use {choice} over {alt} because {reason}. Rejected: {rejected}
+- Learning: {what} failed when {trigger} | root: {cause} | fix: {fix} verified by {cmd}
 
-<confidence>
-execution/user observed → 1.0 | graph EXTRACTED → 1.0 | graph INFERRED → 0.55–0.95 | graph AMBIGUOUS → 0.55 | agent deduced → 0.5–0.95 | learning resolved → 0.85
-</confidence>
+**Confidence:** execution/user = 1.0 | graph EXTRACTED = 1.0 | INFERRED = 0.55–0.95 | AMBIGUOUS = 0.55 | deduced = 0.5–0.95 | resolved = 0.85
 
-<boundaries>
-noesis: task cognitive state | mnemopi: cross-session memory | hindsight: session summaries | obsidian: human projection (write-only)
-</boundaries>
+**Boundaries:** noesis = task state | mnemopi = cross-session | hindsight = summaries | obsidian = human projection (write-only)
 
-<compaction>
-State survives via survivor set in compaction context + preserveData.noesis + .omp/noesis/state.json.
-</compaction>
-<graphify-mcp>
-When graph features are available, you can call these MCP tools directly:
+**Compaction:** State survives via survivor set + preserveData.noesis + .omp/noesis/state.json
+
+**Graph modes:** FULL | STALE (−0.10 penalty, floor 0.55) | NO_GRAPH | DEGRADED
+
+**MCP Graphify tools** (when available):
 - mcp__graphify__query_graph — BFS/DFS traversal with keyword scoring
 - mcp__graphify__get_node — Full details for a specific node
 - mcp__graphify__get_neighbors — All direct neighbors with edge details
@@ -91,9 +79,7 @@ When graph features are available, you can call these MCP tools directly:
 - mcp__graphify__graph_stats — Node/edge/community counts
 - mcp__graphify__get_community — All nodes in a community
 
-Use these for on-demand graph exploration. The attend-tool handles automated preamble evidence via CLI.
-</graphify-mcp>
-</noesis>`;
+Use these for on-demand graph exploration. The attend-tool handles automated preamble evidence via CLI.`;
 
 // ============================================================================
 // INIT ARGS

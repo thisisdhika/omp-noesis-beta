@@ -142,6 +142,13 @@ export function evictOverCap(state: NoesisState): number {
     count += before - state.learning.failures.length;
   }
 
+  // --- Pending evidence: cap at 5 entries --------------------------------
+  if (state.attention.pendingEvidence.length > 5) {
+    const before = state.attention.pendingEvidence.length;
+    state.attention.pendingEvidence = state.attention.pendingEvidence.slice(0, 5);
+    count += before - state.attention.pendingEvidence.length;
+  }
+
   return count;
 }
 

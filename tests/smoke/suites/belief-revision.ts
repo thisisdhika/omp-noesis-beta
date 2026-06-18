@@ -45,7 +45,7 @@ async function scenarioContradictingSupersedes(): Promise<ScenarioResult> {
   const ctx = await createSmokeContext();
   try {
     // Create belief A: port is 8080
-    await ctx.prompt(
+    await ctx.promptAndWait(
       "the API server port is 8080, just a note",
     );
     let state = await ctx.readState();
@@ -53,7 +53,7 @@ async function scenarioContradictingSupersedes(): Promise<ScenarioResult> {
     assertFactExists(state, "active");
 
     // Create belief B: port is 9090 (contradicting)
-    await ctx.prompt(
+    await ctx.promptAndWait(
       "actually the API server port is 9090 now, not 8080. that old port note should be superseded",
     );
     state = await ctx.readState();
@@ -78,7 +78,7 @@ async function scenarioGraphVsUserConflict(): Promise<ScenarioResult> {
   const ctx = await createSmokeContext();
   try {
     // Create a graph-sourced belief
-    await ctx.prompt(
+    await ctx.promptAndWait(
       "the database connection timeout is 30 seconds — found that from the graph",
     );
     let state = await ctx.readState();
@@ -86,7 +86,7 @@ async function scenarioGraphVsUserConflict(): Promise<ScenarioResult> {
     assertHasBelief(state, { source: "graph", status: "active" });
 
     // Create a user-sourced contradicting belief
-    await ctx.prompt(
+    await ctx.promptAndWait(
       "hey that graph data is wrong, the actual timeout is 60 seconds. I'm overriding that — the 30s one should be superseded since this is from the actual config",
     );
     state = await ctx.readState();
@@ -124,7 +124,7 @@ async function scenarioConfidenceDowngrade(): Promise<ScenarioResult> {
   const ctx = await createSmokeContext();
   try {
     // Create a belief with high confidence
-    await ctx.prompt(
+    await ctx.promptAndWait(
       "the deployment pipeline takes 3 minutes, pretty sure about that. record it with 0.9 confidence",
     );
     let state = await ctx.readState();
@@ -143,7 +143,7 @@ async function scenarioConfidenceDowngrade(): Promise<ScenarioResult> {
     assertFactExists(state, "active");
 
     // Now prompt to downgrade confidence
-    await ctx.prompt(
+    await ctx.promptAndWait(
       `actually I'm not so sure about that deployment time anymore — the data was unreliable. downgrade that to 0.3 confidence and supersede the old entry with id "${originalId}"`,
     );
     state = await ctx.readState();
@@ -177,13 +177,13 @@ async function scenarioSourceTracking(): Promise<ScenarioResult> {
   const ctx = await createSmokeContext();
   try {
     // Create beliefs with different sources
-    await ctx.prompt(
+    await ctx.promptAndWait(
       "found this via code search: the config key is API_TIMEOUT",
     );
-    await ctx.prompt(
+    await ctx.promptAndWait(
       "the GraphQL schema has a User type — found that from code analysis",
     );
-    await ctx.prompt(
+    await ctx.promptAndWait(
       "we decided to use pnpm over npm. rationale: faster installs and better disk efficiency",
     );
 
@@ -209,7 +209,7 @@ async function scenarioMultiRevisionChain(): Promise<ScenarioResult> {
   const ctx = await createSmokeContext();
   try {
     // A v1: create initial belief
-    await ctx.prompt(
+    await ctx.promptAndWait(
       "the app is currently on version 1.0.0, noting that",
     );
     let state = await ctx.readState();
@@ -224,7 +224,7 @@ async function scenarioMultiRevisionChain(): Promise<ScenarioResult> {
     }
 
     // A v2: supersede v1
-    await ctx.prompt(
+    await ctx.promptAndWait(
       `we bumped the version to 2.0.0 — update that note and supersede the old one with id "${v1.id}"`,
     );
     state = await ctx.readState();
@@ -239,7 +239,7 @@ async function scenarioMultiRevisionChain(): Promise<ScenarioResult> {
     }
 
     // A v3: supersede v2
-    await ctx.prompt(
+    await ctx.promptAndWait(
       `and now we're on 3.0.0. update again, superseding the one with id "${v2.id}"`,
     );
     state = await ctx.readState();

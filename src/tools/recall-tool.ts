@@ -32,9 +32,9 @@ export function registerRecallTool(pi: ExtensionAPI, runtime: NoesisRuntime): vo
     name: "noesis_recall",
     label: "Noesis: Recall",
     description:
-      "Query the agent's cognitive state. " +
-      "Supports active_beliefs, active_decisions, unresolved_hypotheses, " +
-      "relevant_learning, current_workflow, full_state_digest, and search.",
+  "Read cognitive state. Call BEFORE assuming you don't know something. " +
+  "Query beliefs, decisions, hypotheses, learning, or search by keyword. " +
+  "Do NOT call to store information — use noesis_believe.",
     parameters: pi.zod.object({
       query: pi.zod.enum([
         "active_beliefs",

@@ -29,6 +29,7 @@ import type { MockPi } from "../helpers/mock-pi.js";
 // ---------------------------------------------------------------------------
 
 var _enableGraphifyCLI = false;
+var _graphifyBuildSuccess = true;
 
 mock.module("../../src/infrastructure/graphify-setup.js", () => ({
   checkGraphifyCLI: mock(
@@ -44,7 +45,11 @@ mock.module("../../src/infrastructure/graphify-setup.js", () => ({
   ),
   runGraphifyBuild: mock(
     (): Promise<{ success: boolean; output: string }> =>
-      Promise.resolve({ success: true, output: "graph built" })
+      Promise.resolve(
+        _graphifyBuildSuccess
+          ? { success: true, output: "graph built" }
+          : { success: false, output: "build failed" }
+      )
   ),
 }));
 
@@ -357,7 +362,21 @@ describe("noesis:init", () => {
     it("returns initialized-degraded-no-graphify when skipGraphify is true", async () => {
       const status = await initCommand(castToExtensionAPI(pi), { skipGraphify: true });
     });
+
+    it("returns initialized-full with build errors when graphify build fails", async () => {
+      _enableGraphifyCLI = true;
+      _graphifyBuildSuccess = false;
+      const status = await initCommand(castToExtensionAPI(pi), {});
+      expect(status).toBe("initialized-full");
+
+      // Verify the final summary includes "Graph: build errors"
+      const msgs = sentMessages(pi);
+      const finalMsg = msgs[msgs.length - 1];
+      expect(finalMsg).toBeDefined();
+      expect(finalMsg!.message.content).toContain("Graph: build errors");
+    });
   });
+
 
   // -----------------------------------------------------------------------
   // 7. MCP config writing

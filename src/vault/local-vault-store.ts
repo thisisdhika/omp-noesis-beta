@@ -12,7 +12,7 @@
  * @module vault/local-vault-store
  */
 
-import { appendFileSync, readFileSync, existsSync } from "node:fs";
+import { appendFileSync, readFileSync, existsSync, statSync, renameSync } from "node:fs";
 import { join } from "node:path";
 import { VaultArtifactSchema } from "../schema.js";
 import type { VaultArtifact, VaultPullResult } from "../schema.js";
@@ -53,6 +53,16 @@ export class LocalVaultStore implements VaultStore {
    * Writes are append-only — no deduplication or overwrite is performed.
    */
   async push(artifact: VaultArtifact): Promise<void> {
+    // Size cap: rotate if file exceeds 100KB
+    try {
+      const stats = statSync(this.#filePath);
+      if (stats.size > 100 * 1024) {
+        renameSync(this.#filePath, this.#filePath + ".bak");
+      }
+    } catch {
+      // File doesn't exist yet — fine
+    }
+
     const section = [
       `## [${artifact.kind}] ${artifact.id} — ${artifact.pushedAt}`,
       artifact.content,

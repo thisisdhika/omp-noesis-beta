@@ -17,8 +17,9 @@ export function registerFocusTool(pi: ExtensionAPI, runtime: NoesisRuntime): voi
     name: "noesis_focus",
     label: "Noesis: Focus",
     description:
-      "Quickly set the agent's current focus and optional file references. " +
-      "Lighter than noesis_attend — does not run graph queries.",
+  "Quick focus update mid-task. Lighter than noesis_attend — no graph queries. " +
+  "Call when: switching subtopics, narrowing scope, or changing file references. " +
+  "Do NOT call at task start — use noesis_attend instead.",
     parameters: pi.zod.object({
       focus: pi.zod.string().min(1).max(200),
       files: pi.zod.array(pi.zod.string()).max(10).optional(),

@@ -56,11 +56,7 @@ export async function runHookIntegration(): Promise<SuiteResult> {
         await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
 
         // Second prompt triggers the context hook which updates attention state
-        await ctx.prompt("What do you know about this project?");
-        // Give async hooks a moment to finish writing state.
-        const { promise: pause, resolve: unpause } = Promise.withResolvers<void>();
-        setTimeout(unpause, 500);
-        await pause;
+        await ctx.promptAndWait("What do you know about this project?");
 
         const state = await ctx.readState();
         if (!state) throw new Error("State was not persisted");

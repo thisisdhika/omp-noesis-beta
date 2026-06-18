@@ -84,16 +84,19 @@ function buildActiveDecisions(state: NoesisState): string {
   return lines.join("\n");
 }
 
-function buildActiveBeliefs(state: NoesisState): string {
+function buildActiveBeliefs(state: NoesisState, render: RenderContext): string {
   const highConfidence = state.belief.facts.filter(
     (f) => f.status === "active" && f.confidence >= 0.75,
   );
   if (highConfidence.length === 0) return "";
 
   const shown = highConfidence.slice(0, CAPS.beliefs);
-  const lines: string[] = ["Beliefs (\u22650.75):"];
+  const lines: string[] = ["Beliefs (≥0.75):"];
   for (const f of shown) {
-    lines.push(`  - [${f.confidence.toFixed(2)}] ${f.content}`);
+    const displayConfidence = render.capabilityLevel === "STALE" && f.source === "graph"
+      ? Math.max(0.55, f.confidence - 0.10)
+      : f.confidence;
+    lines.push(`  - [${displayConfidence.toFixed(2)}] ${f.content}`);
   }
   return lines.join("\n");
 }
@@ -142,7 +145,11 @@ function buildGraphEvidence(state: NoesisState): string {
     .slice(0, 2);
 
   for (const f of recent) {
-    lines.push(`  - ${f.query}`);
+    lines.push(`  - Query: ${f.query}`);
+    if (f.nodes.length > 0) lines.push(`    Nodes: ${f.nodes.slice(0, 3).join(", ")}`);
+    if (f.relations.length > 0) lines.push(`    Relations: ${f.relations.slice(0, 2).join(", ")}`);
+    lines.push(`    Confidence: ${f.confidence}${f.inferredConfidence ? ` (${f.inferredConfidence})` : ""}`);
+    if (f.community) lines.push(`    Community: ${f.community}`);
   }
   return lines.join("\n");
 }
@@ -159,6 +166,7 @@ function buildMcpSection(render: RenderContext): string {
   if (!render.hasMcpGraphify) return "";
   return [
     "<graphify-mcp>",
+    "Tools:",
     "- mcp__graphify__query_graph — BFS/DFS traversal with keyword scoring",
     "- mcp__graphify__get_node — Full details for a specific node",
     "- mcp__graphify__get_neighbors — All direct neighbors with edge details",
@@ -166,6 +174,16 @@ function buildMcpSection(render: RenderContext): string {
     "- mcp__graphify__god_nodes — Most connected nodes",
     "- mcp__graphify__graph_stats — Node/edge/community counts",
     "- mcp__graphify__get_community — All nodes in a community",
+    "- mcp__graphify__list_prs — List pull requests",
+    "- mcp__graphify__get_pr_impact — PR impact analysis",
+    "- mcp__graphify__triage_prs — Triage PRs by priority",
+    "Resources:",
+    "- graphify://report — Full graph report",
+    "- graphify://stats — Graph statistics",
+    "- graphify://god-nodes — Most connected nodes",
+    "- graphify://surprises — Surprising connections",
+    "- graphify://audit — Graph audit",
+    "- graphify://questions — Suggested questions",
     "</graphify-mcp>",
   ].join("\n");
 }
@@ -188,7 +206,7 @@ function buildSections(state: NoesisState, render: RenderContext): Section[] {
     { index: 3, content: buildFocus(state), protected: true },
     { index: 4, content: buildWorkflow(state), protected: false },
     { index: 5, content: buildActiveDecisions(state), protected: false },
-    { index: 6, content: buildActiveBeliefs(state), protected: false },
+    { index: 6, content: buildActiveBeliefs(state, render), protected: false },
     { index: 7, content: buildUnresolvedHypotheses(state), protected: false },
     { index: 8, content: buildTopRankedLearning(state), protected: false },
     { index: 9, content: buildGraphEvidence(state), protected: false },

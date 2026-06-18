@@ -41,7 +41,7 @@ async function scenarioCreateFactBelief(): Promise<ScenarioResult> {
   const start = Date.now();
   const ctx = await createSmokeContext();
   try {
-    await ctx.prompt(
+    await ctx.promptAndWait(
       "hey just a quick note — the auth service runs on port 8080 in case you need it later",
     );
     const state = await ctx.readState();
@@ -60,7 +60,7 @@ async function scenarioCreateDecisionBelief(): Promise<ScenarioResult> {
   const start = Date.now();
   const ctx = await createSmokeContext();
   try {
-    await ctx.prompt(
+    await ctx.promptAndWait(
       "we decided to go with PostgreSQL for the primary database. rationale: better JSON support than MySQL and the team's more familiar with it",
     );
     const state = await ctx.readState();
@@ -80,7 +80,7 @@ async function scenarioUpdateBelief(): Promise<ScenarioResult> {
   const ctx = await createSmokeContext();
   try {
     // First, create a belief
-    await ctx.prompt(
+    await ctx.promptAndWait(
       "the auth service runs on port 8080, jot that down as a note",
     );
     let state = await ctx.readState();
@@ -88,7 +88,7 @@ async function scenarioUpdateBelief(): Promise<ScenarioResult> {
     assertFactExists(state, "active");
 
     // Now update / supersede it
-    await ctx.prompt(
+    await ctx.promptAndWait(
       "actually the auth service also listens on 8443 for admin endpoints now. can you update that previous note about port 8080? the old one should be superseded by this",
     );
     state = await ctx.readState();
@@ -113,7 +113,7 @@ async function scenarioArchiveBelief(): Promise<ScenarioResult> {
   const ctx = await createSmokeContext();
   try {
     // Create a belief first
-    await ctx.prompt(
+    await ctx.promptAndWait(
       "just a heads up — there's a temporary debug flag enabled right now, noting it so we don't forget to remove it",
     );
     let state = await ctx.readState();
@@ -121,7 +121,7 @@ async function scenarioArchiveBelief(): Promise<ScenarioResult> {
     assertFactExists(state, "active");
 
     // Now archive it
-    await ctx.prompt(
+    await ctx.promptAndWait(
       "the debug flag is gone now, removed from config. archive that note about it",
     );
     state = await ctx.readState();
@@ -142,7 +142,7 @@ async function scenarioBeliefWithConfidence(): Promise<ScenarioResult> {
   const start = Date.now();
   const ctx = await createSmokeContext();
   try {
-    await ctx.prompt(
+    await ctx.promptAndWait(
       "pretty sure about this one — the build takes exactly 42 seconds, I timed it. record that with high confidence, say 0.95",
     );
     const state = await ctx.readState();
@@ -228,7 +228,7 @@ async function scenarioBelieveLearningPromotion(): Promise<ScenarioResult> {
   const ctx = await createSmokeContext();
   try {
     // Trigger a bash failure to create a learning entry
-    await ctx.prompt(
+    await ctx.promptAndWait(
       "try running this and see what happens: `exit 1` in bash",
     );
 
@@ -248,7 +248,7 @@ async function scenarioBelieveLearningPromotion(): Promise<ScenarioResult> {
     const learningId = failure.id;
 
     // Resolve the learning entry using believe tool with type="learning"
-    await ctx.prompt(
+    await ctx.promptAndWait(
       `ok so the learning entry "${learningId}" — the root cause is that exit 1 always returns non-zero. fix is to use exit 0 for successful test commands. log that as a learning please`,
     );
 
@@ -270,7 +270,7 @@ async function scenarioBelieveWithTagsAndEvidence(): Promise<ScenarioResult> {
   const start = Date.now();
   const ctx = await createSmokeContext();
   try {
-    await ctx.prompt(
+    await ctx.promptAndWait(
       "just found this in nginx.conf line 42 — the API rate limit is 100 requests per minute. pretty confident about this, 0.8. tag it with api and rate-limit",
     );
 

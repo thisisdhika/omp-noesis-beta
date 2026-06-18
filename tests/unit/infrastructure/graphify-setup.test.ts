@@ -9,7 +9,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { installGraphifySkill, runGraphifyBuild } from "../../../src/infrastructure/graphify-setup.js";
+import { checkGraphifyCLI, installGraphifySkill, runGraphifyBuild } from "../../../src/infrastructure/graphify-setup.js";
 import { createTempDir } from "../../helpers/temp-dir.js";
 
 // ============================================================================
@@ -29,6 +29,50 @@ beforeEach(() => {
 
 afterEach(() => {
   tempDir.cleanup();
+});
+
+// ============================================================================
+// Tests — checkGraphifyCLI
+// ============================================================================
+
+describe("checkGraphifyCLI", () => {
+  it("should return installed:true with version when CLI is available", async () => {
+    const result = await checkGraphifyCLI();
+    expect(result.installed).toBeTrue();
+    expect(result.version).toBeDefined();
+    expect(typeof result.version).toBe("string");
+    expect(result.version!.length).toBeGreaterThan(0);
+  });
+
+  it("should return installed:false when CLI binary is not found", async () => {
+    const origWhich = Bun.which;
+    try {
+      Bun.which = (() => null) as typeof Bun.which;
+      const result = await checkGraphifyCLI();
+      expect(result.installed).toBeFalse();
+      expect(result.version).toBeUndefined();
+    } finally {
+      Bun.which = origWhich;
+    }
+  });
+
+  it("should return installed:true even when version detection fails", async () => {
+    const origWhich = Bun.which;
+    const origSpawn = Bun.spawn;
+    try {
+      // Return a path for which, but make spawn throw
+      Bun.which = (() => "/usr/bin/graphify") as typeof Bun.which;
+      Bun.spawn = (() => {
+        throw new Error("Binary not executable");
+      }) as typeof Bun.spawn;
+      const result = await checkGraphifyCLI();
+      expect(result.installed).toBeTrue();
+      expect(result.version).toBeUndefined();
+    } finally {
+      Bun.which = origWhich;
+      Bun.spawn = origSpawn;
+    }
+  });
 });
 
 // ============================================================================

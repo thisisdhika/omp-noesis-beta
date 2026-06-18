@@ -25,6 +25,8 @@ import { accessSync } from "node:fs";
 
 export interface SmokeContext {
   prompt(message: string): Promise<void>;
+  /** Send a prompt and wait for the first tool_execution_end event. */
+  promptAndWait(message: string, timeoutMs?: number): Promise<Record<string, unknown>>;
   events: Record<string, unknown>[];
   waitForEvent(
     predicate: (e: Record<string, unknown>) => boolean,
@@ -180,6 +182,13 @@ function buildContext(
   return {
     async prompt(message: string): Promise<void> {
       sendCommand(stdin, { type: "prompt", message });
+    },
+    async promptAndWait(
+      message: string,
+      timeoutMs: number = PROMPT_TIMEOUT_MS,
+    ): Promise<Record<string, unknown>> {
+      sendCommand(stdin, { type: "prompt", message });
+      return this.waitForEvent(e => e.type === "tool_execution_end", timeoutMs);
     },
 
     events,

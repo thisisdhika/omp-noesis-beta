@@ -12,6 +12,10 @@
 import type { VaultStore, VaultArtifact, VaultPullResult } from "./vault-store.js";
 
 export class NoopVaultStore implements VaultStore {
+  constructor() {
+    /* no-op */
+  }
+
   async push(_artifact: VaultArtifact): Promise<void> {
     // no-op: discard silently
   }

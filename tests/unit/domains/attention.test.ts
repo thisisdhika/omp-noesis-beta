@@ -14,6 +14,8 @@ import {
   storeGraphFindings,
   clearGraphFindings,
   setFiles,
+  addPendingEvidence,
+  decayPendingEvidence,
 } from "../../../src/domains/attention/attention-domain.js";
 import type { NoesisState, GraphFinding } from "../../../src/schema.js";
 import { EMPTY_STATE, CAPS } from "../../../src/schema.js";
@@ -199,5 +201,146 @@ describe("setFiles", () => {
     state.attention.files = ["keep-me.ts"];
     setFiles(state, []);
     expect(state.attention.files).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// addPendingEvidence
+// ---------------------------------------------------------------------------
+
+describe("addPendingEvidence", () => {
+  it("adds a pending evidence entry with correct properties", () => {
+    const state = freshState();
+    const findings: GraphFinding[] = [
+      { query: "q1", nodes: ["A"], relations: [], confidence: "EXTRACTED", timestamp: new Date().toISOString() },
+    ];
+    const turn = 5;
+
+    addPendingEvidence(state, findings, "q1", turn);
+
+    expect(state.attention.pendingEvidence).toHaveLength(1);
+    expect(state.attention.pendingEvidence[0]!.query).toBe("q1");
+    expect(state.attention.pendingEvidence[0]!.findings).toEqual(findings);
+    expect(state.attention.pendingEvidence[0]!.turnAdded).toBe(5);
+    expect(state.attention.pendingEvidence[0]!.turnsRemaining).toBe(3);
+    expect(state.attention.updatedAt).toBeDefined();
+  });
+
+  it("adds multiple entries sequentially", () => {
+    const state = freshState();
+    const f1: GraphFinding[] = [
+      { query: "q1", nodes: [], relations: [], confidence: "EXTRACTED", timestamp: new Date().toISOString() },
+    ];
+    const f2: GraphFinding[] = [
+      { query: "q2", nodes: [], relations: [], confidence: "INFERRED", timestamp: new Date().toISOString() },
+    ];
+
+    addPendingEvidence(state, f1, "q1", 1);
+    addPendingEvidence(state, f2, "q2", 2);
+
+    expect(state.attention.pendingEvidence).toHaveLength(2);
+    expect(state.attention.pendingEvidence[0]!.query).toBe("q1");
+    expect(state.attention.pendingEvidence[1]!.query).toBe("q2");
+  });
+
+  it("preserves entries with the same query (no dedup)", () => {
+    const state = freshState();
+    const findings: GraphFinding[] = [
+      { query: "q1", nodes: [], relations: [], confidence: "EXTRACTED", timestamp: new Date().toISOString() },
+    ];
+
+    addPendingEvidence(state, findings, "q1", 1);
+    addPendingEvidence(state, findings, "q1", 2);
+
+    expect(state.attention.pendingEvidence).toHaveLength(2);
+  });
+
+  it("starts with empty pendingEvidence", () => {
+    const state = freshState();
+    expect(state.attention.pendingEvidence).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// decayPendingEvidence
+// ---------------------------------------------------------------------------
+
+describe("decayPendingEvidence", () => {
+  it("decrements turnsRemaining on all entries", () => {
+    const state = freshState();
+    const findings: GraphFinding[] = [
+      { query: "q1", nodes: [], relations: [], confidence: "EXTRACTED", timestamp: new Date().toISOString() },
+    ];
+    state.attention.pendingEvidence = [
+      { findings, query: "q1", turnAdded: 1, turnsRemaining: 3 },
+      { findings, query: "q2", turnAdded: 2, turnsRemaining: 2 },
+    ];
+
+    decayPendingEvidence(state);
+
+    expect(state.attention.pendingEvidence).toHaveLength(2);
+    expect(state.attention.pendingEvidence[0]!.turnsRemaining).toBe(2);
+    expect(state.attention.pendingEvidence[1]!.turnsRemaining).toBe(1);
+    expect(state.attention.updatedAt).toBeDefined();
+  });
+
+  it("removes expired entries (turnsRemaining <= 0)", () => {
+    const state = freshState();
+    const findings: GraphFinding[] = [
+      { query: "q1", nodes: [], relations: [], confidence: "EXTRACTED", timestamp: new Date().toISOString() },
+    ];
+    state.attention.pendingEvidence = [
+      { findings, query: "q1", turnAdded: 1, turnsRemaining: 1 },
+      { findings, query: "q2", turnAdded: 1, turnsRemaining: 3 },
+    ];
+
+    decayPendingEvidence(state);
+
+    // q1 expired, q2 still has 2 remaining
+    expect(state.attention.pendingEvidence).toHaveLength(1);
+    expect(state.attention.pendingEvidence[0]!.query).toBe("q2");
+    expect(state.attention.pendingEvidence[0]!.turnsRemaining).toBe(2);
+  });
+
+  it("handles empty pendingEvidence gracefully", () => {
+    const state = freshState();
+    expect(state.attention.pendingEvidence).toEqual([]);
+
+    decayPendingEvidence(state);
+
+    expect(state.attention.pendingEvidence).toEqual([]);
+  });
+
+  it("removes all entries after enough decay cycles", () => {
+    const state = freshState();
+    const findings: GraphFinding[] = [
+      { query: "q1", nodes: [], relations: [], confidence: "EXTRACTED", timestamp: new Date().toISOString() },
+    ];
+    state.attention.pendingEvidence = [
+      { findings, query: "q1", turnAdded: 1, turnsRemaining: 3 },
+      { findings, query: "q2", turnAdded: 1, turnsRemaining: 1 },
+    ];
+
+    decayPendingEvidence(state);
+    decayPendingEvidence(state);
+    decayPendingEvidence(state);
+
+    // q2 expired after 1 decay; q1 expires after 3
+    expect(state.attention.pendingEvidence).toHaveLength(0);
+  });
+
+  it("does not produce negative turnsRemaining values", () => {
+    const state = freshState();
+    const findings: GraphFinding[] = [
+      { query: "q1", nodes: [], relations: [], confidence: "EXTRACTED", timestamp: new Date().toISOString() },
+    ];
+    state.attention.pendingEvidence = [
+      { findings, query: "q1", turnAdded: 1, turnsRemaining: 0 },
+    ];
+
+    decayPendingEvidence(state);
+
+    // turnsRemaining becomes -1 -> filtered out (<=0)
+    expect(state.attention.pendingEvidence).toHaveLength(0);
   });
 });

@@ -13,6 +13,11 @@ import {
   CAPS,
   CURRENT_VERSION,
   generateId,
+  MAX_PREAMBLE_TOKENS,
+  NoesisStateSchema,
+  CommitmentLayerSchema,
+  LearningEntrySchema,
+  VaultArtifactSchema,
 } from "../../src/schema.js";
 import type { NoesisState } from "../../src/schema.js";
 
@@ -151,5 +156,147 @@ describe("generateId", () => {
     const uuidPart = id.slice("x-".length);
     // UUIDv4 format: 8-4-4-4-12 hex digits
     expect(uuidPart).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// MAX_PREAMBLE_TOKENS
+// ---------------------------------------------------------------------------
+
+describe("MAX_PREAMBLE_TOKENS", () => {
+  it("is defined as 2000", () => {
+    expect(MAX_PREAMBLE_TOKENS).toBe(2000);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// CommitmentLayerSchema (covers default factory at lines 217-223)
+// ---------------------------------------------------------------------------
+
+describe("CommitmentLayerSchema", () => {
+  it("generates workflow via default factory when omitted from parse", () => {
+    const result = CommitmentLayerSchema.parse({ actions: [] });
+    expect(result.workflow).toBeDefined();
+    expect(result.workflow.id).toMatch(/^wf-/);
+    expect(result.workflow.goal).toBe("");
+    expect(result.workflow.status).toBe("draft");
+    expect(result.workflow.steps).toEqual([]);
+    expect(result.actions).toEqual([]);
+  });
+
+  it("accepts explicit workflow data", () => {
+    const now = new Date().toISOString();
+    const result = CommitmentLayerSchema.parse({
+      workflow: {
+        id: generateId("wf"),
+        goal: "explicit goal",
+        status: "active",
+        steps: [],
+        createdAt: now,
+        updatedAt: now,
+      },
+      actions: [],
+    });
+    expect(result.workflow.goal).toBe("explicit goal");
+    expect(result.workflow.status).toBe("active");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// NoesisStateSchema
+// ---------------------------------------------------------------------------
+
+describe("NoesisStateSchema", () => {
+  it("parses a minimal valid state object", () => {
+    const now = new Date().toISOString();
+    const state = {
+      version: CURRENT_VERSION,
+      lastPersisted: now,
+      attention: {
+        focus: "",
+        priority: "normal",
+        graphQueries: [],
+        files: [],
+        graphFindings: [],
+        pendingEvidence: [],
+        updatedAt: now,
+      },
+      belief: { facts: [], decisions: [] },
+      inference: { hypotheses: [], reasoning: [] },
+      commitment: {
+        workflow: {
+          id: generateId("wf"),
+          goal: "",
+          status: "draft",
+          steps: [],
+          createdAt: now,
+          updatedAt: now,
+        },
+        actions: [],
+      },
+      learning: {
+        successes: [],
+        failures: [],
+        summary: { successCount: 0, failureCount: 0, resolvedCount: 0, diagnosedCount: 0 },
+      },
+    };
+    const result = NoesisStateSchema.parse(state);
+    expect(result.version).toBe(CURRENT_VERSION);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// LearningEntrySchema default
+// ---------------------------------------------------------------------------
+
+describe("LearningEntrySchema", () => {
+  it("defaults status to captured when omitted", () => {
+    const result = LearningEntrySchema.parse({
+      id: "le-test-123e4567-e89b-12d3-a456-426614174000",
+      description: "test learning entry",
+      capturedAt: new Date().toISOString(),
+    });
+    expect(result.status).toBe("captured");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// VaultArtifactSchema (covers refine callback at line 330)
+// ---------------------------------------------------------------------------
+
+describe("VaultArtifactSchema", () => {
+  it("parses a valid vault artifact", () => {
+    const result = VaultArtifactSchema.parse({
+      kind: "decision",
+      projectPath: "/test/project",
+      id: "valid-id",
+      pushedAt: new Date().toISOString(),
+      content: "some content",
+    });
+    expect(result.id).toBe("valid-id");
+  });
+
+  it("rejects artifact ID containing path separators", () => {
+    expect(() =>
+      VaultArtifactSchema.parse({
+        kind: "belief",
+        projectPath: "/p",
+        id: "contains/slash",
+        pushedAt: new Date().toISOString(),
+        content: "x",
+      }),
+    ).toThrow();
+  });
+
+  it("rejects artifact ID containing parent directory reference", () => {
+    expect(() =>
+      VaultArtifactSchema.parse({
+        kind: "belief",
+        projectPath: "/p",
+        id: "contains..",
+        pushedAt: new Date().toISOString(),
+        content: "x",
+      }),
+    ).toThrow();
   });
 });

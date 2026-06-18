@@ -42,6 +42,7 @@ async function scenarioBugInvestigation(): Promise<ScenarioResult> {
     await ctx.prompt(
       "ok so what do you think is causing this? jot down a hypothesis — feels like maybe the connection pool is exhausted or something",
     );
+    await ctx.waitForTool("noesis_infer", PROMPT_TIMEOUT_MS);
 
     // Turn 3: Ask agent to record a belief about the timeout issue
     await ctx.prompt(
@@ -88,6 +89,7 @@ async function scenarioLearningFromFailure(): Promise<ScenarioResult> {
     await ctx.prompt(
       "hey can you run this real quick? `node -e \"throw new Error('BUG-42: null pointer in parser')\"` — want to see how the error handling catches this kind of parser crash",
     );
+    await ctx.waitForTool("bash", PROMPT_TIMEOUT_MS);
 
     // Turn 2: Ask to recall what was learned
     await ctx.prompt(
@@ -99,6 +101,7 @@ async function scenarioLearningFromFailure(): Promise<ScenarioResult> {
     await ctx.prompt(
       "alright so the root cause here is a missing null check before dereference. can you log that as a learning entry with the fix? should be adding a null guard around line 42 in the parser",
     );
+    await ctx.waitForTool("noesis_believe", PROMPT_TIMEOUT_MS);
 
     // Verify learning was captured and belief was created
     const state = await ctx.readState();

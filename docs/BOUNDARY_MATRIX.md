@@ -118,6 +118,8 @@ Project optionally: decisions, workflow documents, learning records, state snaps
 
 When a graph is stale (>24h since last update), INFERRED belief confidences are reduced by **-0.10** (floored at 0.55). EXTRACTED beliefs are never penalized.
 
+Currently agent-interpreted (system surfaces STALE capability). System-level penalty is a design goal.
+
 ## 9. Decision Matrix
 
 | Proposed Feature | Owner |

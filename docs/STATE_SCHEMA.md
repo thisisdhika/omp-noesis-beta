@@ -31,8 +31,15 @@ interface AttentionLayer {
   graphQueries: string[];      // Max 5
   files: string[];            // Max 10
   graphFindings: GraphFinding[]; // Ephemeral, cleared after render
-  contextUsage: number;       // Token estimate
+  pendingEvidence: PendingEvidenceEntry[]; // Auto-decays after 3 turns
   updatedAt: string;           // ISO 8601
+}
+
+interface PendingEvidenceEntry {
+  findings: GraphFinding[];
+  query: string;
+  turnAdded: number;
+  turnsRemaining: number;      // Defaults to 3, decremented each turn
 }
 
 interface GraphFinding {

@@ -28,11 +28,9 @@ export function registerInferTool(pi: ExtensionAPI, runtime: NoesisRuntime): voi
     name: "noesis_infer",
     label: "Noesis: Infer",
     description:
-      "Manage hypotheses and reasoning steps. " +
-      "Use action=\"add_hypothesis\" to create a new hypothesis, " +
-      "\"update_hypothesis\" to change status/evidence (optionally auto-promoting " +
-      "confirmed hypotheses to belief facts), and \"add_reasoning\" to log a " +
-      "reasoning step.",
+  "Hypothesis management. Call when: testing a theory, confirming or refuting " +
+  "a hypothesis, or recording a reasoning step. Confirmed hypotheses " +
+  "auto-promote to beliefs. Do NOT call for simple facts — use noesis_believe.",
     parameters: pi.zod.object({
       action: pi.zod.enum(["add_hypothesis", "update_hypothesis", "add_reasoning"]),
       content: pi.zod.string().min(1).max(2000).optional(),

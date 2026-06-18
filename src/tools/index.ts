@@ -17,6 +17,7 @@ import { registerBelieveTool } from "./believe-tool.js";
 import { registerInferTool } from "./infer-tool.js";
 import { registerCommitTool } from "./commit-tool.js";
 import { registerRecallTool } from "./recall-tool.js";
+import { registerVaultSearchTool } from "./vault-search-tool.js";
 
 /**
  * Register all noesis tools with the extension API.
@@ -31,5 +32,6 @@ export function registerTools(pi: ExtensionAPI, runtime: NoesisRuntime): void {
   registerBelieveTool(pi, runtime);
   registerInferTool(pi, runtime);
   registerCommitTool(pi, runtime);
+  registerVaultSearchTool(pi, runtime);
   registerRecallTool(pi, runtime);
 }

@@ -130,4 +130,75 @@ describe("VaultRetry", () => {
       cleanup();
     }
   });
+
+  // ============================================================================
+  // FLUSH — lines 91–113 (primary coverage gap)
+  // ============================================================================
+
+  it("flush on empty queue returns zeroed result", async () => {
+    const { path, cleanup } = createTempDir();
+    try {
+      const buf = new RetryBuffer(path);
+      const result = await buf.flush(async () => {});
+      expect(result).toEqual({ succeeded: 0, failed: 0 });
+    } finally {
+      cleanup();
+    }
+  });
+
+  it("flush removes all items after successful writes", async () => {
+    const { path, cleanup } = createTempDir();
+    try {
+      const buf = new RetryBuffer(path);
+      await buf.enqueue(makeArtifact({ id: "fl-ok-1" }));
+      await buf.enqueue(makeArtifact({ id: "fl-ok-2" }));
+
+      const result = await buf.flush(async () => {});
+      expect(result).toEqual({ succeeded: 2, failed: 0 });
+
+      expect(await buf.peek()).toEqual([]);
+      expect(await buf.count()).toBe(0);
+    } finally {
+      cleanup();
+    }
+  });
+
+  it("flush preserves items whose writer throws", async () => {
+    const { path, cleanup } = createTempDir();
+    try {
+      const buf = new RetryBuffer(path);
+      await buf.enqueue(makeArtifact({ id: "fl-ok" }));
+      await buf.enqueue(makeArtifact({ id: "fl-fail" }));
+      await buf.enqueue(makeArtifact({ id: "fl-ok-2" }));
+
+      const result = await buf.flush(async (artifact) => {
+        if (artifact.id === "fl-fail") throw new Error("write failed");
+      });
+      expect(result).toEqual({ succeeded: 2, failed: 1 });
+
+      const remaining = await buf.peek();
+      expect(remaining).toHaveLength(1);
+      expect(remaining[0]!.id).toBe("fl-fail");
+    } finally {
+      cleanup();
+    }
+  });
+
+  it("flush with all failures preserves every item", async () => {
+    const { path, cleanup } = createTempDir();
+    try {
+      const buf = new RetryBuffer(path);
+      await buf.enqueue(makeArtifact({ id: "fail-1" }));
+      await buf.enqueue(makeArtifact({ id: "fail-2" }));
+
+      const result = await buf.flush(async () => {
+        throw new Error("always fails");
+      });
+      expect(result).toEqual({ succeeded: 0, failed: 2 });
+
+      expect(await buf.count()).toBe(2);
+    } finally {
+      cleanup();
+    }
+  });
 });

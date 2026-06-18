@@ -13,12 +13,12 @@ import { join } from "node:path";
 export const WORKDIR =
   process.env.SMOKE_WORKDIR || join(tmpdir(), "omp-noesis-smoke-" + Date.now());
 
-export const MODEL = "opencode-go/deepseek-v4-flash:off";
+export const MODEL = "opencode-zen/nemotron-3-ultra-free:minimal";
 
 export const STATE_PATH = join(WORKDIR, ".omp", "noesis", "state.json");
 
 /** Hard timeout for the overall agent prompt call (2 minutes). */
 export const TIMEOUT_MS = 120_000;
 
-/** How long to wait for a specific tool to finish (90 seconds). */
-export const PROMPT_TIMEOUT_MS = 90_000;
+/** How long to wait for a specific tool to finish (30 seconds). */
+export const PROMPT_TIMEOUT_MS = 30_000;

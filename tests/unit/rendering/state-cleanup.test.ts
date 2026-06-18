@@ -299,6 +299,25 @@ describe("evictOverCap", () => {
     expect(evictOverCap(state)).toBe(1);
     expect(state.learning.failures).toHaveLength(cap);
   });
+
+  it("trims pendingEvidence over 5 entries", () => {
+    const state = freshState();
+    // Add 7 pending evidence entries
+    for (let i = 0; i < 7; i++) {
+      state.attention.pendingEvidence.push({
+        findings: [],
+        query: `q-${i}`,
+        turnAdded: i,
+        turnsRemaining: 3,
+      });
+    }
+    expect(state.attention.pendingEvidence).toHaveLength(7);
+    expect(evictOverCap(state)).toBe(2);
+    expect(state.attention.pendingEvidence).toHaveLength(5);
+    // Should keep the first 5 (oldest first since we don't sort)
+    expect(state.attention.pendingEvidence[0]!.query).toBe("q-0");
+    expect(state.attention.pendingEvidence[4]!.query).toBe("q-4");
+  });
 });
 
 // ---------------------------------------------------------------------------

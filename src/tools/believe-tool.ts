@@ -11,21 +11,22 @@
 
 import type { ExtensionAPI } from "@oh-my-pi/pi-coding-agent";
 import type { NoesisRuntime } from "../runtime.js";
-import type { BeliefFact, BeliefDecision } from "../schema.js";
+import type { GraphFinding, BeliefFact, BeliefDecision } from "../schema.js";
 import {
   addFact,
   addDecision,
   resolveLearning,
 } from "../domains/belief/belief-domain.js";
+import { mapGraphConfidence } from "../domains/belief/confidence-strategy.js";
 
 export function registerBelieveTool(pi: ExtensionAPI, runtime: NoesisRuntime): void {
   pi.registerTool({
     name: "noesis_believe",
     label: "Noesis: Believe",
     description:
-      "Record a belief fact, decision, or resolve a learning entry into a belief fact. " +
-      "Use type=\"fact\" for factual claims, type=\"decision\" for design choices, " +
-      "and type=\"learning\" to promote a learning entry to a belief.",
+  "Store knowledge. Call when: you verify a fact, make a design decision, " +
+  "or learn from a failure. NEVER skip storing verified information. " +
+  "Do NOT call when: speculating, unsure, or for routine tool results.",
     parameters: pi.zod.object({
       type: pi.zod.enum(["fact", "decision", "learning"]),
       content: pi.zod.string().min(1).max(1000).optional(),
@@ -39,6 +40,15 @@ export function registerBelieveTool(pi: ExtensionAPI, runtime: NoesisRuntime): v
       tags: pi.zod.array(pi.zod.string()).max(5).optional(),
       contradictsIds: pi.zod.array(pi.zod.string()).optional(),
       evidence: pi.zod.string().max(500).optional(),
+      graphFinding: pi.zod.object({
+        query: pi.zod.string(),
+        nodes: pi.zod.array(pi.zod.string()),
+        relations: pi.zod.array(pi.zod.string()),
+        confidence: pi.zod.enum(["EXTRACTED", "INFERRED", "AMBIGUOUS"]),
+        inferredConfidence: pi.zod.number().optional(),
+        community: pi.zod.string().optional(),
+        timestamp: pi.zod.string(),
+      }).optional(),
     }).refine((data) => {
       if (data.type === "fact") {
         return typeof data.content === "string" && data.content.length > 0 &&
@@ -64,8 +74,12 @@ export function registerBelieveTool(pi: ExtensionAPI, runtime: NoesisRuntime): v
 
       if (params.type === "fact") {
         const content = params.content;
-        const confidence = params.confidence;
         const source = params.source;
+        // Compute confidence: explicit param takes precedence; fall back to graphFinding
+        let confidence = params.confidence;
+        if (confidence === undefined && source === "graph" && params.graphFinding) {
+          confidence = mapGraphConfidence(params.graphFinding as GraphFinding);
+        }
         if (!content || confidence === undefined || !source) {
           return {
             isError: true,

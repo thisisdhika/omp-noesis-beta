@@ -50,6 +50,10 @@ export function registerContextHook(pi: ExtensionAPI, runtime: NoesisRuntime): v
       capabilityLevel: _capability,
       contextHookFired: true,
       hasMcpGraphify: hasMcp,
+      graphFreshness: {
+        isStale: _capability === "STALE",
+        staleHours: 24,
+      },
     };
 
 

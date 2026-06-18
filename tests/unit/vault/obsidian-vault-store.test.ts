@@ -141,20 +141,19 @@ describe("ObsidianVaultStore", () => {
       }
     });
 
-    it("roundtrips artifact with nested objects in metadata", async () => {
+    it("roundtrips artifact with various scalar metadata values", async () => {
       const { path, cleanup } = createTempDir();
       try {
         mkdirSync(join(path, ".obsidian"));
         const store = new ObsidianVaultStore(path);
         const artifact = makeArtifact({
-          id: "yml-nested",
+          id: "yml-scalars",
           kind: "decision",
-          content: "nested object test",
+          content: "scalar types test",
           metadata: {
-            source: {
-              type: "graph",
-              confidence: 0.9,
-            },
+            sourceType: "graph",
+            confidence: 0.9,
+            enabled: true,
           },
         });
 
@@ -163,44 +162,43 @@ describe("ObsidianVaultStore", () => {
         const pulled = result.artifacts.find((a) => a.id === artifact.id);
 
         expect(pulled).toBeDefined();
-        const source = pulled!.metadata!["source"] as Record<string, unknown>;
-        expect(source).toBeDefined();
-        expect(source["type"]).toBe("graph");
-        expect(source["confidence"]).toBe(0.9);
+        expect(pulled!.metadata!["sourceType"]).toBe("graph");
+        expect(pulled!.metadata!["confidence"]).toBe(0.9);
+        expect(pulled!.metadata!["enabled"]).toBe(true);
       } finally {
         cleanup();
       }
     });
 
-    it("serializes arrays in metadata but parser reads them as empty objects", async () => {
+    it("handles null metadata value correctly", async () => {
       const { path, cleanup } = createTempDir();
       try {
         mkdirSync(join(path, ".obsidian"));
         const store = new ObsidianVaultStore(path);
         const artifact = makeArtifact({
-          id: "yml-array",
+          id: "yml-null-md",
           kind: "decision",
-          content: "array test",
+          content: "null metadata test",
           metadata: {
-            tags: ["critical", "performance"],
+            nullable: null,
+            fallback: "default",
           },
         });
 
         await store.push(artifact);
 
-        // Verify the on-disk file has the array serialized correctly
-        const filePath = join(path, ".obsidian", "noesis", "decision", "yml-array.md");
+        // Verify the on-disk file has the metadata serialized correctly
+        const filePath = join(path, ".obsidian", "noesis", "decision", "yml-null-md.md");
         const diskContent = readFileSync(filePath, "utf-8");
-        expect(diskContent).toContain("tags:");
-        expect(diskContent).toContain("- critical");
-        expect(diskContent).toContain("- performance");
+        expect(diskContent).toContain("nullable: ~");
+        expect(diskContent).toContain("fallback:");
 
-        // Parsing roundtrip: the line-based parser cannot handle
-        // YAML array literals yet, so arrays become empty objects
+        // Parsing roundtrip
         const result = await store.pull("decision", 100);
         const pulled = result.artifacts.find((a) => a.id === artifact.id);
         expect(pulled).toBeDefined();
-        expect(pulled!.metadata!["tags"]).toEqual({});
+        expect(pulled!.metadata!["nullable"]).toBeNull();
+        expect(pulled!.metadata!["fallback"]).toBe("default");
       } finally {
         cleanup();
       }
@@ -764,6 +762,94 @@ describe("ObsidianVaultStore", () => {
 
         const valid = await store.validate();
         expect(valid).toBe(false);
+      } finally {
+        cleanup();
+      }
+    });
+  });
+
+  // ========================================================================
+  // flush()
+  // ========================================================================
+
+  describe("flush()", () => {
+    it("succeeds when retry buffer is empty", async () => {
+      const { path, cleanup } = createTempDir();
+      try {
+        mkdirSync(join(path, ".obsidian"));
+        const store = new ObsidianVaultStore(path);
+
+        await expect(store.flush()).resolves.toBeUndefined();
+      } finally {
+        cleanup();
+      }
+    });
+
+    it("retries artifacts from the retry buffer and writes them to vault", async () => {
+      const { path, cleanup } = createTempDir();
+      try {
+        mkdirSync(join(path, ".obsidian", "noesis", "decision"), { recursive: true });
+        const store = new ObsidianVaultStore(path);
+
+        // Prepare an artifact that conforms to VaultArtifactSchema
+        const artifact = makeArtifact({
+          id: "flush-ok-1",
+          kind: "decision",
+          content: "retried successfully",
+        });
+
+        // Pre-populate the retry buffer directly
+        const retryDir = join(path, ".omp", "noesis");
+        mkdirSync(retryDir, { recursive: true });
+        const retryFile = join(retryDir, "vault-retry.json");
+        writeFileSync(retryFile, JSON.stringify([artifact]));
+
+        await store.flush();
+
+        // Artifact should have been written to the vault
+        const vaultPath = join(
+          path, ".obsidian", "noesis", "decision", "flush-ok-1.md",
+        );
+        expect(existsSync(vaultPath)).toBe(true);
+        const content = readFileSync(vaultPath, "utf-8");
+        expect(content).toContain("id: flush-ok-1");
+
+        // Retry buffer should be empty
+        const buffer = JSON.parse(readFileSync(retryFile, "utf-8"));
+        expect(buffer).toEqual([]);
+      } finally {
+        cleanup();
+      }
+    });
+
+    it("leaves failed artifacts in retry buffer when flush retry fails", async () => {
+      const { path, cleanup } = createTempDir();
+      try {
+        mkdirSync(join(path, ".obsidian", "noesis", "decision"), { recursive: true });
+        const store = new ObsidianVaultStore(path);
+
+        const artifact = makeArtifact({
+          id: "flush-fail-1",
+          kind: "decision",
+          content: "will fail on retry",
+        });
+
+        // Pre-populate the retry buffer
+        const retryDir = join(path, ".omp", "noesis");
+        mkdirSync(retryDir, { recursive: true });
+        const retryFile = join(retryDir, "vault-retry.json");
+        writeFileSync(retryFile, JSON.stringify([artifact]));
+
+        // Block the target file path with a directory so renameSync fails
+        const vaultDir = join(path, ".obsidian", "noesis", "decision");
+        mkdirSync(join(vaultDir, "flush-fail-1.md"));
+
+        await store.flush();
+
+        // Failed artifact should remain in the retry buffer
+        const buffer = JSON.parse(readFileSync(retryFile, "utf-8"));
+        expect(buffer).toHaveLength(1);
+        expect(buffer[0].id).toBe("flush-fail-1");
       } finally {
         cleanup();
       }

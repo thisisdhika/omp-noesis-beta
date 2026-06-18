@@ -16,6 +16,7 @@ import type { VaultStore, VaultArtifact, VaultPullResult } from "./vault-store.j
 import { writeObsidianNote } from "./obsidian-writer.js";
 import { RetryBuffer } from "./vault-retry.js";
 import type { FlushResult } from "./vault-retry.js";
+import { load as yamlLoad } from "js-yaml";
 import { join } from "node:path";
 import { readdir, readFile, stat } from "node:fs/promises";
 
@@ -50,21 +51,13 @@ function yamlPrimitive(value: unknown): string {
  * Serialize an object as YAML key-value pairs at the given indent level.
  * Each entry occupies its own line.
  */
-function yamlObject(obj: Record<string, unknown>, indent: number): string {
+function yamlObject(obj: Record<string, string | number | boolean | null>, indent: number): string {
   const pad = " ".repeat(indent);
   const lines: string[] = [];
 
   for (const [key, value] of Object.entries(obj)) {
     if (value === null || value === undefined) {
       lines.push(`${pad}${key}: ~`);
-    } else if (typeof value === "object" && !Array.isArray(value)) {
-      lines.push(`${pad}${key}:`);
-      lines.push(yamlObject(value as Record<string, unknown>, indent + 2));
-    } else if (Array.isArray(value)) {
-      lines.push(`${pad}${key}:`);
-      for (const item of value) {
-        lines.push(`${pad}- ${yamlPrimitive(item)}`);
-      }
     } else {
       lines.push(`${pad}${key}: ${yamlPrimitive(value)}`);
     }
@@ -80,40 +73,17 @@ function yamlObject(obj: Record<string, unknown>, indent: number): string {
 function formatFrontmatter(artifact: VaultArtifact): string {
   const lines = ["---"];
   lines.push(`kind: ${artifact.kind}`);
-  lines.push(`id: ${artifact.id}`);
-  lines.push(`pushedAt: ${artifact.pushedAt}`);
-  lines.push(`projectPath: ${artifact.projectPath}`);
+  lines.push(`id: ${yamlPrimitive(artifact.id)}`);
+  lines.push(`pushedAt: ${yamlPrimitive(artifact.pushedAt)}`);
+  lines.push(`projectPath: ${yamlPrimitive(artifact.projectPath)}`);
 
   if (artifact.metadata && Object.keys(artifact.metadata).length > 0) {
     lines.push("metadata:");
-    lines.push(yamlObject(artifact.metadata, 2));
+    lines.push(yamlObject(artifact.metadata!, 2));
   }
 
   lines.push("---");
   return lines.join("\n");
-}
-
-/**
- * Parse a scalar YAML value (single line after the colon).
- */
-function parseYamlScalar(raw: string): unknown {
-  const trimmed = raw.trim();
-  if (trimmed === "~" || trimmed === "null") return null;
-  if (trimmed === "true") return true;
-  if (trimmed === "false") return false;
-  // Number?
-  if (/^-?\d+(\.\d+)?$/.test(trimmed)) {
-    const num = Number(trimmed);
-    if (!Number.isNaN(num)) return num;
-  }
-  // Quoted string — strip one level of quotes
-  if (
-    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
-    (trimmed.startsWith("'") && trimmed.endsWith("'"))
-  ) {
-    return trimmed.slice(1, -1);
-  }
-  return trimmed;
 }
 
 interface ParsedNote {
@@ -121,7 +91,7 @@ interface ParsedNote {
   id: string;
   pushedAt: string;
   projectPath: string;
-  metadata?: Record<string, unknown>;
+  metadata?: Record<string, string | number | boolean | null>;
   content: string;
 }
 
@@ -133,62 +103,37 @@ interface ParsedNote {
  * malformed, or lacks required fields.
  */
 function parseFrontmatter(text: string): ParsedNote | null {
-  const match = text.match(/^---\n([\s\S]*?)\n---\n/);
+  const match = text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/);
   if (!match) return null;
 
   const fmText = match[1] as string;
   const content = text.slice(match[0].length);
 
-  // Parse YAML line by line, tracking object nesting via indent.
-  const lines = fmText.split("\n");
-  const root: Record<string, unknown> = {};
-  const stack: Array<{ obj: Record<string, unknown>; indent: number }> = [
-    { obj: root, indent: -1 },
-  ];
-
-  for (const line of lines) {
-    if (line.trim() === "" || line.trim().startsWith("#")) continue;
-
-    const indent = line.search(/\S/);
-    const trimmed = line.trim();
-
-    // Pop back to the correct nesting level
-    while (stack.length > 1 && stack[stack.length - 1]!.indent >= indent) {
-      stack.pop();
-    }
-
-    const colonIdx = trimmed.indexOf(":");
-    if (colonIdx === -1) continue;
-
-    const key = trimmed.slice(0, colonIdx);
-    const valuePart = trimmed.slice(colonIdx + 1).trim();
-
-    if (valuePart === "") {
-      // Start a new sub-object
-      const sub: Record<string, unknown> = {};
-      stack[stack.length - 1]!.obj[key] = sub;
-      stack.push({ obj: sub, indent });
-    } else {
-      stack[stack.length - 1]!.obj[key] = parseYamlScalar(valuePart);
-    }
+  let parsed: Record<string, unknown>;
+  try {
+    parsed = yamlLoad(fmText) as Record<string, unknown>;
+  } catch {
+    return null;
   }
+
+  if (typeof parsed !== "object" || parsed === null) return null;
 
   // Validate required fields
   if (
-    typeof root.kind !== "string" ||
-    typeof root.id !== "string" ||
-    typeof root.pushedAt !== "string" ||
-    typeof root.projectPath !== "string"
+    typeof parsed.kind !== "string" ||
+    typeof parsed.id !== "string" ||
+    typeof parsed.pushedAt !== "string" ||
+    typeof parsed.projectPath !== "string"
   ) {
     return null;
   }
 
   return {
-    kind: root.kind as VaultArtifact["kind"],
-    id: root.id,
-    pushedAt: root.pushedAt,
-    projectPath: root.projectPath,
-    metadata: (root.metadata ?? undefined) as Record<string, unknown> | undefined,
+    kind: parsed.kind as VaultArtifact["kind"],
+    id: parsed.id,
+    pushedAt: parsed.pushedAt,
+    projectPath: parsed.projectPath,
+    metadata: (parsed.metadata ?? undefined) as Record<string, string | number | boolean | null> | undefined,
     content,
   };
 }

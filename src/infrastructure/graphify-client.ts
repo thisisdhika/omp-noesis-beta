@@ -14,6 +14,9 @@ import { runGraphifyBuild } from "./graphify-setup.js";
 import { parseQueryOutput } from "./graphify-parser.js";
 import { stat } from "node:fs/promises";
 
+/** Flag to prevent repeated auto-heal attempts within a session. */
+let _autoHealAttempted = false;
+
 // ============================================================================
 // CAPABILITY DETECTION
 // ============================================================================
@@ -47,7 +50,21 @@ export async function detectCapability(
   try {
     const stats = await stat(graphPath);
     const ageHours = (Date.now() - stats.mtimeMs) / (1000 * 60 * 60);
-    return ageHours > 24 ? "STALE" : "FULL";
+    if (ageHours > 24) {
+      // Attempt one auto-heal per session via incremental update
+      if (!_autoHealAttempted) {
+        _autoHealAttempted = true;
+        const result = await updateGraph(projectRoot);
+        if (result.success) {
+          // Re-check freshness after successful update
+          const newStats = await stat(graphPath);
+          const newAgeHours = (Date.now() - newStats.mtimeMs) / (1000 * 60 * 60);
+          return newAgeHours > 24 ? "STALE" : "FULL";
+        }
+      }
+      return "STALE";
+    }
+    return "FULL";
   } catch {
     // If stat fails (permissions, race), treat as stale
     return "STALE";
@@ -131,4 +148,34 @@ export async function build(
   projectRoot: string,
 ): Promise<{ success: boolean; output: string }> {
   return runGraphifyBuild(projectRoot);
+}
+
+// ============================================================================
+// UPDATE INVOCATION
+// ============================================================================
+
+/**
+ * Run an incremental graphify update on the project.
+ *
+ * Uses `graphify . --update` to refresh the graph incrementally without
+ * a full rebuild.  Timeout is 2 minutes.
+ *
+ * @param projectRoot - Absolute path to the project root.
+ * @returns Update result with success flag and stdout/stderr output.
+ */
+export async function updateGraph(
+  projectRoot: string,
+): Promise<{ success: boolean; output: string }> {
+  try {
+    const proc = Bun.spawn(
+      ["graphify", ".", "--update"],
+      { cwd: projectRoot, stdout: "pipe", timeout: 120000 },
+    );
+    const output = await new Response(proc.stdout).text();
+    const exitCode = await proc.exited;
+    return { success: exitCode === 0, output };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return { success: false, output: message };
+  }
 }

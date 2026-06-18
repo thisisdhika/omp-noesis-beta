@@ -42,20 +42,12 @@ const VaultArtifactRowSchema = z.object({
 // ---------------------------------------------------------------------------
 
 type PullStmt = "pullAll" | "pullByKind";
-type SearchStmt = "searchAll" | "searchByKind";
 
 const PULL_STMTS: Record<PullStmt, string> = {
   pullAll:
     "SELECT * FROM vault_artifacts ORDER BY pushed_at DESC LIMIT ?",
   pullByKind:
     "SELECT * FROM vault_artifacts WHERE kind = ? ORDER BY pushed_at DESC LIMIT ?",
-};
-
-const SEARCH_STMTS: Record<SearchStmt, string> = {
-  searchAll:
-    "SELECT * FROM vault_artifacts WHERE content LIKE ? ORDER BY pushed_at DESC LIMIT ?",
-  searchByKind:
-    "SELECT * FROM vault_artifacts WHERE content LIKE ? AND kind = ? ORDER BY pushed_at DESC LIMIT ?",
 };
 
 // ---------------------------------------------------------------------------
@@ -111,6 +103,32 @@ export class MnemopiVaultStore implements VaultStore {
     this.#db.run(
       "CREATE INDEX IF NOT EXISTS idx_pushed_at ON vault_artifacts(pushed_at)",
     );
+
+    // FTS5 virtual table for full-text search
+    this.#db.run(`
+      CREATE VIRTUAL TABLE IF NOT EXISTS vault_fts USING fts5(
+        id, content, kind,
+        content=vault_artifacts,
+        content_rowid=rowid
+      )
+    `);
+    // Populate FTS index from existing data (idempotent)
+    this.#db.run(`
+      INSERT OR IGNORE INTO vault_fts(rowid, id, content, kind)
+      SELECT rowid, id, content, kind FROM vault_artifacts
+    `);
+
+    // Access tracking columns — added idempotently
+    for (const col of [
+      "ALTER TABLE vault_artifacts ADD COLUMN last_accessed TEXT DEFAULT ''",
+      "ALTER TABLE vault_artifacts ADD COLUMN access_count INTEGER DEFAULT 0",
+    ]) {
+      try {
+        this.#db.run(col);
+      } catch {
+        // Column already exists — safe to ignore
+      }
+    }
   }
 
   // -----------------------------------------------------------------------
@@ -119,9 +137,12 @@ export class MnemopiVaultStore implements VaultStore {
 
   async push(artifact: VaultArtifact): Promise<void> {
     const stmt = this.#db.query(`
-      INSERT OR REPLACE INTO vault_artifacts
-        (id, kind, project_path, pushed_at, metadata, content)
+      INSERT INTO vault_artifacts (id, kind, project_path, pushed_at, metadata, content)
       VALUES (?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        content = excluded.content,
+        metadata = excluded.metadata,
+        pushed_at = excluded.pushed_at
     `);
 
     stmt.run(
@@ -134,6 +155,12 @@ export class MnemopiVaultStore implements VaultStore {
         : null,
       artifact.content,
     );
+
+    // Keep FTS index in sync (INSERT OR REPLACE handles both new and updated artifacts)
+    this.#db.run(`
+      INSERT OR REPLACE INTO vault_fts(rowid, id, content, kind)
+      SELECT rowid, id, content, kind FROM vault_artifacts WHERE id = ?
+    `, [artifact.id]);
   }
 
   async pull(kind?: string, maxResults = 10): Promise<VaultPullResult> {
@@ -153,10 +180,19 @@ export class MnemopiVaultStore implements VaultStore {
       .all(...params);
     const rows = VaultArtifactRowSchema.array().parse(raw);
 
+    // Update access tracking
+    const now = new Date().toISOString();
+    for (const row of rows) {
+      this.#db.run(
+        `UPDATE vault_artifacts SET last_accessed = ?, access_count = access_count + 1 WHERE id = ?`,
+        [now, row.id],
+      );
+    }
+
     return {
       artifacts: rows.map(rowToArtifact),
       source: "mnemopi",
-      timestamp: new Date().toISOString(),
+      timestamp: now,
     };
   }
 
@@ -165,20 +201,39 @@ export class MnemopiVaultStore implements VaultStore {
     kind?: string,
     maxResults = 10,
   ): Promise<VaultArtifact[]> {
-    let stmtKey: SearchStmt;
-    let params: (string | number)[];
+    // Strip FTS5 special characters to prevent syntax errors
+    // Keep only alphanumeric, spaces, and basic punctuation
+    const sanitized = query.replace(/[^a-zA-Z0-9\s]/g, "").trim();
+    if (!sanitized) return [];
 
+    let raw: unknown[];
     if (kind !== undefined) {
-      stmtKey = "searchByKind";
-      params = [`%${query}%`, kind, maxResults];
+      raw = this.#db.prepare(`
+        SELECT a.* FROM vault_artifacts a
+        JOIN vault_fts f ON a.rowid = f.rowid
+        WHERE vault_fts MATCH ? AND a.kind = ?
+        ORDER BY rank
+        LIMIT ?
+      `).all(sanitized, kind, maxResults);
     } else {
-      stmtKey = "searchAll";
-      params = [`%${query}%`, maxResults];
+      raw = this.#db.prepare(`
+        SELECT a.* FROM vault_artifacts a
+        JOIN vault_fts f ON a.rowid = f.rowid
+        WHERE vault_fts MATCH ?
+        ORDER BY rank
+        LIMIT ?
+      `).all(sanitized, maxResults);
     }
-    const raw = this.#db
-      .query(SEARCH_STMTS[stmtKey])
-      .all(...params);
     const rows = VaultArtifactRowSchema.array().parse(raw);
+
+    // Update access tracking
+    const now = new Date().toISOString();
+    for (const row of rows) {
+      this.#db.run(
+        `UPDATE vault_artifacts SET last_accessed = ?, access_count = access_count + 1 WHERE id = ?`,
+        [now, row.id],
+      );
+    }
 
     return rows.map(rowToArtifact);
   }

@@ -69,7 +69,7 @@ async function scenarioAddHypothesis(): Promise<ScenarioResult> {
   const start = Date.now();
   const ctx = await createSmokeContext();
   try {
-    await ctx.prompt(
+    await ctx.promptAndWait(
       "hey I'm wondering if the memory leak is from unclosed database connections — add that as a hypothesis so we can track it",
     );
     const state = await ctx.readState();
@@ -94,7 +94,7 @@ async function scenarioConfirmHypothesis(): Promise<ScenarioResult> {
   const ctx = await createSmokeContext();
   try {
     // First, create a hypothesis
-    await ctx.prompt(
+    await ctx.promptAndWait(
       "I think the memory leak might be caused by unclosed database connections. add that as a hypothesis",
     );
     let state = await ctx.readState();
@@ -104,7 +104,7 @@ async function scenarioConfirmHypothesis(): Promise<ScenarioResult> {
     }
 
     // Now confirm it — the agent should use the hypothesis id from its own context
-    await ctx.prompt(
+    await ctx.promptAndWait(
       "so I checked the heap dump and found 47 unclosed connections. that pretty much confirms it — update the memory leak hypothesis to confirmed with that as evidence",
     );
     state = await ctx.readState();
@@ -143,7 +143,7 @@ async function scenarioRefuteHypothesis(): Promise<ScenarioResult> {
   const ctx = await createSmokeContext();
   try {
     // First, create a hypothesis
-    await ctx.prompt(
+    await ctx.promptAndWait(
       "I've got a theory — the high CPU might be from excessive GC. add it as a hypothesis so we can test it",
     );
     let state = await ctx.readState();
@@ -153,7 +153,7 @@ async function scenarioRefuteHypothesis(): Promise<ScenarioResult> {
     }
 
     // Now refute it
-    await ctx.prompt(
+    await ctx.promptAndWait(
       "ran heap profiling and GC pauses are under 20ms which is totally normal. so high CPU isn't from GC — lets refute that hypothesis and note the evidence",
     );
     state = await ctx.readState();
@@ -185,7 +185,7 @@ async function scenarioAbandonHypothesis(): Promise<ScenarioResult> {
   const ctx = await createSmokeContext();
   try {
     // First, create a hypothesis
-    await ctx.prompt(
+    await ctx.promptAndWait(
       "I suspect the API latency might be from slow DNS resolution. capture that as a hypothesis",
     );
     let state = await ctx.readState();
@@ -195,7 +195,7 @@ async function scenarioAbandonHypothesis(): Promise<ScenarioResult> {
     }
 
     // Now abandon it
-    await ctx.prompt(
+    await ctx.promptAndWait(
       "actually we checked and DNS is fine, the latency is from something else. abandon the DNS hypothesis for now",
     );
     state = await ctx.readState();
@@ -226,7 +226,7 @@ async function scenarioAddReasoning(): Promise<ScenarioResult> {
   const start = Date.now();
   const ctx = await createSmokeContext();
   try {
-    await ctx.prompt(
+    await ctx.promptAndWait(
       "looking at the logs, the auth service starts before the DB service. pretty sure it's a race condition — auth.init() calls db.connect() before the DB is ready. log that as a reasoning step with relatesTo 'auth-startup-race'",
     );
     const state = await ctx.readState();
@@ -251,7 +251,7 @@ async function scenarioInferenceChainToBelief(): Promise<ScenarioResult> {
   const ctx = await createSmokeContext();
   try {
     // Create a hypothesis
-    await ctx.prompt(
+    await ctx.promptAndWait(
       "I think the payment service is failing because of a timeout in the external gateway call. add that as a hypothesis",
     );
     let state = await ctx.readState();
@@ -261,7 +261,7 @@ async function scenarioInferenceChainToBelief(): Promise<ScenarioResult> {
     }
 
     // Confirm it — this should auto-promote to a belief with source "inference"
-    await ctx.prompt(
+    await ctx.promptAndWait(
       "confirmed — the gateway timeout threshold is 5s but external calls average 7s. update the payment service hypothesis to confirmed with that evidence",
     );
     state = await ctx.readState();

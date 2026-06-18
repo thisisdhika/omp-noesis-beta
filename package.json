@@ -23,9 +23,8 @@
     "test:behavioral": "bun test --isolate tests/behavioral",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
-    "build": "bun build src/index.ts --outdir dist --target bun",
     "prepublishOnly": "bun run typecheck",
-    "smoke": "bun run tests/smoke/run.ts",
+    "smoke": "SMOKE_WORKDIR=/Users/thisisdhika/Projects/kaa.ltd/LAB/experiments/noesis bun run tests/smoke/run.ts",
     "dev": "bun run --watch src/index.ts"
   },
   "dependencies": {

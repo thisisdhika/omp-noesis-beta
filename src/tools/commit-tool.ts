@@ -34,9 +34,9 @@ export function registerCommitTool(pi: ExtensionAPI, runtime: NoesisRuntime): vo
     name: "noesis_commit",
     label: "Noesis: Commit",
     description:
-      "Manage the active workflow and planned actions. " +
-      "Use mode=\"extend_workflow\" to append steps, \"replace_workflow\" to start fresh, " +
-      "\"update_step\" to mark progress, and \"add_action\" to record a to-do.",
+  "Workflow tracking. Call when: starting multi-step work, completing a step, " +
+  "or replanning. Tracks cognition, not execution. " +
+  "Do NOT call for single-step tasks.",
     parameters: pi.zod.object({
       mode: pi.zod.enum(["extend_workflow", "replace_workflow", "update_step", "add_action"]),
       goal: pi.zod.string().min(1).max(500).optional(),

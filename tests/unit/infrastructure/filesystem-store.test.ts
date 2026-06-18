@@ -5,6 +5,7 @@
  */
 
 import { describe, it, expect, afterEach } from "bun:test";
+import { existsSync, mkdirSync, rmSync } from "node:fs";
 import { writeAtomic, readJSON, fileExists } from "../../../src/infrastructure/filesystem-store.js";
 import { createTempDir } from "../../helpers/temp-dir.js";
 import { join } from "node:path";
@@ -123,6 +124,26 @@ describe("writeAtomic directory creation", () => {
     }
   });
 });
+
+  it("cleans up temp file and rethrows when renameSync fails due to directory collision", async () => {
+    const dir = createTempDir();
+    const targetPath = join(dir.path, "dir-collision.json");
+    try {
+      // Create target as a directory so renameSync fails (cannot rename file over dir)
+      mkdirSync(targetPath);
+
+      await expect(writeAtomic(targetPath, { data: "test" })).rejects.toThrow();
+
+      // Temp file should have been cleaned up
+      const tempPath = `${targetPath}.tmp.${process.pid}`;
+      expect(existsSync(tempPath)).toBe(false);
+    } finally {
+      if (existsSync(targetPath)) {
+        rmSync(targetPath, { recursive: true, force: true });
+      }
+      dir.cleanup();
+    }
+  });
 
 // NOTE: Adding a true write-failure test (e.g., writing to a path where a
 // directory exists instead of a file) is not feasible in the temp-dir fixture

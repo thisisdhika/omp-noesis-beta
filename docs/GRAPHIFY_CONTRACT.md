@@ -6,7 +6,7 @@
 
 Graphify is the required perception substrate. Noesis queries Graphify but never builds, replaces, or wraps it as a user tool.
 
-MCP (Model Context Protocol) is the primary integration path for LLM-to-Graphify queries. The CLI serves as a fallback for automated queries (attend-tool preamble evidence) and for graphs built outside a running MCP session. OMP manages the MCP server lifecycle — no custom client is needed.
+MCP is the primary integration path for LLM-to-Graphify queries. The CLI is the primary path for Noesis-internal automated queries (attend-tool preamble evidence). OMP manages the MCP server lifecycle — no custom client is needed.
 
 
 ## 2. Availability Detection
@@ -69,24 +69,25 @@ these fields when committing beliefs.
 | confidence: "AMBIGUOUS" (or unknown) | confidence: "AMBIGUOUS" | Fallback for missing/unrecognized values |
 | inferredConfidence: 0.55–0.95 | inferredConfidence preserved | Optional numeric field, validated to [0.55, 0.95] |
 
-> **Stale penalty (-0.10):** Not implemented in code. The graphify system detects
-> staleness (STALE mode after 24h) and surfaces it via capability level, but no
-> automatic confidence deduction is applied to individual findings. This is a
-> design goal for a future revision.
+> **Stale penalty (-0.10):** The agent should deduct -0.10 from INFERRED findings when the graph is stale (>24h). The system surfaces staleness via capability level (STALE). System-level automatic deduction is a design goal for a future revision.
 
 ## 7. Evidence-to-Belief Pipeline
 
 ```
 1. TRIGGER: Agent calls noesis_attend with graphQueries
-2. QUERY: MCP tool call first; CLI fallback if MCP unavailable, with 30s timeout via graphify-client.query()
+2. QUERY: CLI (`graphify query "..." --graph <path>`) via graphify-client.query() with 30s timeout.
+   MCP is used when the LLM itself queries Graphify; attend-tool always uses the CLI path.
    Note: No capability check or auto-update for stale graphs.
    Agent must manually run `graphify . --update` if needed.
 3. PARSE: parseQueryOutput extracts structured findings (nodes, relations,
    confidence, timestamp, optional fields)
-4. SURFACE: Findings stored in attention.graphFindings, shown in preamble
-   as "Graph evidence (N): — <query text>"
-5. COMMIT: Agent must call noesis_believe(source="graph") to persist as
-   durable belief fact
+4. SURFACE: Findings stored in attention.graphFindings and attention.pendingEvidence.
+   Shown in preamble as "Graph evidence (N): — <query text>".
+   Pending evidence entries auto-expire after 3 turns via decayPendingEvidence().
+5. COMMIT: Agent calls noesis_believe(source="graph") to persist as durable belief fact.
+   When committing from graph evidence, pass confidence mapped from the finding's
+   confidence label (see §6 Confidence Handling) and include the finding summary
+   in the evidence parameter for provenance tracking.
 ```
 ## 8. Retrieval-Before-Read Policy (Future — v2)
 

@@ -12,6 +12,7 @@
 import type { ExtensionAPI } from "@oh-my-pi/pi-coding-agent";
 import type { NoesisRuntime } from "../runtime.js";
 import { fullCleanup } from "../rendering/state-cleanup.js";
+import { decayPendingEvidence } from "../domains/attention/attention-domain.js";
 
 /**
  * Register the turn_end hook that triggers full state cleanup
@@ -24,6 +25,7 @@ import { fullCleanup } from "../rendering/state-cleanup.js";
 export function registerTurnEndHook(pi: ExtensionAPI, runtime: NoesisRuntime): void {
   pi.on("turn_end", async (_event) => {
     await runtime.stateManager.mutate((state) => {
+      decayPendingEvidence(state);
       fullCleanup(state);
     });
 

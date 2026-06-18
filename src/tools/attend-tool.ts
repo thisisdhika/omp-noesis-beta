@@ -18,6 +18,7 @@ import {
   setGraphQueries,
   setFiles,
   storeGraphFindings,
+  addPendingEvidence,
 } from "../domains/attention/attention-domain.js";
 import { query as graphifyQuery } from "../infrastructure/graphify-client.js";
 
@@ -26,9 +27,9 @@ export function registerAttendTool(pi: ExtensionAPI, runtime: NoesisRuntime): vo
     name: "noesis_attend",
     label: "Noesis: Attend",
     description:
-      "Set the agent's focus, file references, and optional graph queries. " +
-      "When graphQueries are provided, each query is run against the project " +
-      "knowledge graph and the resulting findings are stored.",
+  "Call at task start or when focus changes. Sets what you're working on " +
+  "and runs graph queries if provided. Call BEFORE doing the work, not after. " +
+  "Do NOT skip. Do NOT call for quick mid-task focus changes — use noesis_focus instead.",
     parameters: pi.zod.object({
       focus: pi.zod.string().min(1).max(200),
       files: pi.zod.array(pi.zod.string()).max(10).optional(),
@@ -53,13 +54,14 @@ export function registerAttendTool(pi: ExtensionAPI, runtime: NoesisRuntime): vo
         }
       }
 
-      // Single atomic mutation: focus, files, graph queries, and all findings
+      // Single atomic mutation: focus, files, graph queries, findings, and pending evidence
       await runtime.stateManager.mutate((state) => {
         setFocus(state, focus, priority);
         setFiles(state, files ?? []);
         setGraphQueries(state, graphQueries ?? []);
         if (allFindings.length > 0) {
           storeGraphFindings(state, allFindings);
+          addPendingEvidence(state, allFindings, graphQueries?.join(", ") ?? "", Date.now());
         }
       });
 

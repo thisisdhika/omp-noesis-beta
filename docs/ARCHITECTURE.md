@@ -98,7 +98,6 @@ omp-noesis is an Oh My Pi extension that adds a structured cognitive substrate t
 | `migrations.ts` | Sequential migration pipeline: v0 → v1 → v2 |
 | `graphify-client.ts` | Graphify subprocess + MCP fallback, capability detection |
 | `graphify-parser.ts` | Semi-structured NL → structured `GraphFinding` |
-| `graphify-engine.ts` | Confidence mapping, stale penalty, community tags |
 | `graphify-setup.ts` | CLI detection, skill installation, build invocation |
 
 ### 3.4 Domain Layer
@@ -145,15 +144,15 @@ Thin wrappers over domain logic. Each validates params, calls domain, persists, 
 | `tool_result` | `tool-result-hook.ts` | Phase-1 learning capture |
 | `turn_end` | `turn-end-hook.ts` | Eviction + vault flush |
 
-### 3.7a System Prompt Injection (`src/hooks/append-system.ts`)
+### 3.7a System Prompt Injection
 
-The `before_agent_start` hook injects the Noesis identity and behavioral rules into the LLM system prompt via chaining:
+The system prompt is assembled from two sources to separate static rules from per-session computation:
 
-1. **APPEND_SYSTEM** (~300 tokens) — static Noesis instructions (identity, rules, graphify trust model, gotchas, templates, confidence values, boundaries, compaction survival)
+1. **RULES.md** (`.omp/RULES.md`, ~300 tokens) — static Noesis instructions (identity, rules, graphify trust model, gotchas, templates, confidence values, boundaries, compaction survival). Auto-discovered by OMP as an always-apply rule and injected automatically before every agent start. No hook code needed for this content.
 2. **OMP system prompt** — chained through from `event.systemPrompt` (tools, workflow, skills, context files)
-3. **Capability footer** — one-liner `[Noesis: FULL. State: .omp/noesis/state.json]`
+3. **Capability footer** (appended by `before_agent_start` hook in `src/hooks/append-system.ts`) — one-liner `[Noesis: FULL. State: .omp/noesis/state.json]` reflecting the current graphify capability level (FULL | STALE | NO_GRAPH | DEGRADED)
 
-This replaces the previous approach of embedding instructions in SKILL.md files (deleted) which were never auto-injected (`alwaysApply: false`).
+This replaces the previous approach of embedding instructions in SKILL.md files (deleted) which were never auto-injected (`alwaysApply: false`). The before_agent_start hook now handles only the dynamic capability detection result; all static behavioral content lives in RULES.md.
 
 ### 3.8 Vault Layer (`src/vault/`)
 
@@ -165,6 +164,7 @@ This replaces the previous approach of embedding instructions in SKILL.md files 
 | `obsidian-merger.ts` | Conflict resolution for pulled artifacts |
 | `obsidian-writer.ts` | Atomic Markdown note creation (temp → fsync → rename) |
 | `vault-detector.ts` | Backend resolution chain |
+| `composite-vault-store.ts` | Combines memory + projection backends |
 | `vault-retry.ts` | On-disk retry buffer |
 | `local-vault-store.ts` | Append-only MEMORY.md |
 | `mnemopi-vault-store.ts` | Bun.sqlite backend |

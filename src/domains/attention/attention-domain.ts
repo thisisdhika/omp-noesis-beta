@@ -75,3 +75,33 @@ export function setFiles(state: NoesisState, files: string[]): void {
   state.attention.files = files.slice(0, CAPS.files);
   state.attention.updatedAt = now();
 }
+
+/**
+ * Add graph findings to the pending evidence inbox.
+ * Each entry expires after 3 turns via decayPendingEvidence.
+ */
+export function addPendingEvidence(
+  state: NoesisState,
+  findings: GraphFinding[],
+  query: string,
+  currentTurn: number,
+): void {
+  state.attention.pendingEvidence.push({
+    findings,
+    query,
+    turnAdded: currentTurn,
+    turnsRemaining: 3,
+  });
+  state.attention.updatedAt = now();
+}
+
+/**
+ * Decrement the turns-remaining counter on all pending evidence entries
+ * and remove those that have expired.
+ */
+export function decayPendingEvidence(state: NoesisState): void {
+  state.attention.pendingEvidence = state.attention.pendingEvidence
+    .map(e => ({ ...e, turnsRemaining: e.turnsRemaining - 1 }))
+    .filter(e => e.turnsRemaining > 0);
+  state.attention.updatedAt = now();
+}
