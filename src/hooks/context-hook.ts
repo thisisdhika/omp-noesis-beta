@@ -11,7 +11,7 @@
 
 import type { ExtensionAPI, ContextEvent, ContextEventResult } from "@oh-my-pi/pi-coding-agent";
 import type { NoesisRuntime } from "../runtime.js";
-import type { CapabilityLevel, RenderContext } from "../schema.js";
+import type { CapabilityLevel, RenderContext } from "../shared/schema.js";
 import { detectFamilyFromModel } from "../shared/model-profile.js";
 
 import { buildPreamble } from "../rendering/preamble-builder.js";

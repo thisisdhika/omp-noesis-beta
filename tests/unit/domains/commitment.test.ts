@@ -15,8 +15,8 @@ import {
   updateStep,
   addAction,
 } from "../../../src/domains/commitment/commitment-domain.js";
-import type { NoesisState, WorkflowStep } from "../../../src/schema.js";
-import { EMPTY_STATE, CAPS } from "../../../src/schema.js";
+import type { NoesisState, WorkflowStep } from "../../../src/shared/schema.js";
+import { EMPTY_STATE, CAPS } from "../../../src/shared/schema.js";
 import { freshState } from "../../helpers/fixtures.js";
 
 // ---------------------------------------------------------------------------

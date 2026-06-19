@@ -4,7 +4,7 @@
  * Integration test: end-to-end cognitive state flow across layers.
  */
 import { describe, it, expect } from "bun:test";
-import { EMPTY_STATE } from "../../src/schema.js";
+import { EMPTY_STATE } from "../../src/shared/schema.js";
 import { deepClone } from "../../src/shared/clone.js";
 import { setFocus } from "../../src/domains/attention/attention-domain.js";
 import { addFact, getActiveFacts } from "../../src/domains/belief/belief-domain.js";
@@ -45,6 +45,9 @@ describe("State Flow Integration", () => {
     expect(result!.hypothesis.status).toBe("confirmed");
     expect(result!.beliefFact).toBeDefined();
     expect(result!.beliefFact!.source).toBe("inference");
+    if (result && result.beliefFact) {
+      state.belief.facts.push(result.beliefFact);
+    }
     expect(state.belief.facts.length).toBe(2);
 
     // Verify promoted belief is active

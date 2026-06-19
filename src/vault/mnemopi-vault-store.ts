@@ -9,7 +9,7 @@
  */
 
 import { z } from "zod";
-import { VaultArtifactSchema } from "../schema.js";
+import { VaultArtifactSchema } from "../shared/schema.js";
 import type { VaultStore, VaultArtifact, VaultPullResult } from "./vault-store.js";
 import { join } from "node:path";
 import { Database } from "bun:sqlite";

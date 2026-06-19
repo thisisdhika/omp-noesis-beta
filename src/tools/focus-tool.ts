@@ -10,7 +10,7 @@
 
 import type { ExtensionAPI } from "@oh-my-pi/pi-coding-agent";
 import type { NoesisRuntime } from "../runtime.js";
-import { setFocus, setFiles } from "../domains/attention/attention-domain.js";
+import { AttendUseCase } from "../application/use-cases/attend.js";
 
 export function buildFocusParams(pi: ExtensionAPI) {
   return pi.zod.object({
@@ -26,9 +26,12 @@ export async function executeFocus(
 ) {
   const { focus, priority, files } = params;
 
-  await runtime.stateManager.mutate((state) => {
-    setFocus(state, focus, priority);
-    setFiles(state, files ?? []);
+  const uow = runtime.stateManager.createUnitOfWork();
+  const useCase = new AttendUseCase(uow);
+  await useCase.execute({
+    focus,
+    priority,
+    files,
   });
 
   return {

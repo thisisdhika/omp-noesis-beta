@@ -4,8 +4,8 @@
  * Test fixtures — reusable test data for omp-noesis unit tests.
  */
 
-import type { NoesisState, BeliefFact, BeliefDecision, Hypothesis, Workflow, LearningEntry } from "../../src/schema.js";
-import { EMPTY_STATE, generateId } from "../../src/schema.js";
+import type { NoesisState, BeliefFact, BeliefDecision, Hypothesis, Workflow, LearningEntry } from "../../src/shared/schema.js";
+import { EMPTY_STATE, generateId } from "../../src/shared/schema.js";
 import { now } from "../../src/shared/time.js";
 import { unlinkSync, existsSync } from "node:fs";
 import { join } from "node:path";

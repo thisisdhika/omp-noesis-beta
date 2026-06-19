@@ -4,7 +4,7 @@
  * Integration test: Vault backends (noop, detector, retry).
  */
 import { describe, it, expect } from "bun:test";
-import type { VaultArtifact, VaultPullResult } from "../../src/schema.js";
+import type { VaultArtifact, VaultPullResult } from "../../src/shared/schema.js";
 
 describe("Vault Integration", () => {
   describe("NoopVaultStore", () => {

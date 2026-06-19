@@ -8,7 +8,8 @@
  * and build delegation for graph-based cognitive state enrichment.
  */
 
-import type { CapabilityLevel, GraphFinding } from "../schema.js";
+import type { CapabilityLevel } from "../shared/schema-base.js";
+import type { GraphFinding } from "../domains/attention/schema.js";
 import { validateGraphPath } from "../shared/paths.js";
 import { runGraphifyBuild } from "./graphify-setup.js";
 import { parseQueryOutput } from "./graphify-parser.js";
@@ -119,12 +120,27 @@ export async function query(
       {
         cwd: projectRoot,
         stdout: "pipe",
+        stderr: "pipe",
         timeout: 30000,
       },
     );
 
-    const raw = await new Response(proc.stdout).text();
-    return { findings: parseQueryOutput(raw), duration: Date.now() - start };
+    const [rawStdout, rawStderr, exitCode] = await Promise.all([
+      new Response(proc.stdout).text(),
+      new Response(proc.stderr).text(),
+      proc.exited,
+    ]);
+
+    if (exitCode !== 0) {
+      const errorMsg = rawStderr.trim() || `Graphify query exited with code ${exitCode}`;
+      return {
+        findings: [],
+        error: errorMsg,
+        duration: Date.now() - start,
+      };
+    }
+
+    return { findings: parseQueryOutput(rawStdout), duration: Date.now() - start };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return { findings: [], error: message, duration: Date.now() - start };

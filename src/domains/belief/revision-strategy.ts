@@ -14,7 +14,7 @@
  * @module revision-strategy
  */
 
-import type { NoesisState } from "../../schema.js";
+import type { NoesisState } from "../../shared/schema.js";
 
 /**
  * Supersede a set of existing facts and/or decisions, marking them as

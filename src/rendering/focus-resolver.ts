@@ -10,7 +10,7 @@
  * All functions are pure — they read state without mutation.
  */
 
-import type { NoesisState } from "../schema.js";
+import type { NoesisState } from "../shared/schema.js";
 
 /**
  * Resolve the agent's current focus string using a fallback chain:
@@ -28,13 +28,16 @@ export function resolveFocus(state: NoesisState): string {
     return state.attention.focus;
   }
 
-  if (state.commitment.workflow.goal.length > 0) {
-    return state.commitment.workflow.goal;
-  }
+  const status = state.commitment.workflow.status;
+  if (status !== "done" && status !== "abandoned") {
+    if (state.commitment.workflow.goal.length > 0) {
+      return state.commitment.workflow.goal;
+    }
 
-  for (const step of state.commitment.workflow.steps) {
-    if (step.status === "pending" || step.status === "active") {
-      return step.description;
+    for (const step of state.commitment.workflow.steps) {
+      if (step.status === "pending" || step.status === "active") {
+        return step.description;
+      }
     }
   }
 

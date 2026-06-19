@@ -20,10 +20,10 @@ export function deepMergeDefaults<T extends Record<string, unknown>>(
   defaults: T,
   loaded: Partial<T>,
 ): T {
-  const result: Record<string, unknown> = { ...defaults };
+  const result: Record<string, unknown> = deepClone(defaults);
   for (const key of Object.keys(loaded)) {
     const lv = loaded[key as keyof T];
-    const dv = defaults[key];
+    const dv = result[key];
     if (
       dv !== null && typeof dv === "object" && !Array.isArray(dv) &&
       lv !== null && typeof lv === "object" && !Array.isArray(lv)
@@ -33,7 +33,7 @@ export function deepMergeDefaults<T extends Record<string, unknown>>(
         lv as Record<string, unknown>,
       );
     } else if (lv !== undefined) {
-      result[key] = lv;
+      result[key] = deepClone(lv);
     }
   }
   return result as T;

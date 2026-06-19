@@ -101,13 +101,30 @@ describe("detectCapability error handling", () => {
 
 describe("query error handling", () => {
   it("returns error result when parseQueryOutput throws", async () => {
-    // Create graph file so query proceeds to the try block, spawn
-    // succeeds (CLI is installed), then the mocked parseQueryOutput
-    // throws → caught by catch block → error result.
+    // Create graph file so validateGraphPath passes — then mock Bun.spawn to
+    // return exit code 0 with some stdout, so the code reaches parseQueryOutput
+    // (which is mocked to throw) → caught by the catch block → error result.
     createGraphFile(tempDir.path);
-    const result = await query(tempDir.path, "test question");
-    expect(result.findings).toEqual([]);
-    expect(result.error).toBe("simulated parser failure");
-    expect(result.duration).toBeGreaterThanOrEqual(0);
+
+    const originalSpawn = Bun.spawn;
+    Bun.spawn = (() => ({
+      stdout: new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode("{}"));
+          controller.close();
+        },
+      }),
+      stderr: new ReadableStream({ start(c) { c.close(); } }),
+      exited: Promise.resolve(0),
+    })) as unknown as typeof Bun.spawn;
+
+    try {
+      const result = await query(tempDir.path, "test question");
+      expect(result.findings).toEqual([]);
+      expect(result.error).toBe("simulated parser failure");
+      expect(result.duration).toBeGreaterThanOrEqual(0);
+    } finally {
+      Bun.spawn = originalSpawn;
+    }
   });
 });

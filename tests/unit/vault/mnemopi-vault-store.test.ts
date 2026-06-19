@@ -3,7 +3,7 @@
 import { describe, it, expect } from "bun:test";
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
-import type { VaultArtifact } from "../../../src/schema.js";
+import type { VaultArtifact } from "../../../src/shared/schema.js";
 import { createTempDir } from "../../../tests/helpers/temp-dir.js";
 import { MnemopiVaultStore } from "../../../src/vault/mnemopi-vault-store.js";
 

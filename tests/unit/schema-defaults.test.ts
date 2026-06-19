@@ -18,8 +18,8 @@ import {
   CommitmentLayerSchema,
   LearningEntrySchema,
   VaultArtifactSchema,
-} from "../../src/schema.js";
-import type { NoesisState } from "../../src/schema.js";
+} from "../../src/shared/schema.js";
+import type { NoesisState } from "../../src/shared/schema.js";
 
 // ---------------------------------------------------------------------------
 // EMPTY_STATE

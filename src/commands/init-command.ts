@@ -16,7 +16,7 @@ import { mkdirSync, existsSync, readFileSync, writeFileSync, appendFileSync } fr
 import { ensureNoesisDir } from "../shared/paths.js";
 import { writeAtomic, fileExists } from "../infrastructure/filesystem-store.js";
 import { checkGraphifyCLI, installGraphifySkill, runGraphifyBuild } from "../infrastructure/graphify-setup.js";
-import { EMPTY_STATE } from "../schema.js";
+import { EMPTY_STATE } from "../shared/schema.js";
 
 
 // ============================================================================
@@ -80,6 +80,45 @@ const RULES_MD = `# Noesis Rules
 - mcp__graphify__get_community — All nodes in a community
 
 Use these for on-demand graph exploration. The attend-tool handles automated preamble evidence via CLI.`;
+
+// ============================================================================
+// OBSIDIAN DASHBOARD TEMPLATE
+// ============================================================================
+
+const NOESIS_DASHBOARD_MD = `# Noesis Dashboard
+
+Welcome to the **omp-noesis** cognitive state projection! This dashboard uses [Dataview](https://blacksmithgu.github.io/obsidian-dataview/) to give you a real-time, comprehensive overview of your agent's memory.
+
+## 🧠 Active Beliefs
+\`\`\`dataview
+TABLE metadata.status AS "Status", metadata.confidence AS "Confidence"
+FROM ".obsidian/noesis/belief"
+WHERE metadata.status = "active"
+SORT metadata.confidence DESC
+\`\`\`
+
+## ⚖️ Decisions
+\`\`\`dataview
+TABLE metadata.rationale AS "Rationale", metadata.rejected AS "Rejected Options"
+FROM ".obsidian/noesis/decision"
+WHERE metadata.status = "active"
+\`\`\`
+
+## 📈 Learning & Failures
+\`\`\`dataview
+TABLE metadata.cause AS "Root Cause", metadata.fix AS "Fix"
+FROM ".obsidian/noesis/learning"
+SORT pushedAt DESC
+LIMIT 10
+\`\`\`
+
+## 🔄 Workflow & Sessions
+\`\`\`dataview
+TABLE metadata.goal AS "Goal", metadata.status AS "Status"
+FROM ".obsidian/noesis/session"
+SORT pushedAt DESC
+\`\`\`
+`;
 
 // ============================================================================
 // INIT ARGS
@@ -250,6 +289,23 @@ export async function initCommand(pi: ExtensionAPI, args: InitArgs = {}): Promis
     summary.push("RULES.md: written");
   }
 
+  // 3b. Setup Obsidian Vault & Dashboard
+  const obsidianDir = join(projectRoot, ".obsidian");
+  if (!existsSync(obsidianDir)) {
+    mkdirSync(obsidianDir, { recursive: true });
+    summary.push("Obsidian Vault: created");
+  } else {
+    summary.push("Obsidian Vault: detected");
+  }
+
+  const dashboardPath = join(projectRoot, "Noesis Dashboard.md");
+  if (!existsSync(dashboardPath) || force) {
+    writeFileSync(dashboardPath, NOESIS_DASHBOARD_MD, "utf-8");
+    summary.push("Dashboard: generated");
+  } else {
+    summary.push("Dashboard: up-to-date");
+  }
+
   // Quick return if graph setup skipped
   if (skipGraphify) {
     summary.push("Graphify: skipped");
@@ -286,6 +342,16 @@ export async function initCommand(pi: ExtensionAPI, args: InitArgs = {}): Promis
     display: true,
     attribution: "agent",
   }, { deliverAs: "steer" });
+
+  // 6a. Check for Graphify Environment Config Warning
+  if (!process.env.GRAPHIFY_EMBEDDING_MODEL) {
+    pi.sendMessage({
+      customType: "noesis:graphify-warning",
+      content: "⚠️ **Graphify configuration warning:** `GRAPHIFY_EMBEDDING_MODEL` environment variable is not set. If you are using Ollama, ensure you set this (and `GRAPHIFY_LLM_MODEL`) to guarantee absolute privacy and zero token costs.",
+      display: true,
+      attribution: "agent",
+    });
+  }
 
   // 7. Build the project knowledge graph (unless opted out)
   if (buildGraph) {

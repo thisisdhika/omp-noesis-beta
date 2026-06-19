@@ -16,8 +16,8 @@ import {
   getFailures,
 } from "../../../src/domains/learning/learning-domain.js";
 import { evictStale } from "../../../src/domains/learning/eviction-strategy.js";
-import type { NoesisState, LearningEntry } from "../../../src/schema.js";
-import { EMPTY_STATE, CAPS } from "../../../src/schema.js";
+import type { NoesisState, LearningEntry } from "../../../src/shared/schema.js";
+import { EMPTY_STATE, CAPS } from "../../../src/shared/schema.js";
 import { freshState } from "../../helpers/fixtures.js";
 
 // ---------------------------------------------------------------------------

@@ -9,7 +9,7 @@ import { join } from "node:path";
 import { parseQueryOutput } from "../../src/infrastructure/graphify-parser.js";
 import { detectCapability, query, build } from "../../src/infrastructure/graphify-client.js";
 import { checkGraphifyCLI, runGraphifyBuild } from "../../src/infrastructure/graphify-setup.js";
-import type { CapabilityLevel } from "../../src/schema.js";
+import type { CapabilityLevel } from "../../src/shared/schema.js";
 import { createTempDir } from "../helpers/temp-dir.js";
 
 const VALID_CAPABILITIES: CapabilityLevel[] = ["FULL", "STALE", "NO_GRAPH", "DEGRADED"];

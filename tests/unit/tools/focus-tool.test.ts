@@ -10,7 +10,7 @@ import { join } from "node:path";
 import { createMockPi } from "../../helpers/mock-pi.js";
 import { createRuntime, type NoesisRuntime } from "../../../src/runtime.js";
 import { registerFocusTool } from "../../../src/tools/focus-tool.js";
-import { EMPTY_STATE } from "../../../src/schema.js";
+import { EMPTY_STATE } from "../../../src/shared/schema.js";
 import { deepClone } from "../../../src/shared/clone.js";
 import type { ExtensionAPI } from "@oh-my-pi/pi-coding-agent";
 

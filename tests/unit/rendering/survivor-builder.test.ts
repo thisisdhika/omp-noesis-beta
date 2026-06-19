@@ -11,9 +11,9 @@
 
 import { describe, it, expect } from "bun:test";
 import { buildSurvivorContext } from "../../../src/rendering/survivor-builder.js";
-import { EMPTY_STATE } from "../../../src/schema.js";
+import { EMPTY_STATE } from "../../../src/shared/schema.js";
 import { populatedState } from "../../helpers/fixtures.js";
-import type { NoesisState } from "../../../src/schema.js";
+import type { NoesisState } from "../../../src/shared/schema.js";
 import { estimateTokens } from "../../../src/shared/tokens.js";
 
 // =============================================================================

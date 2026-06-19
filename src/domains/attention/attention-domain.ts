@@ -10,8 +10,9 @@
  * All functions mutate the NoesisState directly (sync only).
  */
 
-import type { NoesisState, GraphFinding } from "../../schema.js";
-import { CAPS } from "../../schema.js";
+import type { NoesisState } from "../../shared/schema.js";
+import type { GraphFinding } from "./schema.js";
+import { CAPS } from "../../shared/schema-base.js";
 import { now } from "../../shared/time.js";
 
 /**

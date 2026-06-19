@@ -11,29 +11,31 @@ import { createMockPi, toExtensionAPI } from "../../helpers/mock-pi.js";
 import { createRuntime, type NoesisRuntime } from "../../../src/runtime.js";
 import { registerTurnEndHook } from "../../../src/hooks/turn-end-hook.js";
 import { cleanPersistedState } from "../../helpers/fixtures.js";
-import { EMPTY_STATE } from "../../../src/schema.js";
-import type { NoesisState } from "../../../src/schema.js";
+import { EMPTY_STATE } from "../../../src/shared/schema.js";
+import type { NoesisState } from "../../../src/shared/schema.js";
 import type { StateManager } from "../../../src/infrastructure/state-manager.js";
 import type { VaultStore } from "../../../src/vault/vault-store.js";
+import { UnitOfWork } from "../../../src/infrastructure/unit-of-work.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 /**
- * Create a minimal mock StateManager.  StateManager has #private fields so
- * structural assignment is rejected; the double cast via `unknown` is required.
+ * Create a minimal mock StateManager.
  */
-function createMockStateManager(
-  mutateImpl?: (fn: (state: NoesisState) => void) => Promise<NoesisState>,
-): StateManager {
+function createMockStateManager(): StateManager {
   return {
     read: () => structuredClone(EMPTY_STATE),
-    mutate: mutateImpl ?? (async (fn) => {
+    createUnitOfWork: () => {
+      const state = structuredClone(EMPTY_STATE);
+      return new UnitOfWork(state, async () => {});
+    },
+    mutate: async (fn: (state: NoesisState) => void) => {
       const state = structuredClone(EMPTY_STATE);
       fn(state);
       return state;
-    }),
+    },
     initialize: async () => {},
     checkpointAttention: async () => {},
     invalidate: async () => {},
@@ -79,14 +81,20 @@ describe("registerTurnEndHook", () => {
     expect(typeof hooks[0]).toBe("function");
   });
 
-  it("calls stateManager.mutate when turn_end fires", async () => {
-    let mutateCalled = false;
-    const mockStateManager = createMockStateManager(async (fn) => {
-      mutateCalled = true;
-      const state = structuredClone(EMPTY_STATE);
-      fn(state);
-      return state;
-    });
+  it("opens and commits a Unit of Work when turn_end fires", async () => {
+    let uowCreated = false;
+    let commitCalled = false;
+
+    const mockStateManager = {
+      read: () => structuredClone(EMPTY_STATE),
+      createUnitOfWork: () => {
+        uowCreated = true;
+        const state = structuredClone(EMPTY_STATE);
+        return new UnitOfWork(state, async () => {
+          commitCalled = true;
+        });
+      },
+    } as unknown as StateManager;
 
     const pi = createMockPi();
     const runtime: NoesisRuntime = {
@@ -98,32 +106,36 @@ describe("registerTurnEndHook", () => {
 
     const handler = pi._getHooks("turn_end")[0]!;
     await handler({});
-    expect(mutateCalled).toBe(true);
+    expect(uowCreated).toBe(true);
+    expect(commitCalled).toBe(true);
   });
 
-  it("applies decayPendingEvidence and fullCleanup to state within mutate", async () => {
-    // Create a state with a pending evidence entry to verify decay ran
-    let mutatedState: NoesisState | undefined;
-    const mockStateManager = createMockStateManager(async (fn) => {
-      const state = structuredClone(EMPTY_STATE);
-      state.attention.pendingEvidence = [
-        {
-          query: "test",
-          turnAdded: 1,
-          turnsRemaining: 2,
-          findings: [{
+  it("applies decayPendingEvidence and fullCleanup to state within the Unit of Work", async () => {
+    let committedState: NoesisState | undefined;
+
+    const mockStateManager = {
+      read: () => structuredClone(EMPTY_STATE),
+      createUnitOfWork: () => {
+        const state = structuredClone(EMPTY_STATE);
+        state.attention.pendingEvidence = [
+          {
             query: "test",
-            nodes: ["node-1"],
-            relations: ["related-to"],
-            confidence: "EXTRACTED",
-            timestamp: new Date().toISOString(),
-          }],
-        },
-      ];
-      fn(state);
-      mutatedState = state;
-      return state;
-    });
+            turnAdded: 1,
+            turnsRemaining: 2,
+            findings: [{
+              query: "test",
+              nodes: ["node-1"],
+              relations: ["related-to"],
+              confidence: "EXTRACTED",
+              timestamp: new Date().toISOString(),
+            }],
+          },
+        ];
+        return new UnitOfWork(state, async (finalState) => {
+          committedState = finalState;
+        });
+      },
+    } as unknown as StateManager;
 
     const pi = createMockPi();
     const runtime: NoesisRuntime = {
@@ -136,11 +148,10 @@ describe("registerTurnEndHook", () => {
     const handler = pi._getHooks("turn_end")[0]!;
     await handler({});
 
-    // decayPendingEvidence should have decremented turnsRemaining
-    expect(mutatedState!.attention.pendingEvidence).toHaveLength(1);
-    expect(mutatedState!.attention.pendingEvidence[0]!.turnsRemaining).toBe(1);
-    // fullCleanup / decayPendingEvidence should have updated the timestamp
-    expect(mutatedState!.attention.updatedAt).not.toBe(EMPTY_STATE.attention.updatedAt);
+    expect(committedState).toBeDefined();
+    expect(committedState!.attention.pendingEvidence).toHaveLength(1);
+    expect(committedState!.attention.pendingEvidence[0]!.turnsRemaining).toBe(1);
+    expect(committedState!.attention.updatedAt).not.toBe(EMPTY_STATE.attention.updatedAt);
   });
 
   it("calls vaultStore.flush when vaultStore has flush method", async () => {

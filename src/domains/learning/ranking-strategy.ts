@@ -8,7 +8,7 @@
  * Used by the learning domain to surface the most actionable entries first.
  */
 
-import type { LearningEntry } from "../../schema.js";
+import type { LearningEntry } from "./schema.js";
 
 /**
  * Rank entries by descending score.

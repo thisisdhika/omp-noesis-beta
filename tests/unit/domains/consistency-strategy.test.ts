@@ -8,7 +8,7 @@
 
 import { describe, it, expect } from "bun:test";
 import { checkCircularDeps, checkStatusConsistency } from "../../../src/domains/commitment/consistency-strategy.js";
-import type { Workflow, WorkflowStep } from "../../../src/schema.js";
+import type { Workflow, WorkflowStep } from "../../../src/shared/schema.js";
 import { now } from "../../../src/shared/time.js";
 
 // ---------------------------------------------------------------------------

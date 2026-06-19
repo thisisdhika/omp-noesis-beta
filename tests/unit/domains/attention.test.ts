@@ -17,8 +17,8 @@ import {
   addPendingEvidence,
   decayPendingEvidence,
 } from "../../../src/domains/attention/attention-domain.js";
-import type { NoesisState, GraphFinding } from "../../../src/schema.js";
-import { EMPTY_STATE, CAPS } from "../../../src/schema.js";
+import type { NoesisState, GraphFinding } from "../../../src/shared/schema.js";
+import { EMPTY_STATE, CAPS } from "../../../src/shared/schema.js";
 import { freshState } from "../../helpers/fixtures.js";
 
 // ---------------------------------------------------------------------------

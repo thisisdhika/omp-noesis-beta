@@ -14,12 +14,47 @@ import type {
   NoesisState,
   RenderContext,
   LearningEntry,
-} from "../schema.js";
-import { MAX_PREAMBLE_TOKENS, CAPS } from "../schema.js";
+} from "../shared/schema.js";
+import { MAX_PREAMBLE_TOKENS, CAPS } from "../shared/schema.js";
 import { estimateTokens } from "../shared/tokens.js";
 import { truncate, stripMarkdown } from "../shared/text.js";
-import { getContestedWarnings } from "../domains/belief/belief-domain.js";
 import { getProfile, type ModelFamily } from "../shared/model-profile.js";
+
+function getContestedWarnings(state: NoesisState): string[] {
+  const supersededIds = new Set(
+    state.belief.facts
+      .filter((f) => f.status === "superseded")
+      .map((f) => f.id),
+  );
+
+  const warnings: string[] = [];
+
+  for (const supersededId of supersededIds) {
+    const dependents = state.inference.hypotheses.filter(
+      (h) => h.relatedBeliefId === supersededId,
+    );
+
+    for (const hyp of dependents) {
+      const fact = state.belief.facts.find((f) => f.id === supersededId);
+      if (fact === undefined) continue;
+
+      const factContent =
+        fact.content.length > 40
+          ? fact.content.slice(0, 40) + "..."
+          : fact.content;
+      const hypContent =
+        hyp.content.length > 40
+          ? hyp.content.slice(0, 40) + "..."
+          : hyp.content;
+
+      warnings.push(
+        `Belief '${factContent}' superseded (${supersededId}); hypothesis '${hypContent}' (${hyp.id}) may need review`,
+      );
+    }
+  }
+
+  return warnings;
+}
 
 // ============================================================================
 // SECTION BUILDERS (each returns the section text or empty string)

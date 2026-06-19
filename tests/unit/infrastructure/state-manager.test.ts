@@ -8,7 +8,7 @@ import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import { join } from "node:path";
 import { StateManager } from "../../../src/infrastructure/state-manager.js";
 import { writeAtomic } from "../../../src/infrastructure/filesystem-store.js";
-import { CURRENT_VERSION, EMPTY_STATE } from "../../../src/schema.js";
+import { CURRENT_VERSION, EMPTY_STATE } from "../../../src/shared/schema.js";
 import { createTempDir } from "../../helpers/temp-dir.js";
 
 // ============================================================================

@@ -12,7 +12,7 @@ import type { MockPi } from "../../helpers/mock-pi.js";
 import { createRuntime, type NoesisRuntime } from "../../../src/runtime.js";
 import { registerCompactionHook } from "../../../src/hooks/compaction-hook.js";
 import { cleanPersistedState } from "../../helpers/fixtures.js";
-import type { NoesisState } from "../../../src/schema.js";
+import type { NoesisState } from "../../../src/shared/schema.js";
 
 // ---------------------------------------------------------------------------
 // Setup

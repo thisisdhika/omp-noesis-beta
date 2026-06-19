@@ -24,5 +24,8 @@ export async function createRuntime(pi: ExtensionAPI): Promise<NoesisRuntime> {
   const stateManager = new StateManager(projectRoot);
   await stateManager.initialize();
   const vaultStore = await createVaultStore(projectRoot);
+  if (vaultStore.sync) {
+    await vaultStore.sync();
+  }
   return { projectRoot, stateManager, vaultStore };
 }

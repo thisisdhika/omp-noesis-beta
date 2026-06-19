@@ -8,7 +8,7 @@
 
 import { describe, it, expect } from "bun:test";
 import { evictStale, evictOverCap } from "../../../src/domains/learning/eviction-strategy.js";
-import type { LearningEntry } from "../../../src/schema.js";
+import type { LearningEntry } from "../../../src/shared/schema.js";
 
 // ---------------------------------------------------------------------------
 // Helpers

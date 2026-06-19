@@ -13,8 +13,8 @@ import { join } from "node:path";
 import { createTempDir } from "../helpers/temp-dir.js";
 import { StateManager } from "../../src/infrastructure/state-manager.js";
 import { addFact, getActiveFacts } from "../../src/domains/belief/belief-domain.js";
-import { EMPTY_STATE } from "../../src/schema.js";
-import type { NoesisState } from "../../src/schema.js";
+import { EMPTY_STATE } from "../../src/shared/schema.js";
+import type { NoesisState } from "../../src/shared/schema.js";
 
 describe("cross-session recall — state survival", () => {
   it("survives init -> mutate -> destroy -> re-init cycle", async () => {

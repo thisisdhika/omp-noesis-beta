@@ -12,14 +12,8 @@
 
 import type { ExtensionAPI } from "@oh-my-pi/pi-coding-agent";
 import type { NoesisRuntime } from "../runtime.js";
-import type { GraphFinding } from "../schema.js";
-import {
-  setFocus,
-  setGraphQueries,
-  setFiles,
-  storeGraphFindings,
-  addPendingEvidence,
-} from "../domains/attention/attention-domain.js";
+import type { GraphFinding } from "../shared/schema.js";
+import { AttendUseCase } from "../application/use-cases/attend.js";
 import { query as graphifyQuery } from "../infrastructure/graphify-client.js";
 
 export function buildAttendParams(pi: ExtensionAPI) {
@@ -51,15 +45,16 @@ export async function executeAttend(
     }
   }
 
-  // Single atomic mutation: focus, files, graph queries, findings, and pending evidence
-  await runtime.stateManager.mutate((state) => {
-    setFocus(state, focus, priority);
-    setFiles(state, files ?? []);
-    setGraphQueries(state, graphQueries ?? []);
-    if (allFindings.length > 0) {
-      storeGraphFindings(state, allFindings);
-      addPendingEvidence(state, allFindings, graphQueries?.join(", ") ?? "", Date.now());
-    }
+  // Use AttendUseCase with UnitOfWork
+  const uow = runtime.stateManager.createUnitOfWork();
+  const useCase = new AttendUseCase(uow);
+  await useCase.execute({
+    focus,
+    priority,
+    files,
+    graphQueries,
+    findings: allFindings,
+    clearExistingQueries: false,
   });
 
   return {

@@ -11,8 +11,7 @@
 
 import type { ExtensionAPI } from "@oh-my-pi/pi-coding-agent";
 import type { NoesisRuntime } from "../runtime.js";
-import { fullCleanup } from "../rendering/state-cleanup.js";
-import { decayPendingEvidence } from "../domains/attention/attention-domain.js";
+import { EndTurnCleanupUseCase } from "../application/use-cases/end-turn-cleanup.js";
 
 /**
  * Register the turn_end hook that triggers full state cleanup
@@ -24,10 +23,9 @@ import { decayPendingEvidence } from "../domains/attention/attention-domain.js";
  */
 export function registerTurnEndHook(pi: ExtensionAPI, runtime: NoesisRuntime): void {
   pi.on("turn_end", async (_event) => {
-    await runtime.stateManager.mutate((state) => {
-      decayPendingEvidence(state);
-      fullCleanup(state);
-    });
+    const uow = runtime.stateManager.createUnitOfWork();
+    const useCase = new EndTurnCleanupUseCase(uow);
+    await useCase.execute();
 
     // Flush the vault retry buffer (OBSIDIAN_CONTRACT.md §4 — turn end projection)
     if (runtime.vaultStore.flush) {

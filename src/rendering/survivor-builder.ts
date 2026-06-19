@@ -11,8 +11,8 @@
  * Each section is independently truncated to stay within budget.
  */
 
-import { CAPS } from "../schema.js";
-import type { NoesisState } from "../schema.js";
+import { CAPS } from "../shared/schema.js";
+import type { NoesisState } from "../shared/schema.js";
 import { estimateTokens } from "../shared/tokens.js";
 import { escapeXml } from "../shared/text.js";
 

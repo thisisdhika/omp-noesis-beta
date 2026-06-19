@@ -1,7 +1,7 @@
 "use strict";
 
 import { describe, it, expect } from "bun:test";
-import { generateId } from "../../../src/schema.js";
+import { generateId } from "../../../src/shared/schema.js";
 
 describe("generateId", () => {
   it("should return a string starting with the given prefix", () => {

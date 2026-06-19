@@ -38,8 +38,8 @@ function yamlPrimitive(value: unknown): string {
   if (value === null || value === undefined) return "~";
   if (typeof value === "boolean" || typeof value === "number") return String(value);
   if (typeof value === "string") {
-    // Quote strings that contain YAML-significant characters or leading whitespace
-    if (/^[\s]|[:#"',\[\]{}&\*!|>%@`]/.test(value) || value === "") {
+    // Quote strings that contain YAML-significant characters, newlines, or leading whitespace
+    if (/^[\s]|[\n\r]|[:#"',\[\]{}&\*!|>%@`]/.test(value) || value === "") {
       return JSON.stringify(value);
     }
     return value;
@@ -118,20 +118,26 @@ function parseFrontmatter(text: string): ParsedNote | null {
 
   if (typeof parsed !== "object" || parsed === null) return null;
 
-  // Validate required fields
+  // Validate required fields — js-yaml auto-converts unquoted ISO datetime strings
+  // to Date objects, so we must accept both string and Date for pushedAt.
   if (
     typeof parsed.kind !== "string" ||
     typeof parsed.id !== "string" ||
-    typeof parsed.pushedAt !== "string" ||
+    (typeof parsed.pushedAt !== "string" && !(parsed.pushedAt instanceof Date)) ||
     typeof parsed.projectPath !== "string"
   ) {
     return null;
   }
 
+  const pushedAt =
+    parsed.pushedAt instanceof Date
+      ? parsed.pushedAt.toISOString()
+      : parsed.pushedAt;
+
   return {
     kind: parsed.kind as VaultArtifact["kind"],
     id: parsed.id,
-    pushedAt: parsed.pushedAt,
+    pushedAt,
     projectPath: parsed.projectPath,
     metadata: (parsed.metadata ?? undefined) as Record<string, string | number | boolean | null> | undefined,
     content,
@@ -247,39 +253,48 @@ export class ObsidianVaultStore implements VaultStore {
     const artifacts: VaultArtifact[] = [];
 
     const kindDirs = kind ? [kind] : await listSubdirectories(baseDir);
+    const fileEntries: { filePath: string; mtime: number }[] = [];
 
     for (const k of kindDirs) {
-      if (artifacts.length >= maxResults) break;
       const dir = join(baseDir, k);
-
-      let files: string[];
       try {
         const entries = await readdir(dir, { withFileTypes: true });
-        files = entries
-          .filter((e) => e.isFile() && e.name.endsWith(".md"))
-          .map((e) => e.name)
-          .slice(0, maxResults - artifacts.length);
+        for (const entry of entries) {
+          if (entry.isFile() && entry.name.endsWith(".md")) {
+            const filePath = join(dir, entry.name);
+            try {
+              const fileStat = await stat(filePath);
+              fileEntries.push({ filePath, mtime: fileStat.mtime.getTime() });
+            } catch {
+              // skip if stat fails
+            }
+          }
+        }
       } catch {
         continue; // directory does not exist or is unreadable
       }
+    }
 
-      for (const file of files) {
-        try {
-          const text = await readFile(join(dir, file), "utf-8");
-          const parsed = parseFrontmatter(text);
-          if (parsed) {
-            artifacts.push({
-              kind: parsed.kind,
-              id: parsed.id,
-              pushedAt: parsed.pushedAt,
-              projectPath: parsed.projectPath,
-              metadata: parsed.metadata,
-              content: parsed.content,
-            });
-          }
-        } catch {
-          // skip unreadable or malformed files
+    // Sort by mtime descending
+    fileEntries.sort((a, b) => b.mtime - a.mtime);
+
+    // Slice and load
+    for (const entry of fileEntries.slice(0, maxResults)) {
+      try {
+        const text = await readFile(entry.filePath, "utf-8");
+        const parsed = parseFrontmatter(text);
+        if (parsed) {
+          artifacts.push({
+            kind: parsed.kind,
+            id: parsed.id,
+            pushedAt: parsed.pushedAt,
+            projectPath: parsed.projectPath,
+            metadata: parsed.metadata,
+            content: parsed.content,
+          });
         }
+      } catch {
+        // skip unreadable or malformed files
       }
     }
 
@@ -316,7 +331,7 @@ export class ObsidianVaultStore implements VaultStore {
       return [];
     }
 
-    const proc = Bun.spawn(["grep", "-rl", query, searchDir, "--include=*.md"]);
+    const proc = Bun.spawn(["grep", "-ril", query, searchDir, "--include=*.md"]);
     const stdout = await new Response(proc.stdout).text();
     await proc.exited;
 

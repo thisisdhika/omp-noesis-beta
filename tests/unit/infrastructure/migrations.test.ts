@@ -6,7 +6,7 @@
 
 import { describe, it, expect, beforeAll, afterAll } from "bun:test";
 import { migrate, MIGRATIONS } from "../../../src/infrastructure/migrations.js";
-import { CURRENT_VERSION, EMPTY_STATE } from "../../../src/schema.js";
+import { CURRENT_VERSION, EMPTY_STATE } from "../../../src/shared/schema.js";
 import type { Migration } from "../../../src/infrastructure/migrations.js";
 
 // ============================================================================

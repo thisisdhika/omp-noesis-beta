@@ -12,7 +12,7 @@ import { join } from "node:path";
 import { createMockPi, toExtensionAPI } from "../../helpers/mock-pi.js";
 import { createRuntime, type NoesisRuntime } from "../../../src/runtime.js";
 import { registerInferTool, buildInferParams } from "../../../src/tools/infer-tool.js";
-import { EMPTY_STATE } from "../../../src/schema.js";
+import { EMPTY_STATE } from "../../../src/shared/schema.js";
 import { deepClone } from "../../../src/shared/clone.js";
 import type { MockPi } from "../../helpers/mock-pi.js";
 
@@ -333,7 +333,7 @@ describe("noesis_infer", () => {
     const pi = createMockPi();
 
     // Use the real builder (no .refine())
-    const schema = buildInferParams(pi);
+    const schema = buildInferParams(toExtensionAPI(pi));
 
     // add_hypothesis without content now passes (no refine)
     expect(() => schema.parse({ action: "add_hypothesis" })).not.toThrow();

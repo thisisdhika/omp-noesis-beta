@@ -19,7 +19,7 @@ bun init
 
 ### Day 2: Schema Definition
 ```
-src/schema.ts
+src/shared/schema.ts
 ```
 - Define all Zod schemas
 - Export TypeScript interfaces
@@ -230,9 +230,8 @@ src/vault/
 ### Day 31-32: Obsidian Backend
 ```
 src/vault/
-  obsidian-vault-store.ts  — Markdown + frontmatter
-  obsidian-merger.ts       — Conflict resolution
-  obsidian-writer.ts       — Atomic file write
+  obsidian-vault-store.ts  — Projection
+  obsidian-writer.ts       — Safe atomic write
 ```
 
 ### Day 33: Retry Buffer

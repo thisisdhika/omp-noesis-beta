@@ -67,7 +67,7 @@ describe("frontier models — unchanged", () => {
     const payload = makePayload("claude-sonnet-4-6", [tool]);
     const result = adaptProviderPayload(structuredClone(payload));
     const t = (result as any).tools[0];
-    expect(t.function.description).toBe(tool.function.description);
+    expect(t.function.description).toBe((tool as any).function.description);
     expect(t.function.parameters.additionalProperties).toBe(false);
   });
 
@@ -184,7 +184,7 @@ describe("small models — description truncation", () => {
   ];
 
   for (const modelId of smallModelIds) {
-    const family = modelId.split("/")[0].toLowerCase();
+    const family = (modelId.split("/")[0] ?? "").toLowerCase();
 
     it(`${family}: truncates description > 200 chars`, () => {
       const longDesc =

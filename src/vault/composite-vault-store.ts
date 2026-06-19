@@ -53,4 +53,35 @@ export class CompositeVaultStore implements VaultStore {
       this.#projection.flush?.() ?? Promise.resolve(),
     ]);
   }
+
+  async sync(): Promise<void> {
+    const projResult = await this.#projection.pull(undefined, 1000);
+    const memResult = await this.#memory.pull(undefined, 1000);
+    
+    const memMap = new Map<string, VaultArtifact>();
+    for (const a of memResult.artifacts) {
+      memMap.set(a.id, a);
+    }
+
+    const pushes: Promise<void>[] = [];
+    for (const proj of projResult.artifacts) {
+      const mem = memMap.get(proj.id);
+      
+      if (!mem) {
+        // Exists in projection but not in memory -> human created it or memory wiped
+        pushes.push(this.#memory.push(proj));
+      } else {
+        const projTime = Date.parse(proj.pushedAt) || 0;
+        const memTime = Date.parse(mem.pushedAt) || 0;
+        
+        const contentChanged = proj.content !== mem.content || JSON.stringify(proj.metadata) !== JSON.stringify(mem.metadata);
+        
+        // If projection is strictly newer, or if timestamps are identical but content changed (human edit without updating timestamp)
+        if (projTime > memTime || (projTime === memTime && contentChanged)) {
+          pushes.push(this.#memory.push(proj));
+        }
+      }
+    }
+    await Promise.allSettled(pushes);
+  }
 }

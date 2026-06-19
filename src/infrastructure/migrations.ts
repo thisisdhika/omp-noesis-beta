@@ -13,7 +13,7 @@
  * in order.
  */
 
-import { type NoesisState, CURRENT_VERSION, NoesisStateSchema } from "../schema.js";
+import { type NoesisState, CURRENT_VERSION, NoesisStateSchema } from "../shared/schema.js";
 
 // ---------------------------------------------------------------------------
 // Types

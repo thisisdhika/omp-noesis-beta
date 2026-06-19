@@ -1,5 +1,0 @@
-compaction:
-  enabled: true
-  strategy: context-full
-  autoContinue: true
-  thresholdTokens: 160000

@@ -30,7 +30,7 @@ Graphify's integration follows **many** best practices but has **clear gaps** in
 
 **Impact:** All INFERRED findings flatline at 0.70 regardless of actual graph confidence. The tiered confidence table in GRAPHIFY_CONTRACT.md §6 is aspirational, not functional.
 
-**Fix:** Wire the parser to extract all optional fields from Graphify CLI output. Validate against the GraphFinding schema in `src/schema.ts`.
+**Fix:** Wire the parser to extract all optional fields from Graphify CLI output. Validate against the GraphFinding schema in `src/shared/schema.ts`.
 
 ### P0-2: Capability detection caching never refreshes
 

@@ -14,7 +14,7 @@ import { join } from "node:path";
 import { createMockPi, toExtensionAPI } from "../../helpers/mock-pi.js";
 import { createRuntime, type NoesisRuntime } from "../../../src/runtime.js";
 import { registerAttendTool } from "../../../src/tools/attend-tool.js";
-import { EMPTY_STATE } from "../../../src/schema.js";
+import { EMPTY_STATE } from "../../../src/shared/schema.js";
 import { deepClone } from "../../../src/shared/clone.js";
 import { createTempDir } from "../../helpers/temp-dir.js";
 import { StateManager } from "../../../src/infrastructure/state-manager.js";

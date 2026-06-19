@@ -9,8 +9,8 @@
  */
 
 import { writeAtomic, readJSON } from "../infrastructure/filesystem-store.js";
-import { VaultArtifactSchema } from "../schema.js";
-import type { VaultArtifact } from "../schema.js";
+import { VaultArtifactSchema } from "../shared/schema.js";
+import type { VaultArtifact } from "../shared/schema.js";
 import { ensureNoesisDir } from "../shared/paths.js";
 import { join } from "node:path";
 

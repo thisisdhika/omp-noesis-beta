@@ -1,7 +1,7 @@
 "use strict";
 
 import { describe, it, expect } from "bun:test";
-import type { VaultArtifact } from "../../../src/schema.js";
+import type { VaultArtifact } from "../../../src/shared/schema.js";
 import { createTempDir } from "../../../tests/helpers/temp-dir.js";
 import { RetryBuffer } from "../../../src/vault/vault-retry.js";
 

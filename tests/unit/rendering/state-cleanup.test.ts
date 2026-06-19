@@ -8,8 +8,8 @@
 
 import { describe, it, expect } from "bun:test";
 import { evictStale, evictOverCap, fullCleanup } from "../../../src/rendering/state-cleanup.js";
-import { EMPTY_STATE, CAPS, generateId } from "../../../src/schema.js";
-import type { NoesisState, BeliefFact, BeliefDecision, Hypothesis, WorkflowStep, PlannedAction, LearningEntry } from "../../../src/schema.js";
+import { EMPTY_STATE, CAPS, generateId } from "../../../src/shared/schema.js";
+import type { NoesisState, BeliefFact, BeliefDecision, Hypothesis, WorkflowStep, PlannedAction, LearningEntry } from "../../../src/shared/schema.js";
 import { now } from "../../../src/shared/time.js";
 import { freshState, OLD_TIMESTAMP, RECENT_TIMESTAMP } from "../../helpers/fixtures.js";
 

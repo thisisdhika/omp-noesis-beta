@@ -9,14 +9,10 @@
  * architecture.
  */
 
-import type {
-  NoesisState,
-  Hypothesis,
-  HypothesisStatus,
-  BeliefFact,
-  ReasoningStep,
-} from "../../schema.js";
-import { CAPS, generateId } from "../../schema.js";
+import type { NoesisState } from "../../shared/schema.js";
+import type { Hypothesis, HypothesisStatus, ReasoningStep } from "./schema.js";
+import type { BeliefFact } from "../belief/schema.js";
+import { CAPS, generateId } from "../../shared/schema-base.js";
 import { now } from "../../shared/time.js";
 
 // ============================================================================
@@ -105,8 +101,9 @@ export function confirmHypothesis(
       createdAt: now(),
       updatedAt: now(),
       status: "active",
+      tags: hypothesis.tags,
+      evidence: hypothesis.evidence,
     };
-    state.belief.facts.push(beliefFact);
     hypothesis.relatedBeliefId = beliefFact.id;
   }
 

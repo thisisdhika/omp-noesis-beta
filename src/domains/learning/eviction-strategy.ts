@@ -9,8 +9,8 @@
  * 2. Capacity eviction — when over cap, drop the oldest entries (capturedAt ASC).
  */
 
-import type { LearningEntry } from "../../schema.js";
-import { CAPS } from "../../schema.js";
+import type { LearningEntry } from "./schema.js";
+import { CAPS } from "../../shared/schema-base.js";
 import { isStaleHours } from "../../shared/time.js";
 
 /**

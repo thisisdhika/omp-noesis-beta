@@ -10,7 +10,7 @@ import { join } from "node:path";
 import { createMockPi, toExtensionAPI } from "../../helpers/mock-pi.js";
 import { createRuntime, type NoesisRuntime } from "../../../src/runtime.js";
 import { registerBelieveFactTool, registerBelieveDecisionTool, registerBelieveLearningTool } from "../../../src/tools/believe-tool.js";
-import { EMPTY_STATE } from "../../../src/schema.js";
+import { EMPTY_STATE } from "../../../src/shared/schema.js";
 import { deepClone } from "../../../src/shared/clone.js";
 import type { MockPi } from "../../helpers/mock-pi.js";
 
@@ -155,7 +155,7 @@ describe("noesis_believe_learning", () => {
     // First create a learning failure entry
     await runtime.stateManager.mutate((state) => {
       state.learning.failures.push({
-        id: "learn-fix-001",
+        id: "le-fix-001",
         description: "Something failed",
         status: "captured",
         capturedAt: new Date().toISOString(),
@@ -163,13 +163,13 @@ describe("noesis_believe_learning", () => {
     });
 
     const result = await execute({
-      learningId: "learn-fix-001",
+      learningId: "le-fix-001",
       rootCause: "Missing null check",
       fix: "Add null guard before dereference",
     });
 
     expect(result.isError).toBe(false);
-    expect(result.content[0]!.text).toContain("Resolved learning learn-fix-001 into fact:");
+    expect(result.content[0]!.text).toContain("Resolved learning le-fix-001 into fact:");
     expect(result.content[0]!.text).toContain("Missing null check");
   });
 

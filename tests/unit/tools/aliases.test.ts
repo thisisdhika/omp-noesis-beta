@@ -15,7 +15,7 @@ import { z } from "zod";
 import { createMockPi, toExtensionAPI } from "../../helpers/mock-pi.js";
 import { createRuntime, type NoesisRuntime } from "../../../src/runtime.js";
 import { registerToolAliases } from "../../../src/tools/aliases.js";
-import { EMPTY_STATE } from "../../../src/schema.js";
+import { EMPTY_STATE } from "../../../src/shared/schema.js";
 import { deepClone } from "../../../src/shared/clone.js";
 import type { MockPi } from "../../helpers/mock-pi.js";
 
@@ -180,7 +180,7 @@ describe("registerToolAliases", () => {
       "test_hypothesis", "track_workflow", "read_memory", "search_archives"].entries()) {
       const tool = pi._getTool(name);
       expect(tool).toBeDefined();
-      expect(tool!.description as string).toContain(canonical[idx]);
+      expect(tool!.description as string).toContain(canonical[idx]!);
     }
   });
 

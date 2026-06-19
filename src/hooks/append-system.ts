@@ -12,7 +12,7 @@
 import type { ExtensionAPI, BeforeAgentStartEvent, BeforeAgentStartEventResult } from "@oh-my-pi/pi-coding-agent";
 import type { NoesisRuntime } from "../runtime.js";
 import { detectCapability } from "../infrastructure/graphify-client.js";
-import type { CapabilityLevel } from "../schema.js";
+import type { CapabilityLevel } from "../shared/schema.js";
 
 // ============================================================================
 // HOOK REGISTRATION

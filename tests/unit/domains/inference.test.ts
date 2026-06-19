@@ -16,8 +16,8 @@ import {
   refuteHypothesis,
   addReasoning,
 } from "../../../src/domains/inference/inference-domain.js";
-import type { NoesisState } from "../../../src/schema.js";
-import { EMPTY_STATE } from "../../../src/schema.js";
+import type { NoesisState } from "../../../src/shared/schema.js";
+import { EMPTY_STATE } from "../../../src/shared/schema.js";
 import { freshState } from "../../helpers/fixtures.js";
 
 // ---------------------------------------------------------------------------
@@ -117,8 +117,8 @@ describe("confirmHypothesis", () => {
     expect(result!.beliefFact!.source).toBe("inference");
     expect(result!.beliefFact!.status).toBe("active");
 
-    // State is updated
-    expect(state.belief.facts).toHaveLength(1);
+    // State is updated (but belief fact is not directly pushed to state.belief.facts inside the domain function anymore)
+    expect(state.belief.facts).toHaveLength(0);
     expect(state.inference.hypotheses[0]!.relatedBeliefId).toBe(result!.beliefFact!.id);
   });
 

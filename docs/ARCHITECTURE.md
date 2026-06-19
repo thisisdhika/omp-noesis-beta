@@ -43,9 +43,9 @@ omp-noesis is an Oh My Pi extension that adds a structured cognitive substrate t
 │  │  │  Cognition   │  │  Perception  │  │   Learning   │    │  │
 │  │  │  Layer       │  │  Layer       │  │   Layer      │    │  │
 │  │  │              │  │              │  │              │    │  │
-│  │  │ - schema.ts  │  │  │ - graphify-  │  │  │ - learning-  │  │  │
-│  │  │ - preamble   │  │  │   client.ts  │  │  │   domain.ts  │  │  │
-│  │  │ - survivors  │  │  │ - graphify-  │  │  │ - ranking-   │  │  │
+│  │  │ - shared/    │  │  │ - graphify-  │  │  │ - learning-  │  │  │
+│  │  │   schema.ts  │  │  │   client.ts  │  │  │   domain.ts  │  │  │
+│  │  │ - preamble   │  │  │ - graphify-  │  │  │ - ranking-   │  │  │
 │  │  │              │  │  │   parser.ts  │  │  │   strategy.ts│  │  │
 │  │  │              │  │  │              │  │  │ - eviction-  │  │  │
 │  │  │              │  │  │              │  │  │   strategy.ts│  │  │
@@ -83,7 +83,7 @@ omp-noesis is an Oh My Pi extension that adds a structured cognitive substrate t
 - Registers 5 hooks with `pi.on`
 - No business logic, no state mutation during load
 
-### 3.2 Schema (`src/schema.ts`)
+### 3.2 Schema (`src/shared/schema.ts`)
 
 - Zod schemas for all state, tool params, and internal types
 - TypeScript interfaces exported for all modules
@@ -165,7 +165,6 @@ This replaces the previous approach of embedding instructions in SKILL.md files 
 | `vault-store.ts` | Interface: push, pull, search, validate |
 | `noop-vault-store.ts` | No-op fallback (optionality guarantee) |
 | `obsidian-vault-store.ts` | Markdown + frontmatter projection |
-| `obsidian-merger.ts` | Conflict resolution for pulled artifacts |
 | `obsidian-writer.ts` | Atomic Markdown note creation (temp → fsync → rename) |
 | `vault-detector.ts` | Backend resolution chain |
 | `composite-vault-store.ts` | Combines memory + projection backends |

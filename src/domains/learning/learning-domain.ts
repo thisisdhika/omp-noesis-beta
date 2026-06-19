@@ -9,8 +9,9 @@
  * querying unresolved failures.
  */
 
-import type { NoesisState, LearningEntry, LearningStatus } from "../../schema.js";
-import { CAPS, generateId } from "../../schema.js";
+import type { NoesisState } from "../../shared/schema.js";
+import type { LearningEntry, LearningStatus } from "./schema.js";
+import { CAPS, generateId } from "../../shared/schema-base.js";
 import { now } from "../../shared/time.js";
 import { rank } from "./ranking-strategy.js";
 import { evictStale, evictOverCap } from "./eviction-strategy.js";

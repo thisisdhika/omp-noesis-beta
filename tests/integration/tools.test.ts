@@ -8,14 +8,14 @@
  */
 
 import { describe, it, expect } from "bun:test";
-import type { LearningEntry } from "../../src/schema.js";
-import { generateId } from "../../src/schema.js";
+import type { LearningEntry } from "../../src/shared/schema.js";
+import { generateId } from "../../src/shared/schema.js";
 import { now } from "../../src/shared/time.js";
 import { cleanPersistedState } from "../helpers/fixtures.js";
 import { createMockPi, toExtensionAPI, type MockPi } from "../helpers/mock-pi.js";
 import { createRuntime, type NoesisRuntime } from "../../src/runtime.js";
 import { registerTools } from "../../src/tools/index.js";
-import { EMPTY_STATE } from "../../src/schema.js";
+import { EMPTY_STATE } from "../../src/shared/schema.js";
 import { deepClone } from "../../src/shared/clone.js";
 
 // ---------------------------------------------------------------------------
@@ -277,7 +277,7 @@ describe("noesis_believe_learning", () => {
     const execute = toolExecutor(pi, "noesis_believe_learning");
 
     // Arrange — seed a learning failure entry
-    const learningId = "test-learning-1";
+    const learningId = "le-learning-1";
     await runtime.stateManager.mutate((state) => {
       state.learning.failures.push({
         id: learningId,
@@ -852,14 +852,14 @@ describe("noesis_recall learning", () => {
     // Arrange — seed learning entries
     await runtime.stateManager.mutate((state) => {
       state.learning.failures.push({
-        id: "learn-1",
+        id: "le-1",
         description: "Connection pool exhaustion under load",
         status: "captured",
         skillScope: "database",
         capturedAt: now(),
       });
       state.learning.successes.push({
-        id: "learn-2",
+        id: "le-2",
         description: "Implementing connection retry improved reliability",
         status: "captured",
         skillScope: "database",
@@ -886,14 +886,14 @@ describe("noesis_recall learning", () => {
     // Arrange — seed learning entries with different scopes
     await runtime.stateManager.mutate((state) => {
       state.learning.failures.push({
-        id: "learn-3",
+        id: "le-3",
         description: "Database migration failed",
         status: "captured",
         skillScope: "database",
         capturedAt: now(),
       });
       state.learning.failures.push({
-        id: "learn-4",
+        id: "le-4",
         description: "TypeScript build error",
         status: "captured",
         skillScope: "typescript",
@@ -1121,7 +1121,7 @@ describe("noesis_believe_learning refine", () => {
     const def = pi._getTool("noesis_believe_learning") as Record<string, unknown>;
     const schema = def.parameters as { safeParse: (d: unknown) => { success: boolean } };
     const result = schema.safeParse({
-      learningId: "learn-1",
+      learningId: "le-1",
       rootCause: "Missing config",
       fix: "Add config file",
     });
@@ -1133,7 +1133,7 @@ describe("noesis_believe_learning refine", () => {
     const def = pi._getTool("noesis_believe_learning") as Record<string, unknown>;
     const schema = def.parameters as { safeParse: (d: unknown) => { success: boolean } };
     const result = schema.safeParse({
-      learningId: "learn-1",
+      learningId: "le-1",
       rootCause: "Missing config",
     });
     expect(result.success).toBe(false);
@@ -1478,7 +1478,7 @@ describe("noesis_recall search edge cases", () => {
     // Seed a decision where only the alternatives match the keyword
     await runtime.stateManager.mutate((state) => {
       state.belief.decisions.push({
-        id: "dec-alt-1",
+        id: "bd-alt-1",
         content: "Use primary runtime",          // no "XYZ" keyword
         rationale: "Best performance",             // no "XYZ" keyword
         alternatives: ["Node.js XYZ", "Deno"],     // "XYZ" matches
@@ -1507,7 +1507,7 @@ describe("noesis_recall search edge cases", () => {
     // Seed a hypothesis where only the evidence matches
     await runtime.stateManager.mutate((state) => {
       state.inference.hypotheses.push({
-        id: "hyp-evidence-1",
+        id: "hy-evidence-1",
         content: "The app crashes",               // no "EVIDENCE_MATCH" keyword
         status: "testing",
         evidence: "Observed EVIDENCE_MATCH in logs",
@@ -1534,7 +1534,7 @@ describe("noesis_recall search edge cases", () => {
 
     await runtime.stateManager.mutate((state) => {
       state.learning.failures.push({
-        id: "learn-cause-1",
+        id: "le-cause-1",
         description: "Server timeout",              // no "ROOTCAUSE_MATCH"
         status: "captured",
         rootCause: "ROOTCAUSE_MATCH in config",
@@ -1560,7 +1560,7 @@ describe("noesis_recall search edge cases", () => {
 
     await runtime.stateManager.mutate((state) => {
       state.learning.successes.push({
-        id: "learn-fix-1",
+        id: "le-fix-1",
         description: "Build flakiness",            // no "FIX_MATCH"
         status: "captured",
         rootCause: "Async race condition",

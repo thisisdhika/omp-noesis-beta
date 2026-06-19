@@ -9,12 +9,13 @@
  */
 
 import { join } from "node:path";
-import { type NoesisState, NoesisStateSchema, EMPTY_STATE } from "../schema.js";
+import { type NoesisState, NoesisStateSchema, EMPTY_STATE } from "../shared/schema.js";
 
 import { writeAtomic, readJSON } from "./filesystem-store.js";
 import { migrate } from "./migrations.js";
 import { deepClone, deepMergeDefaults } from "../shared/clone.js";
 import { ensureNoesisDir } from "../shared/paths.js";
+import { type IUnitOfWork, UnitOfWork } from "./unit-of-work.js";
 
 export class StateManager {
   #state!: NoesisState;
@@ -44,7 +45,7 @@ export class StateManager {
    * Gracefully handles missing file (null returned by readJSON)
    * and malformed JSON (readJSON throws → caught below).
    */
-  async initialize(): Promise<void> {
+  async initialize(preserveData?: Record<string, any>): Promise<void> {
     let loaded: unknown;
     try {
       loaded = await readJSON(this.#statePath);
@@ -60,6 +61,10 @@ export class StateManager {
       }
     }
 
+    if (loaded === null && preserveData && preserveData.noesis) {
+      loaded = preserveData.noesis;
+    }
+
     if (loaded === null) {
       this.#state = deepClone(EMPTY_STATE);
       await writeAtomic(this.#statePath, this.#state);
@@ -71,7 +76,18 @@ export class StateManager {
         EMPTY_STATE as unknown as Record<string, unknown>,
         loaded as Record<string, unknown>,
       );
-      this.#state = migrate(merged);
+      const migrated = migrate(merged);
+      try {
+        NoesisStateSchema.parse(migrated);
+        this.#state = migrated;
+        if (preserveData && preserveData.noesis && loaded === preserveData.noesis) {
+          await writeAtomic(this.#statePath, this.#state);
+        }
+      } catch (validationErr) {
+        console.warn("[StateManager] Invalid state schema, falling back to EMPTY_STATE", validationErr);
+        this.#state = deepClone(EMPTY_STATE);
+        await writeAtomic(this.#statePath, this.#state);
+      }
     }
   }
 
@@ -81,15 +97,54 @@ export class StateManager {
   }
 
   /**
-   * Apply a mutation function to the in-memory state, update the
-   * lastPersisted timestamp, then atomically persist to disk.
-   * Returns the mutated state for convenience.
+   * Apply a mutation function to a clone of the in-memory state, validate
+   * the schema, update the lastPersisted timestamp, then atomically persist to disk
+   * and update the in-memory state. If any step fails, the in-memory state
+   * is untouched. Returns the mutated state for convenience.
    */
   async mutate(fn: (state: NoesisState) => void): Promise<NoesisState> {
-    fn(this.#state);
-    this.#state.lastPersisted = new Date().toISOString();
-    await this.#withLock(() => writeAtomic(this.#statePath, this.#state));
+    const clone = deepClone(this.#state);
+    fn(clone);
+    clone.lastPersisted = new Date().toISOString();
+    NoesisStateSchema.parse(clone);
+
+    await this.#withLock(async () => {
+      await writeAtomic(this.#statePath, clone);
+      this.#state = clone;
+    });
     return this.#state;
+  }
+
+  /**
+   * Create a UnitOfWork instance that operates on a cloned state,
+   * with optimistic concurrency lock checks on commit.
+   */
+  createUnitOfWork(): IUnitOfWork {
+    const clone = deepClone(this.#state);
+    const originalLastPersisted = clone.lastPersisted;
+
+    const commitFn = async (committedState: NoesisState) => {
+      if (originalLastPersisted !== this.#state.lastPersisted) {
+        throw new Error(
+          "Transaction conflict: cognitive state was modified by another task since Unit of Work was opened."
+        );
+      }
+
+      NoesisStateSchema.parse(committedState);
+      committedState.lastPersisted = new Date().toISOString();
+
+      await this.#withLock(async () => {
+        if (originalLastPersisted !== this.#state.lastPersisted) {
+          throw new Error(
+            "Transaction conflict: cognitive state was modified by another task since Unit of Work was opened."
+          );
+        }
+        await writeAtomic(this.#statePath, committedState);
+        this.#state = deepClone(committedState);
+      });
+    };
+
+    return new UnitOfWork(clone, commitFn);
   }
 
   /**
@@ -100,12 +155,16 @@ export class StateManager {
    */
   async checkpointAttention(): Promise<void> {
     await this.#withLock(async () => {
-      const onDisk = await readJSON(this.#statePath);
-      if (onDisk !== null) {
-        const migrated = migrate(onDisk);
-        migrated.attention = this.#state.attention;
-        NoesisStateSchema.parse(migrated);
-        await writeAtomic(this.#statePath, migrated);
+      try {
+        const onDisk = await readJSON(this.#statePath);
+        if (onDisk !== null) {
+          const migrated = migrate(onDisk);
+          migrated.attention = this.#state.attention;
+          NoesisStateSchema.parse(migrated);
+          await writeAtomic(this.#statePath, migrated);
+        }
+      } catch (err: unknown) {
+        console.warn("[StateManager] Failed to checkpoint attention due to read/parse error", err);
       }
     });
   }

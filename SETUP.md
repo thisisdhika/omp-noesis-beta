@@ -4,20 +4,41 @@
 
 - **Bun** >= 1.3.0 ([install](https://bun.sh))
 - **Oh My Pi** >= 15.6.0
-- **Graphify** >= 0.3.0 (`uv tool install graphifyy` or `pip install graphifyy`)
+- **Graphify** >= 0.3.0 (`uv tool install "graphifyy[ollama]"` or `pip install "graphifyy[ollama]"`)
 - **Python** >= 3.10 (for Graphify)
+- **Ollama** (optional but highly recommended for local processing)
 
 
 ## Installation
 
 ### Step 1: Install Graphify
 
-```bash
-# Recommended:
-uv tool install graphifyy
-# Alternative:
-pipx install graphifyy
+**Option A: 100% Private & Free via Ollama (Recommended)**
+1. Install [Ollama](https://ollama.com/) and ensure the service is running.
+2. Pull the required embedding and code models:
+   ```bash
+   ollama pull nomic-embed-text
+   ollama pull qwen2.5-coder:7b
+   ```
+3. Install the Graphify Ollama bundle (note the package name is `graphifyy`):
+   ```bash
+   uv tool install "graphifyy[ollama]"
+   ```
+4. Set environment variables to point Graphify to your Ollama models (add these to your `~/.zshrc` or `~/.bashrc`):
+   ```bash
+   export GRAPHIFY_EMBEDDING_MODEL="nomic-embed-text"
+   export GRAPHIFY_LLM_MODEL="qwen2.5-coder:7b"
+   # If running Ollama on a different host/port, set:
+   # export OLLAMA_HOST="http://127.0.0.1:11434"
+   ```
 
+**Option B: Standard Cloud APIs**
+```bash
+uv tool install graphifyy
+```
+
+Verify installation:
+```bash
 graphify --version  # Should show v0.3.x+
 ```
 

@@ -10,8 +10,8 @@
  * @module rendering/state-cleanup
  */
 
-import type { NoesisState } from "../schema.js";
-import { CAPS } from "../schema.js";
+import type { NoesisState } from "../shared/schema.js";
+import { CAPS } from "../shared/schema.js";
 import { isStaleHours } from "../shared/time.js";
 import {
   evictStale as evictStaleLearning,

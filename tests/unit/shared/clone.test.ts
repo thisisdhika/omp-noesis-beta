@@ -68,7 +68,7 @@ describe("deepMergeDefaults", () => {
   it("should recursively merge nested objects", () => {
     const defaults = { nested: { x: 1, y: 2, z: 3 } };
     const loaded = { nested: { x: 10, y: 20 } };
-    const result = deepMergeDefaults(defaults, loaded);
+    const result = deepMergeDefaults(defaults, loaded as any);
     expect(result).toEqual({ nested: { x: 10, y: 20, z: 3 } });
   });
 
@@ -105,7 +105,7 @@ describe("deepMergeDefaults", () => {
         // pendingEvidence missing — old state file
       },
     };
-    const result = deepMergeDefaults(defaults, loaded);
+    const result = deepMergeDefaults(defaults, loaded as any);
     expect(result.attention.focus).toBe("test");
     expect(result.attention.priority).toBe("high");
     expect(result.attention.pendingEvidence).toEqual([]);
@@ -115,9 +115,9 @@ describe("deepMergeDefaults", () => {
   it("should not mutate defaults or loaded", () => {
     const defaults = { a: { b: 1 } };
     const loaded = { a: { c: 2 } };
-    const result = deepMergeDefaults(defaults, loaded);
+    const result = deepMergeDefaults(defaults, loaded as any);
     expect(defaults).toEqual({ a: { b: 1 } });
     expect(loaded).toEqual({ a: { c: 2 } });
-    expect(result).toEqual({ a: { b: 1, c: 2 } });
+    expect(result as any).toEqual({ a: { b: 1, c: 2 } });
   });
 });

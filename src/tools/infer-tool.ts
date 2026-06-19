@@ -15,14 +15,12 @@
 import type { ExtensionAPI } from "@oh-my-pi/pi-coding-agent";
 import type { NoesisRuntime } from "../runtime.js";
 import type { AgentToolResult } from "@oh-my-pi/pi-agent-core";
-import type { Hypothesis, BeliefFact, ReasoningStep } from "../schema.js";
-import {
-  addHypothesis,
-  updateHypothesis,
-  confirmHypothesis,
-  refuteHypothesis,
-  addReasoning,
-} from "../domains/inference/inference-domain.js";
+import type { Hypothesis, BeliefFact, ReasoningStep } from "../shared/schema.js";
+import { AddHypothesisUseCase } from "../application/use-cases/add-hypothesis.js";
+import { UpdateHypothesisUseCase } from "../application/use-cases/update-hypothesis.js";
+import { ConfirmHypothesisUseCase } from "../application/use-cases/confirm-hypothesis.js";
+import { AddReasoningStepUseCase } from "../application/use-cases/add-reasoning-step.js";
+
 
 
 // ============================================================
@@ -68,13 +66,12 @@ export async function executeInfer(
         details: { error: "missing_fields", action: "add_hypothesis" },
       };
     }
-    let hypothesis!: Hypothesis;
-    await runtime.stateManager.mutate((state) => {
-      hypothesis = addHypothesis(state, {
-        content,
-        evidence: params.evidence,
-        tags: params.tags,
-      });
+    const uow = runtime.stateManager.createUnitOfWork();
+    const useCase = new AddHypothesisUseCase(uow);
+    const hypothesis = await useCase.execute({
+      content,
+      evidence: params.evidence,
+      tags: params.tags,
     });
 
     return {
@@ -106,88 +103,95 @@ export async function executeInfer(
     }
     const { evidence, reasoning, autoPromote } = params;
 
-    // Add reasoning step if provided
-    if (reasoning !== undefined && reasoning.length > 0) {
-      await runtime.stateManager.mutate((state) => {
-        addReasoning(state, reasoning, id);
-      });
-    }
+    if (status === "confirmed") {
+      if (reasoning !== undefined && reasoning.length > 0) {
+        const reasoningUow = runtime.stateManager.createUnitOfWork();
+        const reasoningUseCase = new AddReasoningStepUseCase(reasoningUow);
+        await reasoningUseCase.execute({
+          content: reasoning,
+          relatesTo: id,
+        });
+      }
 
-    // Route to the appropriate domain function based on status
-    let resultId: string;
-    let resultContent: string;
-    let resultStatus: string;
-    let resultKind: string;
-    let beliefFactId: string | null = null;
+      const confirmUow = runtime.stateManager.createUnitOfWork();
+      const useCase = new ConfirmHypothesisUseCase(confirmUow);
+      let res;
+      try {
+        res = await useCase.execute({
+          id,
+          autoPromote,
+        });
+      } catch (err: any) {
+        return {
+          content: [{ type: "text", text: err.message || `Hypothesis not found: ${id}` }],
+          details: { id, error: "not_found" },
+          isError: true,
+        };
+      }
 
-    if (status === "confirmed" && autoPromote) {
-      let confirmed!: { hypothesis: Hypothesis; beliefFact?: BeliefFact } | null;
-      await runtime.stateManager.mutate((state) => {
-        confirmed = confirmHypothesis(state, id, true);
-      });
-      if (confirmed === null) {
+      const hypothesis = runtime.stateManager.read().inference.hypotheses.find(h => h.id === id);
+      if (!hypothesis) {
         return {
           content: [{ type: "text", text: `Hypothesis not found: ${id}` }],
           details: { id, error: "not_found" },
           isError: true,
         };
       }
-      resultId = confirmed.hypothesis.id;
-      resultContent = confirmed.hypothesis.content;
-      resultStatus = confirmed.hypothesis.status;
-      beliefFactId = confirmed.beliefFact?.id ?? null;
-      resultKind = "hypothesis_confirmed";
-    } else if (status === "refuted") {
-      let refuted!: Hypothesis | null;
-      await runtime.stateManager.mutate((state) => {
-        refuted = refuteHypothesis(state, id);
-      });
-      if (refuted === null) {
-        return {
-          content: [{ type: "text", text: `Hypothesis not found: ${id}` }],
-          details: { id, error: "not_found" },
-          isError: true,
-        };
-      }
-      resultId = refuted.id;
-      resultContent = refuted.content;
-      resultStatus = refuted.status;
-      resultKind = "hypothesis_refuted";
-    } else {
-      let hypothesis!: Hypothesis | null;
-      await runtime.stateManager.mutate((state) => {
-        hypothesis = updateHypothesis(state, id, { status, evidence });
-      });
-      if (hypothesis === null) {
-        return {
-          content: [{ type: "text", text: `Hypothesis not found: ${id}` }],
-          details: { id, error: "not_found" },
-          isError: true,
-        };
-      }
-      resultId = hypothesis.id;
-      resultContent = hypothesis.content;
-      resultStatus = hypothesis.status;
-      resultKind = "hypothesis_updated";
-    }
 
-    return {
-      content: [
-        {
-          type: "text",
-          text: `Hypothesis ${resultKind}: ${resultId}\nStatus: ${resultStatus}` +
-            (beliefFactId !== null ? `\nPromoted to belief fact: ${beliefFactId}` : ""),
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Hypothesis hypothesis_confirmed: ${hypothesis.id}\nStatus: ${hypothesis.status}` +
+              (res.beliefFactId ? `\nPromoted to belief fact: ${res.beliefFactId}` : ""),
+          },
+        ],
+        details: {
+          id: hypothesis.id,
+          content: hypothesis.content,
+          status: hypothesis.status,
+          beliefFactId: res.beliefFactId ?? null,
+          kind: "hypothesis_confirmed",
         },
-      ],
-      details: {
-        id: resultId,
-        content: resultContent,
-        status: resultStatus,
-        beliefFactId,
-        kind: resultKind,
-      },
-      isError: false,
-    };
+        isError: false,
+      };
+    } else {
+      const updateUow = runtime.stateManager.createUnitOfWork();
+      const useCase = new UpdateHypothesisUseCase(updateUow);
+      let hypothesis;
+      try {
+        hypothesis = await useCase.execute({
+          id,
+          status,
+          evidence,
+          reasoning,
+        });
+      } catch (err: any) {
+        return {
+          content: [{ type: "text", text: err.message || `Hypothesis not found: ${id}` }],
+          details: { id, error: "not_found" },
+          isError: true,
+        };
+      }
+
+      const resultKind = status === "refuted" ? "hypothesis_refuted" : "hypothesis_updated";
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Hypothesis ${resultKind}: ${hypothesis.id}\nStatus: ${hypothesis.status}`,
+          },
+        ],
+        details: {
+          id: hypothesis.id,
+          content: hypothesis.content,
+          status: hypothesis.status,
+          beliefFactId: null,
+          kind: resultKind,
+        },
+        isError: false,
+      };
+    }
   }
 
   // action === "add_reasoning"
@@ -199,9 +203,11 @@ export async function executeInfer(
       details: { error: "missing_fields", action: "add_reasoning" },
     };
   }
-  let step!: ReasoningStep;
-  await runtime.stateManager.mutate((state) => {
-    step = addReasoning(state, content, params.relatesTo);
+  const uow = runtime.stateManager.createUnitOfWork();
+  const useCase = new AddReasoningStepUseCase(uow);
+  const step = await useCase.execute({
+    content,
+    relatesTo: params.relatesTo,
   });
 
   return {

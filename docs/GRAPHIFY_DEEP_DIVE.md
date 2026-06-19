@@ -432,7 +432,7 @@ export function validateGraphPath(projectRoot: string): string | null {
 
 ### 4.8 Schema
 
-#### `src/schema.ts` — Type Definitions
+#### `src/shared/schema.ts` — Type Definitions
 
 ```typescript
 GraphConfidence = "EXTRACTED" | "INFERRED" | "AMBIGUOUS"
@@ -743,7 +743,7 @@ Graph findings do NOT survive compaction. Only:
 
 ## 14. Configuration
 
-### CAPS Constants (src/schema.ts)
+### CAPS Constants (src/shared/schema.ts)
 
 ```typescript
 CAPS.graphQueries = 5    // Max graph findings stored

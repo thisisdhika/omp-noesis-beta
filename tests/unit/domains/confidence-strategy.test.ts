@@ -8,7 +8,7 @@
 
 import { describe, it, expect } from "bun:test";
 import { mapGraphConfidence, applyStalePenalty } from "../../../src/domains/belief/confidence-strategy.js";
-import type { GraphFinding, BeliefFact } from "../../../src/schema.js";
+import type { GraphFinding, BeliefFact } from "../../../src/shared/schema.js";
 import { now } from "../../../src/shared/time.js";
 import { OLD_TIMESTAMP } from "../../helpers/fixtures.js";
 

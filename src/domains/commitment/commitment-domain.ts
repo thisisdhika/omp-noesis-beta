@@ -9,15 +9,9 @@
  * built-in caps and consistency checks.
  */
 
-import type {
-  NoesisState,
-  Workflow,
-  WorkflowStep,
-  PlannedAction,
-  WorkflowStatus,
-  StepStatus,
-} from "../../schema.js";
-import { CAPS, generateId } from "../../schema.js";
+import type { NoesisState } from "../../shared/schema.js";
+import type { Workflow, WorkflowStep, PlannedAction, WorkflowStatus, StepStatus } from "./schema.js";
+import { CAPS, generateId } from "../../shared/schema-base.js";
 import { now } from "../../shared/time.js";
 import { checkCircularDeps, checkStatusConsistency } from "./consistency-strategy.js";
 
@@ -124,7 +118,10 @@ export function updateStep(
 
   // Signal cycle detection when rolling a completed step back to pending
   if (oldStatus === "done" && newStatus === "pending") {
-    checkCircularDeps(state.commitment.workflow);
+    const cycles = checkCircularDeps(state.commitment.workflow);
+    if (cycles.length > 0) {
+      throw new Error(`Circular dependency detected involving steps: ${cycles.join(", ")}`);
+    }
   }
 
   if (note !== undefined && step.verification !== undefined) {

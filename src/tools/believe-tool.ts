@@ -16,12 +16,10 @@
 import type { ExtensionAPI } from "@oh-my-pi/pi-coding-agent";
 import type { AgentToolResult } from "@oh-my-pi/pi-coding-agent";
 import type { NoesisRuntime } from "../runtime.js";
-import type { GraphFinding, BeliefFact, BeliefDecision } from "../schema.js";
-import {
-  addFact,
-  addDecision,
-  resolveLearning,
-} from "../domains/belief/belief-domain.js";
+import type { GraphFinding, BeliefFact, BeliefDecision } from "../shared/schema.js";
+import { AddBeliefFactUseCase } from "../application/use-cases/add-belief-fact.js";
+import { AddBeliefDecisionUseCase } from "../application/use-cases/add-belief-decision.js";
+import { ResolveLearningUseCase } from "../application/use-cases/resolve-learning.js";
 import { mapGraphConfidence } from "../domains/belief/confidence-strategy.js";
 
 // ============================================================================
@@ -74,19 +72,27 @@ export async function executeBelieveFact(
   if (params.source === "graph" && params.graphFinding) {
     confidence = mapGraphConfidence(params.graphFinding as GraphFinding);
   }
-  let fact!: BeliefFact;
-  await runtime.stateManager.mutate((state) => {
-    fact = addFact(state, {
-      content: params.content,
-      confidence,
-      source: params.source,
-      tags: params.tags,
-      evidence: params.evidence,
-      contradicts: params.contradicts,
-    });
+
+  const uow = runtime.stateManager.createUnitOfWork();
+  const useCase = new AddBeliefFactUseCase(uow);
+  const { factId, contestedWarnings } = await useCase.execute({
+    content: params.content,
+    confidence,
+    source: params.source,
+    tags: params.tags,
+    evidence: params.evidence,
+    contradicts: params.contradicts,
   });
+
+  const fact = runtime.stateManager.read().belief.facts.find(f => f.id === factId);
+  if (!fact) {
+    throw new Error(`Failed to retrieve created fact: ${factId}`);
+  }
+
+  const warningText = contestedWarnings.length > 0 ? `\n\nWarnings:\n${contestedWarnings.join("\n")}` : "";
+
   return {
-    content: [{ type: "text", text: `Created fact: ${fact.id}\n${fact.content}` }],
+    content: [{ type: "text", text: `Created fact: ${fact.id}\n${fact.content}${warningText}` }],
     details: { id: fact.id, content: fact.content, kind: "fact" },
     isError: false,
   };
@@ -137,19 +143,26 @@ export async function executeBelieveDecision(
   runtime: NoesisRuntime,
   params: BelieveDecisionParams,
 ): Promise<AgentToolResult<any, any>> {
-  let decision!: BeliefDecision;
-  await runtime.stateManager.mutate((state) => {
-    decision = addDecision(state, {
-      content: params.content,
-      rationale: params.rationale,
-      alternatives: params.alternatives,
-      source: params.source,
-      tags: params.tags,
-      contradicts: params.contradicts,
-    });
+  const uow = runtime.stateManager.createUnitOfWork();
+  const useCase = new AddBeliefDecisionUseCase(uow);
+  const { decisionId, contestedWarnings } = await useCase.execute({
+    content: params.content,
+    rationale: params.rationale,
+    alternatives: params.alternatives,
+    source: params.source,
+    tags: params.tags,
+    contradicts: params.contradicts,
   });
+
+  const decision = runtime.stateManager.read().belief.decisions.find(d => d.id === decisionId);
+  if (!decision) {
+    throw new Error(`Failed to retrieve created decision: ${decisionId}`);
+  }
+
+  const warningText = contestedWarnings.length > 0 ? `\n\nWarnings:\n${contestedWarnings.join("\n")}` : "";
+
   return {
-    content: [{ type: "text", text: `Created decision: ${decision.id}\n${decision.content}` }],
+    content: [{ type: "text", text: `Created decision: ${decision.id}\n${decision.content}${warningText}` }],
     details: { id: decision.id, content: decision.content, kind: "decision" },
     isError: false,
   };
@@ -198,10 +211,19 @@ export async function executeBelieveLearning(
   runtime: NoesisRuntime,
   params: BelieveLearningParams,
 ): Promise<AgentToolResult<any, any>> {
-  let fact!: BeliefFact;
-  await runtime.stateManager.mutate((state) => {
-    fact = resolveLearning(state, params.learningId, params.rootCause, params.fix);
+  const uow = runtime.stateManager.createUnitOfWork();
+  const useCase = new ResolveLearningUseCase(uow);
+  const factId = await useCase.execute({
+    learningId: params.learningId,
+    rootCause: params.rootCause,
+    fix: params.fix,
   });
+
+  const fact = runtime.stateManager.read().belief.facts.find(f => f.id === factId);
+  if (!fact) {
+    throw new Error(`Failed to retrieve created fact: ${factId}`);
+  }
+
   return {
     content: [{
       type: "text",

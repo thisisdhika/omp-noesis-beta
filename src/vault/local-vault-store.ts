@@ -14,8 +14,8 @@
 
 import { appendFileSync, readFileSync, existsSync, statSync, renameSync } from "node:fs";
 import { join } from "node:path";
-import { VaultArtifactSchema } from "../schema.js";
-import type { VaultArtifact, VaultPullResult } from "../schema.js";
+import { VaultArtifactSchema } from "../shared/schema.js";
+import type { VaultArtifact, VaultPullResult } from "../shared/schema.js";
 import type { VaultStore } from "./vault-store.js";
 
 // ============================================================================

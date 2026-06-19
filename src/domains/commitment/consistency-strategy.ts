@@ -6,7 +6,7 @@
  * Provides cycle detection and status consistency checks for workflows.
  */
 
-import type { Workflow, WorkflowStep } from "../../schema.js";
+import type { Workflow, WorkflowStep } from "./schema.js";
 
 /**
  * Detect circular dependencies in a workflow's step graph.

@@ -54,6 +54,7 @@ type RpcCommand = { type: "prompt"; message: string } | { type: "abort" };
 
 function sendCommand(stdin: FileSink, cmd: RpcCommand): void {
   stdin.write(encoder.encode(JSON.stringify(cmd) + "\n"));
+  stdin.flush();
 }
 
 // ---------------------------------------------------------------------------
@@ -159,6 +160,18 @@ async function spawnRpcProcess(): Promise<RpcProcess> {
     }
   })();
 
+  const stderrReader = proc.stderr.getReader();
+  const stderrLoop = (async () => {
+    try {
+      while (true) {
+        const { done } = await stderrReader.read();
+        if (done) break;
+      }
+    } catch {
+      /* ignore */
+    }
+  })();
+
   // Poll for ready signal
   const deadline = Date.now() + 30_000;
   while (!ready && !readyError && Date.now() < deadline) {
@@ -173,14 +186,7 @@ async function spawnRpcProcess(): Promise<RpcProcess> {
   }
   if (!ready) {
     proc.kill();
-    const stderrChunk = await proc.stderr
-      .getReader()
-      .read()
-      .catch(() => null);
-    const stderr = stderrChunk?.value
-      ? decoder.decode(stderrChunk.value)
-      : "(none)";
-    throw new Error(`Timeout waiting for RPC ready. Stderr: ${stderr}`);
+    throw new Error(`Timeout waiting for RPC ready.`);
   }
 
   const stdin = proc.stdin;

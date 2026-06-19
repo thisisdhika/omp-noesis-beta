@@ -6,7 +6,7 @@ import { mkdirSync, writeFileSync, rmSync, existsSync } from "node:fs";
 import { createTempDir } from "../helpers/temp-dir.js";
 import { StateManager } from "../../src/infrastructure/state-manager.js";
 import { cloneState } from "../helpers/fixtures.js";
-import type { NoesisState } from "../../src/schema.js";
+import type { NoesisState } from "../../src/shared/schema.js";
 import { NoopVaultStore } from "../../src/vault/noop-vault-store.js";
 import type { VaultArtifact } from "../../src/vault/vault-store.js";
 import { addFact, getActiveFacts } from "../../src/domains/belief/belief-domain.js";

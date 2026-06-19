@@ -9,8 +9,8 @@
 
 import { describe, it, expect } from "bun:test";
 import { supersede } from "../../../src/domains/belief/revision-strategy.js";
-import type { NoesisState, BeliefFact, BeliefDecision } from "../../../src/schema.js";
-import { EMPTY_STATE } from "../../../src/schema.js";
+import type { NoesisState, BeliefFact, BeliefDecision } from "../../../src/shared/schema.js";
+import { EMPTY_STATE } from "../../../src/shared/schema.js";
 
 // ---------------------------------------------------------------------------
 // Helpers

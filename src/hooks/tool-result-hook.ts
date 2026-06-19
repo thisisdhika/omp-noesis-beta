@@ -10,7 +10,7 @@
 
 import type { ExtensionAPI } from "@oh-my-pi/pi-coding-agent";
 import type { NoesisRuntime } from "../runtime.js";
-import { addLearning } from "../domains/learning/learning-domain.js";
+import { CaptureLearningUseCase } from "../application/use-cases/capture-learning.js";
 
 /** Keywords in tool output that signal failure. */
 const ERROR_KEYWORDS = ["failed", "error", "cannot", "unable", "not found"];
@@ -34,12 +34,12 @@ export function registerToolResultHook(pi: ExtensionAPI, runtime: NoesisRuntime)
     // Only capture significant events — failures with error content
     if (!isFailure) return;
 
-    await runtime.stateManager.mutate((state) => {
-      addLearning(state, {
-        description: `Tool ${toolName} failed`,
-        toolName,
-        isSuccess: false,
-      });
+    const uow = runtime.stateManager.createUnitOfWork();
+    const useCase = new CaptureLearningUseCase(uow);
+    await useCase.execute({
+      description: `Tool ${toolName} failed`,
+      toolName,
+      isSuccess: false,
     });
   });
 }

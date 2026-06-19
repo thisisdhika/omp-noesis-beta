@@ -12,7 +12,7 @@
  */
 
 
-import type { VaultArtifact, VaultPullResult } from "../schema.js";
+import type { VaultArtifact, VaultPullResult } from "../shared/schema.js";
 export type { VaultArtifact, VaultPullResult };
 
 // ============================================================================
@@ -57,4 +57,9 @@ export interface VaultStore {
    * Implementations that do not buffer can omit this method.
    */
   flush?(): Promise<void>;
+
+  /**
+   * Synchronize artifacts from a projection backend back into the memory backend.
+   */
+  sync?(): Promise<void>;
 }

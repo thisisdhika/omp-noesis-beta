@@ -3,7 +3,7 @@
 import { describe, it, expect, beforeEach } from "bun:test";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import type { VaultArtifact } from "../../../src/schema.js";
+import type { VaultArtifact } from "../../../src/shared/schema.js";
 import { createTempDir } from "../../../tests/helpers/temp-dir.js";
 import { ObsidianVaultStore } from "../../../src/vault/obsidian-vault-store.js";
 
@@ -622,7 +622,7 @@ describe("ObsidianVaultStore", () => {
       }
     });
 
-    it("performs case-sensitive matching (grep default)", async () => {
+    it("performs case-insensitive matching (grep -ril flag)", async () => {
       if (!grepAvailable) return;
       const { path, cleanup } = createTempDir();
       try {
@@ -636,14 +636,14 @@ describe("ObsidianVaultStore", () => {
           makeArtifact({ id: "cs-2", kind: "learning", content: "goodbye world" }),
         );
 
-        // grep -rl is case-sensitive, so "WORLD" matches neither
+        // grep -ril is case-insensitive, so "WORLD" should match both artifacts
         const results = await store.search("WORLD");
-        expect(results).toHaveLength(0);
+        expect(results).toHaveLength(2);
 
-        // Lowercase "world" matches the second artifact
-        const results2 = await store.search("world");
+        // "Hello" matches only the first artifact (case-insensitive)
+        const results2 = await store.search("hello");
         expect(results2).toHaveLength(1);
-        expect(results2[0]!.id).toBe("cs-2");
+        expect(results2[0]!.id).toBe("cs-1");
       } finally {
         cleanup();
       }

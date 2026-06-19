@@ -9,7 +9,7 @@ import { describe, it, expect, beforeEach } from "bun:test";
 import { createMockPi, toExtensionAPI } from "../../helpers/mock-pi.js";
 import { createRuntime, type NoesisRuntime } from "../../../src/runtime.js";
 import { registerToolResultHook } from "../../../src/hooks/tool-result-hook.js";
-import { EMPTY_STATE } from "../../../src/schema.js";
+import { EMPTY_STATE } from "../../../src/shared/schema.js";
 import { deepClone } from "../../../src/shared/clone.js";
 import { cleanPersistedState } from "../../helpers/fixtures.js";
 import type { MockPi } from "../../helpers/mock-pi.js";

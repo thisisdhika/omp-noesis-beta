@@ -11,8 +11,9 @@
  * @module confidence-strategy
  */
 
-import type { BeliefFact, GraphFinding } from "../../schema.js";
-import { CAPS } from "../../schema.js";
+import type { BeliefFact } from "./schema.js";
+import type { GraphFinding } from "../attention/schema.js";
+import { CAPS } from "../../shared/schema-base.js";
 import { isStaleHours } from "../../shared/time.js";
 
 /**

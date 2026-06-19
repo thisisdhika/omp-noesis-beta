@@ -11,7 +11,7 @@ The world's first enterprise-grade cognitive substrate for agentic engineering. 
 Noesis adds a structured, durable, and formally principled cognitive layer to OMP:
 
 - **Structured Beliefs** — AGM-compliant belief revision with audit trails
-- **Graph-Grounded Perception** — Codebase evidence via Graphify integration
+- **Graph-Grounded Perception** — Codebase evidence via Graphify integration (Highly recommended: run locally via `uv tool install "graphify[ollama]"` for absolute privacy and zero token cost)
 - **Compaction Survival** — Typed cognitive state survives OMP compaction
 - **Learning Loops** — Failure → root cause → fix → prevention
 - **Smart-Zone Protection** — ≤2000-token bounded preamble

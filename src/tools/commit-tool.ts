@@ -16,13 +16,12 @@
 import type { ExtensionAPI } from "@oh-my-pi/pi-coding-agent";
 import type { AgentToolResult } from "@oh-my-pi/pi-coding-agent";
 import type { NoesisRuntime } from "../runtime.js";
-import type { Workflow, WorkflowStep, PlannedAction } from "../schema.js";
-import {
-  extendWorkflow,
-  replaceWorkflow,
-  updateStep,
-  addAction,
-} from "../domains/commitment/commitment-domain.js";
+import type { Workflow, WorkflowStep, PlannedAction } from "../shared/schema.js";
+import { ExtendWorkflowUseCase } from "../application/use-cases/extend-workflow.js";
+import { ReplaceWorkflowUseCase } from "../application/use-cases/replace-workflow.js";
+import { UpdateWorkflowStepUseCase } from "../application/use-cases/update-workflow-step.js";
+import { AddPlannedActionUseCase } from "../application/use-cases/add-planned-action.js";
+
 
 export function buildCommitParams(pi: ExtensionAPI) {
   const stepSchema = pi.zod.object({
@@ -77,13 +76,13 @@ export async function executeCommit(runtime: NoesisRuntime, params: CommitParams
     const steps = params.steps;
     const goal = params.goal;
     const ws = params.status;
-    let workflow!: Workflow;
-    await runtime.stateManager.mutate((state) => {
-      workflow = extendWorkflow(state, {
-        goal,
-        steps,
-        status: workflowStatus(ws),
-      });
+
+    const uow = runtime.stateManager.createUnitOfWork();
+    const useCase = new ExtendWorkflowUseCase(uow);
+    const workflow = await useCase.execute({
+      goal,
+      steps,
+      status: workflowStatus(ws),
     });
 
     return {
@@ -115,13 +114,13 @@ export async function executeCommit(runtime: NoesisRuntime, params: CommitParams
     const goal = params.goal;
     const steps = params.steps;
     const ws = params.status;
-    let workflow!: Workflow;
-    await runtime.stateManager.mutate((state) => {
-      workflow = replaceWorkflow(state, {
-        goal,
-        steps,
-        status: workflowStatus(ws),
-      });
+
+    const uow = runtime.stateManager.createUnitOfWork();
+    const useCase = new ReplaceWorkflowUseCase(uow);
+    const workflow = await useCase.execute({
+      goal,
+      steps,
+      status: workflowStatus(ws),
     });
 
     return {
@@ -152,12 +151,17 @@ export async function executeCommit(runtime: NoesisRuntime, params: CommitParams
     }
     const stepId = params.stepId;
     const narrowedStatus = stepStatus(params.status);
-    let step!: WorkflowStep | null;
-    await runtime.stateManager.mutate((state) => {
-      step = updateStep(state, stepId, narrowedStatus);
-    });
 
-    if (step === null) {
+    const uow = runtime.stateManager.createUnitOfWork();
+    const useCase = new UpdateWorkflowStepUseCase(uow);
+    let step!: WorkflowStep;
+    try {
+      step = await useCase.execute({
+        stepId,
+        status: narrowedStatus,
+        note: params.note,
+      });
+    } catch (err: any) {
       return {
         content: [{ type: "text", text: `Step not found: ${stepId}` }],
         details: { stepId, error: "not_found" },
@@ -192,9 +196,12 @@ export async function executeCommit(runtime: NoesisRuntime, params: CommitParams
   }
   const content = params.content;
   const priority = params.priority;
-  let action!: PlannedAction;
-  await runtime.stateManager.mutate((state) => {
-    action = addAction(state, content, priority);
+
+  const uow = runtime.stateManager.createUnitOfWork();
+  const useCase = new AddPlannedActionUseCase(uow);
+  const action = await useCase.execute({
+    content,
+    priority,
   });
 
   return {

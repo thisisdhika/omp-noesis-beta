@@ -10,9 +10,9 @@
 
 import { describe, it, expect } from "bun:test";
 import { buildPreamble } from "../../../src/rendering/preamble-builder.js";
-import { EMPTY_STATE, MAX_PREAMBLE_TOKENS } from "../../../src/schema.js";
+import { EMPTY_STATE, MAX_PREAMBLE_TOKENS } from "../../../src/shared/schema.js";
 import { populatedState } from "../../helpers/fixtures.js";
-import type { NoesisState, RenderContext } from "../../../src/schema.js";
+import type { NoesisState, RenderContext } from "../../../src/shared/schema.js";
 import { estimateTokens } from "../../../src/shared/tokens.js";
 
 // =============================================================================

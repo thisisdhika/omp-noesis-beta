@@ -9,7 +9,7 @@
  * key names for backward compatibility.
  */
 
-import type { GraphFinding, GraphConfidence } from "../schema.js";
+import type { GraphFinding, GraphConfidence } from "../shared/schema.js";
 import { now } from "../shared/time.js";
 
 /** Narrow an unknown value to a record with string keys. */
@@ -76,6 +76,14 @@ function extractRelations(raw: Record<string, unknown>): string[] {
     });
   }
 
+
+  if (Array.isArray(raw.links)) {
+    return raw.links.map((e: unknown) => {
+      if (typeof e === "string") return e;
+      if (!isRecord(e)) return "?→?";
+      return `${String(e.source ?? "?")}→${String(e.target ?? "?")}`;
+    });
+  }
 
   if (Array.isArray(raw.relations)) {
     return raw.relations.filter((r): r is string => typeof r === "string");
