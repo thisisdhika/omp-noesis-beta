@@ -1,15 +1,15 @@
 "use strict";
 
 /**
- * Unit tests for believe-tool.ts — noesis_believe_fact, noesis_believe_decision, noesis_believe_learning tools.
+ * Unit tests for believe-tool.ts — noesis_believe_fact, noesis_believe_decision tools.
  */
 
-import { describe, it, expect } from "bun:test";
+import { describe, it, expect, mock } from "bun:test";
 import { unlinkSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { createMockPi, toExtensionAPI } from "../../helpers/mock-pi.js";
 import { createRuntime, type NoesisRuntime } from "../../../src/runtime.js";
-import { registerBelieveFactTool, registerBelieveDecisionTool, registerBelieveLearningTool } from "../../../src/tools/believe-tool.js";
+import { registerBelieveFactTool, registerBelieveDecisionTool } from "../../../src/tools/believe-tool.js";
 import { EMPTY_STATE } from "../../../src/shared/schema.js";
 import { deepClone } from "../../../src/shared/clone.js";
 import type { MockPi } from "../../helpers/mock-pi.js";
@@ -43,7 +43,6 @@ async function setup(): Promise<{ pi: MockPi; runtime: NoesisRuntime }> {
   const runtime = await createRuntime(toExtensionAPI(pi));
   registerBelieveFactTool(toExtensionAPI(pi), runtime);
   registerBelieveDecisionTool(toExtensionAPI(pi), runtime);
-  registerBelieveLearningTool(toExtensionAPI(pi), runtime);
 
   await runtime.stateManager.mutate((s) => {
     Object.assign(s, deepClone(EMPTY_STATE));
@@ -103,6 +102,56 @@ describe("noesis_believe_fact", () => {
     // Partially specified should also fail
     expect(() => schema.parse({ content: "test" })).toThrow();
   });
+
+  it("retains to OMP when retainToOmp is set and confidence >= 0.6", async () => {
+    const { pi, runtime } = await setup();
+    const retainToOmp = mock(() => Promise.resolve());
+    runtime.retainToOmp = retainToOmp;
+    const execute = toolExecutor(pi, "noesis_believe_fact");
+
+    await execute({
+      content: "Test durable fact",
+      confidence: 0.8,
+      source: "execution",
+    });
+
+    expect(retainToOmp).toHaveBeenCalledTimes(1);
+    expect(retainToOmp).toHaveBeenCalledWith([
+      expect.objectContaining({
+        content: expect.stringContaining("[Noesis Belief] Test durable fact"),
+        context: expect.stringMatching(/source: execution/),
+      }),
+    ]);
+  });
+
+  it("does not retain to OMP when confidence < 0.6", async () => {
+    const { pi, runtime } = await setup();
+    const retainToOmp = mock(() => Promise.resolve());
+    runtime.retainToOmp = retainToOmp;
+    const execute = toolExecutor(pi, "noesis_believe_fact");
+
+    await execute({
+      content: "Low confidence fact",
+      confidence: 0.4,
+      source: "inference",
+    });
+
+    expect(retainToOmp).not.toHaveBeenCalled();
+  });
+
+  it("does not throw when retainToOmp is undefined", async () => {
+    const { pi, runtime } = await setup();
+    const execute = toolExecutor(pi, "noesis_believe_fact");
+
+    const result = await execute({
+      content: "No OMP bridge fact",
+      confidence: 0.9,
+      source: "user",
+    });
+
+    expect(result.isError).toBe(false);
+    expect(result.content[0]!.text).toContain("Created fact:");
+  });
 });
 
 describe("noesis_believe_decision", () => {
@@ -147,44 +196,3 @@ describe("noesis_believe_decision", () => {
   });
 });
 
-describe("noesis_believe_learning", () => {
-  it("records a learning resolution", async () => {
-    const { pi, runtime } = await setup();
-    const execute = toolExecutor(pi, "noesis_believe_learning");
-
-    // First create a learning failure entry
-    await runtime.stateManager.mutate((state) => {
-      state.learning.failures.push({
-        id: "le-fix-001",
-        description: "Something failed",
-        status: "captured",
-        capturedAt: new Date().toISOString(),
-      });
-    });
-
-    const result = await execute({
-      learningId: "le-fix-001",
-      rootCause: "Missing null check",
-      fix: "Add null guard before dereference",
-    });
-
-    expect(result.isError).toBe(false);
-    expect(result.content[0]!.text).toContain("Resolved learning le-fix-001 into fact:");
-    expect(result.content[0]!.text).toContain("Missing null check");
-  });
-
-
-  it("schema refine rejects missing required fields", async () => {
-    const { pi } = await setup();
-    const def = pi._getTool("noesis_believe_learning") as Record<string, unknown> | undefined;
-    expect(def).toBeDefined();
-    const schema = def!.parameters as { parse: (data: unknown) => unknown };
-    expect(schema).toBeDefined();
-
-    // Without learningId, rootCause, or fix should fail refinement
-    expect(() => schema.parse({})).toThrow();
-
-    // Partially specified should also fail
-    expect(() => schema.parse({ learningId: "test" })).toThrow();
-  });
-});

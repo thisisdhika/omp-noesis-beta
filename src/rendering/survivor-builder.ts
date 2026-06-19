@@ -20,14 +20,19 @@ import { escapeXml } from "../shared/text.js";
 // Internal section builders
 // ---------------------------------------------------------------------------
 
-/** Build the <attention> block. Always present. */
+/** Build the <attention> block. Always present. Fields are locally bounded
+ * to keep the always-kept skeleton (attention + workflow + pointer) within
+ * ≤500 tokens under maximal realistic inputs. */
 function buildAttention(state: NoesisState): string {
   const a = state.attention;
+  // Survivor snapshot — truncate verbose fields aggressively
+  const focus = a.focus.length <= 150 ? a.focus : a.focus.slice(0, 150);
+  const files = a.files.slice(0, 5);
   return [
     "  <attention>",
-    `    <focus>${escapeXml(a.focus)}</focus>`,
+    `    <focus>${escapeXml(focus)}</focus>`,
     `    <priority>${escapeXml(a.priority)}</priority>`,
-    `    <files>${escapeXml(a.files.join(", "))}</files>`,
+    `    <files>${escapeXml(files.join(", "))}</files>`,
     "  </attention>",
   ].join("\n");
 }
@@ -49,22 +54,28 @@ function buildBeliefs(state: NoesisState): string {
   return ["  <beliefs>", ...entries, "  </beliefs>"].join("\n");
 }
 
-/** Build the <workflow> block — goal, status, and pending/active steps (max 3). */
+/** Build the <workflow> block — goal, status, and pending/active steps (max 3).
+ * Goal and step descriptions are locally bounded to keep the always-kept
+ * skeleton within ≤500 tokens under maximal realistic inputs. */
 function buildWorkflow(state: NoesisState): string {
   const wf = state.commitment.workflow;
   const steps = wf.steps
     .filter((s) => s.status === "pending" || s.status === "active")
     .slice(0, 3);
 
+  // Survivor snapshot — truncate verbose fields aggressively
+  const goal = wf.goal.length <= 200 ? wf.goal : wf.goal.slice(0, 200);
+
   const lines = [
     "  <workflow>",
-    `    <goal>${escapeXml(wf.goal)}</goal>`,
+    `    <goal>${escapeXml(goal)}</goal>`,
     `    <status>${escapeXml(wf.status)}</status>`,
   ];
 
   for (const s of steps) {
+    const desc = s.description.length <= 150 ? s.description : s.description.slice(0, 150);
     lines.push(
-      `    <step status="${escapeXml(s.status)}">${escapeXml(s.description)}</step>`,
+      `    <step status="${escapeXml(s.status)}">${escapeXml(desc)}</step>`,
     );
   }
 
@@ -110,9 +121,12 @@ function assemble(sections: string[]): string {
  * compaction.
  *
  * Budget enforcement (≤ 500 estimated tokens):
- * 1. Build all sections.
- * 2. If over budget, drop sections bottom-up (learning first, then beliefs).
- * 3. Attention, workflow, and the state pointer are always retained.
+ * 1. Verbose fields in attention (focus, files) and workflow (goal, step
+ *    descriptions) are locally bounded to keep the always-kept skeleton
+ *    under budget.
+ * 2. Build all bounded sections.
+ * 3. If still over budget, drop sections bottom-up (learning first, then beliefs).
+ * 4. Attention, workflow, and the state pointer are always retained.
  */
 export function buildSurvivorContext(state: NoesisState): string {
   const attention = buildAttention(state);
@@ -128,7 +142,8 @@ export function buildSurvivorContext(state: NoesisState): string {
   result = assemble([attention, beliefs, workflow, POINTER_LINE]);
   if (estimateTokens(result) <= 500) return result;
 
-  // Still over — evict beliefs; attention + workflow + pointer always fits
+  // Still over — evict beliefs; attention + workflow + pointer stays ≤500
+  // thanks to local bounding in buildAttention and buildWorkflow.
   result = assemble([attention, workflow, POINTER_LINE]);
   return result;
 }

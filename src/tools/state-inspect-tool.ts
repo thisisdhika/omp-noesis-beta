@@ -1,10 +1,10 @@
 "use strict";
 
 /**
- * omp-noesis: Recall Tool
+ * omp-noesis: State Inspect Tool
  * Version: 0.1.0
  *
- * "noesis_recall" — query the current cognitive state.
+ * "noesis_state_inspect" — query the current cognitive state.
  * Uses a flat object schema with runtime validation for cross-provider
  * (including DeepSeek) compatibility.
  *   - active_beliefs: facts above a confidence threshold
@@ -413,16 +413,16 @@ export async function executeRecall(
     isError: false,
   };
 }
-export function registerRecallTool(pi: ExtensionAPI, runtime: NoesisRuntime): void {
+export function registerStateInspectTool(pi: ExtensionAPI, runtime: NoesisRuntime): void {
   pi.registerTool({
-    name: "noesis_recall",
-    label: "Noesis: Recall",
+    name: "noesis_state_inspect",
+    label: "Noesis: State Inspect",
     description:
-  "Read current cognitive state — beliefs, decisions, hypotheses, learning entries, or active workflows. " +
-  "Call BEFORE assuming you do not know something; check memory first rather than guessing or fabricating. " +
-  "Do NOT call to store information — use noesis_believe_fact, noesis_believe_decision, or noesis_believe_learning. " +
-  "Consequence: returns a snapshot of current state without modifying anything; for cross-session vault queries against durable storage use noesis_vault_search instead. " +
-  "Fields: query(required), keyword(required if query=search), tagFilter, minConfidence, skillScope, limit, layers, includeCompleted, includeSuperseded, includeArchived (optional)",
+      "Read current (live, in-memory) cognitive state — beliefs, decisions, hypotheses, learning entries, active workflows, and keyword search across all layers (query:\"search\"). " +
+      "Call BEFORE assuming you do not know something; check current-session memory first rather than guessing or fabricating. " +
+      "Do NOT call to store information — use noesis_believe_fact, noesis_believe_decision. " +
+      "Consequence: returns a snapshot of live in-memory state without modifying anything; does NOT search durable cross-session storage. For persistent artifacts stored across sessions consider vault backends. " +
+      "Fields: query(required), keyword(required if query=search), tagFilter, minConfidence, skillScope, limit, layers, includeCompleted, includeSuperseded, includeArchived (optional)",
     parameters: buildRecallParams(pi),
     async execute(tCID, params, _signal, _onUpdate, _ctx) {
       return executeRecall(runtime, params);

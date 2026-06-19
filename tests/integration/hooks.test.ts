@@ -80,7 +80,6 @@ describe("hook registration", () => {
 
   it("does not register handlers on unrelated events", () => {
     // Verify no stray registrations on events we do not listen to
-    expect(pi._getHooks("session_start")).toHaveLength(0);
     expect(pi._getHooks("agent_start")).toHaveLength(0);
     expect(pi._getHooks("message_start")).toHaveLength(0);
   });
@@ -91,17 +90,19 @@ describe("hook registration", () => {
 // ---------------------------------------------------------------------------
 
 describe("before_agent_start execution", () => {
-  it("chains OMP system prompt and appends capability footer", async () => {
+  it("chains OMP system prompt and appends capability + MCP footer", async () => {
     const handler = pi._getHooks("before_agent_start")[0]!;
     const event = { systemPrompt: ["OMPSystemPrompt"] } as Record<string, unknown>;
     const result = (await handler(event)) as { systemPrompt?: string[] };
 
     expect(result.systemPrompt).toBeDefined();
-    expect(result.systemPrompt!.length).toBe(2);
+    expect(result.systemPrompt!.length).toBe(3);
     // First block: chained OMP system prompt (includes RULES.md content natively)
     expect(result.systemPrompt![0]).toBe("OMPSystemPrompt");
-    // Second block: dynamic capability footer
-    expect(result.systemPrompt![1]).toContain("Noesis:");
+    // Second block: capability footer
+    expect(result.systemPrompt![1]).toContain("Noesis capability:");
+    // Third block: state file reference
+    expect(result.systemPrompt![2]).toContain("Noesis state:");
   });
 });
 
@@ -125,7 +126,7 @@ describe("compaction execution", () => {
     expect(result.context[0]).toContain("<noesis-state>");
 
     expect(result.preserveData).toBeDefined();
-    expect(result.preserveData.noesis).toBeDefined();
+    expect(result.preserveData["omp-noesis"]).toBeDefined();
   });
 
   it("includes beliefs in survivor context when populated", async () => {
@@ -149,7 +150,7 @@ describe("compaction execution", () => {
       preserveData: Record<string, unknown>;
     };
 
-    const preserved = result.preserveData.noesis as {
+    const preserved = result.preserveData["omp-noesis"] as {
       belief: { facts: Array<{ id: string; content: string }> };
     };
     expect(preserved.belief.facts.length).toBeGreaterThanOrEqual(1);
@@ -215,59 +216,6 @@ describe("context execution", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// Context MCP detection
-// ---------------------------------------------------------------------------
-
-describe("context MCP detection", () => {
-  it("includes hasMcpGraphify in renderContext when MCP config exists", async () => {
-    // Create MCP config in project root .omp dir
-    const ompDir = join(runtime.projectRoot, ".omp");
-    mkdirSync(ompDir, { recursive: true });
-    const mcpConfig = {
-      mcpServers: {
-        graphify: {
-          command: "python3",
-          args: ["-m", "graphify.serve", "graphify-out/graph.json"],
-        },
-      },
-    };
-    writeFileSync(join(ompDir, "mcp.json"), JSON.stringify(mcpConfig, null, 2));
-
-    // Trigger context hook
-    const event = { messages: [] };
-    const handler = pi._getHooks("context")[0]!;
-    const result = (await handler(event, {})) as {
-      messages: Array<{ content: Array<{ text: string }> }>;
-    };
-
-    // Verify preamble contains MCP tool hints
-    const preamble = result.messages[0]!.content[0]!.text;
-    expect(preamble).toContain("mcp__graphify__query_graph");
-
-    // Clean up MCP config
-    const mcpPath = join(ompDir, "mcp.json");
-    try {
-      const { unlinkSync, existsSync } = await import("node:fs");
-      if (existsSync(mcpPath)) unlinkSync(mcpPath);
-    } catch {
-      // best-effort cleanup
-    }
-  });
-
-  it("includes hasMcpGraphify=false when MCP config missing", async () => {
-    // No MCP config created
-    const event = { messages: [] };
-    const handler = pi._getHooks("context")[0]!;
-    const result = (await handler(event, {})) as {
-      messages: Array<{ content: Array<{ text: string }> }>;
-    };
-
-    // Verify preamble does not contain MCP tool hints
-    const preamble = result.messages[0]!.content[0]!.text;
-    expect(preamble).not.toContain("mcp__graphify__query_graph");
-  });
-});
 
 // ---------------------------------------------------------------------------
 // Tool result execution

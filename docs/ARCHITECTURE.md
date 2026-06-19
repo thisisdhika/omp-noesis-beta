@@ -26,12 +26,9 @@ omp-noesis is an Oh My Pi extension that adds a structured cognitive substrate t
 │  │  - registerTool(noesis_attend)                       │  │  │
 │  │  - registerTool(noesis_believe_fact)                 │  │  │
 │  │  - registerTool(noesis_believe_decision)              │  │  │
-│  │  - registerTool(noesis_believe_learning)              │  │  │
 │  │  - registerTool(noesis_infer)                         │  │  │
 │  │  - registerTool(noesis_commit)                        │  │  │
-│  │  - registerTool(noesis_focus)                         │  │  │
-│  │  - registerTool(noesis_recall)                        │  │  │
-│  │  - registerTool(noesis_vault_search)                  │  │  │
+│  │  - registerTool(noesis_state_inspect)                  │  │  │
 │  │  │  - on("context")                                    │  │  │
 │  │  │  - on("session.compacting")                         │  │  │
 │  │  │  - on("tool_result")                                │  │  │
@@ -59,8 +56,8 @@ omp-noesis is an Oh My Pi extension that adds a structured cognitive substrate t
 │  │  └─────────────────────────────────────────────────────┘  │  │
 │  │                                                           │  │
 │  │  ┌─────────────────────────────────────────────────────┐  │  │
-│  │  │              Workflow Layer                          │  │  │
-│  │  │  - preamble-builder.ts (living document)              │  │  │
+│  │  │              Context Curation Layer                   │  │  │
+│  │  │  - preamble-builder.ts (context curation)               │  │  │
 │  │  │  - consistency-strategy.ts (dependency resolution)    │  │  │
 │  │  └─────────────────────────────────────────────────────┘  │  │
 │  └───────────────────────────────────────────────────────────┘  │
@@ -120,7 +117,8 @@ omp-noesis is an Oh My Pi extension that adds a structured cognitive substrate t
 | `survivor-builder.ts` | Compaction survivor selection |
 | `section-formatters.ts` | Per-section Markdown formatters |
 | `focus-resolver.ts` | Focus fallback chain (attend → workflow → carry → default) |
-| `state-cleanup.ts` | Stale/over-cap eviction |
+
+Stale-eviction and capacity-cap enforcement were removed from the rendering layer and are now orchestrated by `EndTurnCleanupUseCase` (`src/application/use-cases/end-turn-cleanup.ts`) with domain-specific strategies (e.g., `eviction-strategy.ts` in the learning domain). See §3.7 (`turn_end` hook) and §3.4 (domain layer).
 
 ### 3.6 Tool Adapters (`src/tools/`)
 
@@ -129,12 +127,9 @@ omp-noesis is an Oh My Pi extension that adds a structured cognitive substrate t
 | `noesis_attend` | `attend-tool.ts` |
 | `noesis_believe_fact` | `believe-tool.ts` |
 | `noesis_believe_decision` | `believe-tool.ts` |
-| `noesis_believe_learning` | `believe-tool.ts` |
 | `noesis_infer` | `infer-tool.ts` |
 | `noesis_commit` | `commit-tool.ts` |
-| `noesis_focus` | `focus-tool.ts` |
-| `noesis_recall` | `recall-tool.ts` |
-| `noesis_vault_search` | `vault-search-tool.ts` |
+| `noesis_state_inspect` | `state-inspect-tool.ts` |
 
 Thin wrappers over domain logic. Each validates params, calls domain, persists, returns structured result.
 
@@ -171,7 +166,6 @@ This replaces the previous approach of embedding instructions in SKILL.md files 
 | `vault-retry.ts` | On-disk retry buffer |
 | `local-vault-store.ts` | Append-only MEMORY.md |
 | `mnemopi-vault-store.ts` | Bun.sqlite backend |
-| `hindsight-vault-store.ts` | Hindsight API backend |
 
 ## 4. Dependency Direction
 
@@ -213,7 +207,7 @@ noesis_attend → graphifyClient.query/update → parse/translate → attention.
 ### 5.4 Learning Path
 ```
 tool_result → learning candidate/minimal failure capture → preamble surfaces unresolved learning
-|→ agent diagnoses → noesis_believe_learning(learningId, rootCause, fix)
+|→ agent diagnoses → noesis_believe_fact(learningId, rootCause, fix)
 → resolved learning retained + ranked higher
 ```
 
@@ -259,8 +253,8 @@ session.compacting → survivor-builder selects bounded subset → preserveData.
 |---|---|
 | Corrupt state JSON (parse error) | Rebuild from EMPTY_STATE (SyntaxError caught by StateManager.initialize) |
 | State file I/O error (permissions, disk) | Rethrow — do not destroy existing data |
-| preserveData.noesis gap | TODO: Not yet consulted on initialize (known gap) |
-| Graphify not available | DEGRADED mode, no graph beliefs, agent continues |
+| preserveData.noesis gap | preserveData is a compaction-survival cache, not a persistence authority. `StateManager.initialize()` accepts preserveData as a disk-fallback, but `createRuntime()` never passes it — no OMP preserveData → startup bridge exists. State recovery is from `.omp/noesis/state.json` only. |
+| Graphify not available | DEGRADED mode (core degradation — no graph beliefs, context selection loses structural grounding) |
 | Graphify query timeout | Return error, agent decides retry |
 | Vault write fails | Buffer to `vault-retry.json`, retry on next turn |
 | Double preamble | `contextHookFired` flag prevents `before_agent_start` injection |

@@ -1,21 +1,16 @@
-import type { IAttentionRepository } from "../domains/attention/repository.js";
-import type { IBeliefRepository } from "../domains/belief/repository.js";
-import type { IInferenceRepository } from "../domains/inference/repository.js";
-import type { ICommitmentRepository } from "../domains/commitment/repository.js";
-import type { ILearningRepository } from "../domains/learning/repository.js";
 import type { NoesisState } from "../shared/schema.js";
-import { AttentionRepository } from "./repositories/attention-repository.js";
-import { BeliefRepository } from "./repositories/belief-repository.js";
-import { InferenceRepository } from "./repositories/inference-repository.js";
-import { CommitmentRepository } from "./repositories/commitment-repository.js";
-import { LearningRepository } from "./repositories/learning-repository.js";
+import { AttentionRepository, type IAttentionRepo } from "./repositories/attention-repository.js";
+import { BeliefRepository, type IBeliefRepo } from "./repositories/belief-repository.js";
+import { InferenceRepository, type IInferenceRepo } from "./repositories/inference-repository.js";
+import { CommitmentRepository, type ICommitmentRepo } from "./repositories/commitment-repository.js";
+import { LearningRepository, type ILearningRepo } from "./repositories/learning-repository.js";
 
 export interface IUnitOfWork {
-  readonly attention: IAttentionRepository;
-  readonly belief: IBeliefRepository;
-  readonly inference: IInferenceRepository;
-  readonly commitment: ICommitmentRepository;
-  readonly learning: ILearningRepository;
+  readonly attention: IAttentionRepo;
+  readonly belief: IBeliefRepo;
+  readonly inference: IInferenceRepo;
+  readonly commitment: ICommitmentRepo;
+  readonly learning: ILearningRepo;
   commit(): Promise<void>;
   rollback(): void;
 }

@@ -24,7 +24,7 @@ export function registerCompactionHook(pi: ExtensionAPI, runtime: NoesisRuntime)
 
     return {
       context: [survivorContext],
-      preserveData: { noesis: deepClone(state) },
+      preserveData: { "omp-noesis": deepClone(state) },
     };
   });
 }

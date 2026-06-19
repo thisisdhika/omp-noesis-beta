@@ -92,14 +92,14 @@ describe("buildSurvivorContext with populatedState", () => {
 describe("buildSurvivorContext budget enforcement", () => {
   it("should stay under 500 tokens for EMPTY_STATE", () => {
     const result = buildSurvivorContext(EMPTY_STATE);
-    const estimatedTokens = Math.ceil(result.length / 4);
+    const estimatedTokens = estimateTokens(result);
     expect(estimatedTokens).toBeLessThanOrEqual(500);
   });
 
   it("should stay under 500 tokens for populatedState", () => {
     const state = populatedState();
     const result = buildSurvivorContext(state);
-    const estimatedTokens = Math.ceil(result.length / 4);
+    const estimatedTokens = estimateTokens(result);
     expect(estimatedTokens).toBeLessThanOrEqual(500);
   });
 
@@ -126,6 +126,69 @@ describe("buildSurvivorContext budget enforcement", () => {
         status: "active",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+      });
+    }
+
+    const result = buildSurvivorContext(state);
+    const tokenCount = estimateTokens(result);
+    expect(tokenCount).toBeLessThanOrEqual(500);
+  });
+
+  it("should keep the always-kept fallback (attention + workflow + pointer) under 500 tokens for maximal realistic inputs", () => {
+    // The survivor builder's last-resort fallback strips beliefs and learning,
+    // keeping only attention + workflow + pointer. This test asserts that
+    // skeleton stays ≤500 tokens under maximum plausible field sizes.
+    const state: NoesisState = structuredClone(EMPTY_STATE);
+    // Maximise attention fields
+    state.attention.focus = "Implement user authentication flow for the admin dashboard including JWT token refresh".repeat(5);
+    state.attention.priority = "high";
+    state.attention.files = [
+      "src/server/auth.ts",
+      "src/server/middleware.ts",
+      "src/client/login.tsx",
+      "src/client/dashboard.tsx",
+      "src/shared/types.ts",
+      "docs/ARCHITECTURE.md",
+    ];
+    // Maximise workflow (survivor caps at 3 steps)
+    state.commitment.workflow.goal =
+      "Deliver the authentication rewrite before the sprint end; coordinate with QA for regression suite".repeat(3);
+    state.commitment.workflow.status = "active";
+    for (let i = 0; i < 10; i++) {
+      state.commitment.workflow.steps.push({
+        id: `step-${i}`,
+        status: i < 3 ? "active" : "pending",
+        description: "Refactor the authentication middleware chain to support both session cookies and JWT tokens seamlessly".repeat(3),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+    }
+    // Blow up beliefs and learning so builder is forced to the fallback
+    for (let i = 0; i < 100; i++) {
+      state.belief.facts.push({
+        id: `bf-${i}`,
+        content: "The authentication system MUST validate tokens on every protected route. ".repeat(20),
+        confidence: 0.95,
+        source: "execution",
+        status: "active",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+    }
+    for (let i = 0; i < 100; i++) {
+      state.learning.successes.push({
+        id: `le-${i}`,
+        description: "Learned that JWT refresh tokens must be rotated every 15 minutes for security compliance. ".repeat(5),
+        status: "resolved",
+        capturedAt: new Date().toISOString(),
+      });
+    }
+    for (let i = 0; i < 100; i++) {
+      state.learning.failures.push({
+        id: `lf-${i}`,
+        description: "Failed: Token validation bypassed for WebSocket connections leading to auth hole. ".repeat(5),
+        status: "resolved",
+        capturedAt: new Date().toISOString(),
       });
     }
 

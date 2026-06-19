@@ -1,7 +1,6 @@
-import type { ICommitmentRepository } from "../../domains/commitment/repository.js";
 import type { CommitmentLayer, Workflow, PlannedAction } from "../../domains/commitment/schema.js";
 
-export class CommitmentRepository implements ICommitmentRepository {
+export class CommitmentRepository {
   constructor(private segment: CommitmentLayer) {}
 
   getWorkflow(): Workflow {
@@ -24,3 +23,4 @@ export class CommitmentRepository implements ICommitmentRepository {
     this.segment.actions = [...actions];
   }
 }
+export type ICommitmentRepo = Pick<CommitmentRepository, 'getWorkflow' | 'setWorkflow' | 'getActions' | 'addAction' | 'setActions'>;

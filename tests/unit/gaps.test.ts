@@ -324,7 +324,7 @@ describe("Milestone 6 Adversarial Gaps Test Suite", () => {
   });
 
   // Gap 1.12: Compaction Recovery Gap
-  it("Gap 1.12: should load from preserveData.noesis if the state file does not exist", async () => {
+  it("Gap 1.12: should load from preserveData[\"omp-noesis\"] if the state file does not exist", async () => {
     const tempDir = createTempDir();
     try {
       const sm = new StateManager(tempDir.path);
@@ -332,7 +332,7 @@ describe("Milestone 6 Adversarial Gaps Test Suite", () => {
       snapshot.attention.focus = "compacted focus";
       
       // Initialize with preserveData.noesis and state file not existing
-      await sm.initialize({ noesis: snapshot });
+      await sm.initialize({ "omp-noesis": snapshot });
       
       expect(sm.read().attention.focus).toBe("compacted focus");
     } finally {

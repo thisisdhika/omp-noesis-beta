@@ -7,8 +7,6 @@ import { createTempDir } from "../helpers/temp-dir.js";
 import { StateManager } from "../../src/infrastructure/state-manager.js";
 import { cloneState } from "../helpers/fixtures.js";
 import type { NoesisState } from "../../src/shared/schema.js";
-import { NoopVaultStore } from "../../src/vault/noop-vault-store.js";
-import type { VaultArtifact } from "../../src/vault/vault-store.js";
 import { addFact, getActiveFacts } from "../../src/domains/belief/belief-domain.js";
 import { addLearning, getRankedLearning } from "../../src/domains/learning/learning-domain.js";
 import { buildSurvivorContext } from "../../src/rendering/survivor-builder.js";
@@ -126,48 +124,5 @@ describe("graceful degradation — EMPTY_STATE is usable", () => {
 
     const files = resolveFiles(state);
     expect(files).toEqual([]);
-  });
-});
-
-describe("graceful degradation — NoopVaultStore", () => {
-  it("should return empty results from pull", async () => {
-    const store = new NoopVaultStore();
-
-    const result = await store.pull();
-    expect(result.artifacts).toEqual([]);
-    expect(result.source).toBe("noop");
-    expect(result.timestamp).toBeDefined();
-  });
-
-  it("should silently discard pushed artifacts", async () => {
-    const store = new NoopVaultStore();
-    const artifact: VaultArtifact = {
-      id: "test-artifact",
-      kind: "decision",
-      projectPath: "/tmp/test",
-      content: "Some decision",
-      pushedAt: new Date().toISOString(),
-    };
-
-    // Should not throw
-    await expect(store.push(artifact)).resolves.toBeUndefined();
-
-    // Confirm nothing was stored
-    const results = await store.pull();
-    expect(results.artifacts).toHaveLength(0);
-  });
-
-  it("should return false from validate", async () => {
-    const store = new NoopVaultStore();
-
-    const valid = await store.validate();
-    expect(valid).toBe(false);
-  });
-
-  it("should return empty results regardless of kind filter", async () => {
-    const store = new NoopVaultStore();
-
-    const result = await store.pull("decision", 50);
-    expect(result.artifacts).toEqual([]);
   });
 });

@@ -4,10 +4,9 @@
  * omp-noesis: Believe Tools (split)
  * Version: 0.1.0
  *
- * Three flat tools replacing the old discriminated-union noesis_believe:
+ * Two flat tools replacing the old discriminated-union noesis_believe:
  *   noesis_believe_fact      — store a verified belief fact
  *   noesis_believe_decision  — record a design or workflow decision
- *   noesis_believe_learning  — resolve a learning entry into a belief fact
  *
  * Each tool has a flat Zod schema with no .refine() — required fields are
  * enforced directly by Zod for cross-provider (including DeepSeek) compatibility.
@@ -88,6 +87,15 @@ export async function executeBelieveFact(
   if (!fact) {
     throw new Error(`Failed to retrieve created fact: ${factId}`);
   }
+  // v0.2: Bridge durable retention to OMP memory backend
+  if (runtime.retainToOmp && params.confidence >= 0.6) {
+    runtime.retainToOmp([{
+      content: `[Noesis Belief] ${params.content}`,
+      context: `source: ${params.source}, confidence: ${confidence}${params.tags ? `, tags: ${params.tags.join(", ")}` : ""}`,
+    }]).catch(() => {
+      // Best-effort bridge; non-critical if OMP memory is unavailable
+    });
+  }
 
   const warningText = contestedWarnings.length > 0 ? `\n\nWarnings:\n${contestedWarnings.join("\n")}` : "";
 
@@ -107,7 +115,8 @@ export function registerBelieveFactTool(pi: ExtensionAPI, runtime: NoesisRuntime
       "Use when you have confirmed information from graph queries, execution results, user statements, or confident inferences. " +
       "Do NOT use for speculative guesses, unverified claims, or routine tool results that do not represent durable knowledge. " +
       "Facts persist across the session and are included in the preamble for subsequent turns. " +
-      "For recording design decisions use noesis_believe_decision; for resolving learning use noesis_believe_learning.",
+      "For recording design decisions use noesis_believe_decision. " +
+      "For cross-session durable retention, also call the OMP `retain` tool separately with the same content.",
     parameters: buildBelieveFactParams(pi),
     async execute(toolCallId, params, _signal, _onUpdate, _ctx) {
       return executeBelieveFact(runtime, params);
@@ -185,8 +194,8 @@ export function registerBelieveDecisionTool(pi: ExtensionAPI, runtime: NoesisRun
   });
 }
 
-// ============================================================================
-// noesis_believe_learning — resolve a learning entry into a belief fact
+// Domain exports (params builder, execute handler) kept for internal use.
+// Tool registration (noesis_believe_learning) has been removed.
 // ============================================================================
 
 export interface BelieveLearningParams {
@@ -237,21 +246,4 @@ export async function executeBelieveLearning(
     },
     isError: false,
   };
-}
-
-export function registerBelieveLearningTool(pi: ExtensionAPI, runtime: NoesisRuntime): void {
-  pi.registerTool({
-    name: "noesis_believe_learning",
-    label: "Noesis: Believe Learning",
-    description:
-      "Resolve a previously-captured learning entry into a durable belief fact. " +
-      "Use when you have diagnosed the root cause of a failure and determined the fix, transforming raw learning into session knowledge. " +
-      "Do NOT use for new factual observations or decisions — only for resolving an existing learning captured via noesis_commit or automatic failure detection. " +
-      "The resolved fact is stored with 0.85 confidence and tagged 'learning-resolved' automatically. " +
-      "For plain factual beliefs use noesis_believe_fact; for decisions use noesis_believe_decision.",
-    parameters: buildBelieveLearningParams(pi),
-    async execute(toolCallId, params, _signal, _onUpdate, _ctx) {
-      return executeBelieveLearning(runtime, params);
-    },
-  });
 }

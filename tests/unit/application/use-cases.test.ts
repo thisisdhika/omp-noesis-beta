@@ -122,7 +122,7 @@ class MockCommitmentRepository {
 class MockLearningRepository {
   successes: any[] = [];
   failures: any[] = [];
-  summary: any = { successCount: 0, failureCount: 0, resolvedCount: 0, diagnosedCount: 0 };
+  summary: any = { successCount: 0, failureCount: 0, resolvedCount: 0 };
   getSuccesses() {
     return this.successes;
   }

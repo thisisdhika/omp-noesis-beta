@@ -43,7 +43,7 @@ describe("registerCompactionHook", () => {
     const handler = pi._getHooks("session.compacting")[0]!;
     const result = (await handler({})) as {
       context: string[];
-      preserveData: { noesis: NoesisState };
+      preserveData: { "omp-noesis": NoesisState };
     };
 
     expect(result).toBeDefined();
@@ -59,30 +59,30 @@ describe("registerCompactionHook", () => {
     const handler = pi._getHooks("session.compacting")[0]!;
     const result = (await handler({})) as {
       context: string[];
-      preserveData: { noesis: NoesisState };
+      preserveData: { "omp-noesis": NoesisState };
     };
 
     expect(result.preserveData).toBeDefined();
-    expect(result.preserveData.noesis).toBeDefined();
+    expect(result.preserveData["omp-noesis"]).toBeDefined();
     // Should contain required top-level keys from a NoesisState
-    expect(result.preserveData.noesis).toHaveProperty("version");
-    expect(result.preserveData.noesis).toHaveProperty("attention");
-    expect(result.preserveData.noesis).toHaveProperty("belief");
-    expect(result.preserveData.noesis).toHaveProperty("learning");
-    expect(result.preserveData.noesis).toHaveProperty("inference");
-    expect(result.preserveData.noesis).toHaveProperty("commitment");
+    expect(result.preserveData["omp-noesis"]).toHaveProperty("version");
+    expect(result.preserveData["omp-noesis"]).toHaveProperty("attention");
+    expect(result.preserveData["omp-noesis"]).toHaveProperty("belief");
+    expect(result.preserveData["omp-noesis"]).toHaveProperty("learning");
+    expect(result.preserveData["omp-noesis"]).toHaveProperty("inference");
+    expect(result.preserveData["omp-noesis"]).toHaveProperty("commitment");
   });
 
   it("preserves data is a deep clone (mutating source does not affect it)", async () => {
     const handler = pi._getHooks("session.compacting")[0]!;
     const result = (await handler({})) as {
       context: string[];
-      preserveData: { noesis: NoesisState };
+      preserveData: { "omp-noesis": NoesisState };
     };
 
     // Modify the runtime state after the snapshot was taken
     runtime.stateManager.read().attention.focus = "mutated";
     // The preserved snapshot should still have the original empty focus
-    expect(result.preserveData.noesis.attention.focus).toBe("");
+    expect(result.preserveData["omp-noesis"].attention.focus).toBe("");
   });
 });

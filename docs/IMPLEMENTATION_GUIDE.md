@@ -153,12 +153,17 @@ src/rendering/focus-resolver.ts
 - Carry-forward fallback
 - Minimal default
 
-### Day 17: State Cleanup
+### Day 17: End-Turn Cleanup & Eviction
 ```
-src/rendering/state-cleanup.ts
+src/
+  hooks/turn-end-hook.ts                — Hooks into "turn_end" event
+  application/use-cases/end-turn-cleanup.ts  — Orchestrates stale-eviction + capacity caps
+  domains/learning/eviction-strategy.ts  — evictStale() / evictOverCap() for learning entries
 ```
-- `evictStale()` — remove non-active items
-- `evictOverCap()` — trim lowest-ranked items
+- `EndTurnCleanupUseCase.execute()`: stale eviction across belief, inference, learning; pending-evidence decay; cap enforcement on graph findings, workflow steps, actions, and learning entries
+- All domains define their own eviction/retention policies; the use-case orchestrates from the application layer
+
+**Note:** The original `src/rendering/state-cleanup.ts` was deleted. Rendering is now purely for preamble/survivor/focus construction.
 
 ### Day 18-19: Graphify Integration
 ```
@@ -175,8 +180,7 @@ src/infrastructure/
 ### Day 20-21: Attention Tools
 ```
 src/tools/
-  attend-tool.ts   — noesis_attend
-  focus-tool.ts    — noesis_focus
+  attend-tool.ts   — noesis_attend (handles both task-start and quick focus updates)
 ```
 
 ### Day 22: Belief Tool
@@ -196,8 +200,7 @@ src/tools/commit-tool.ts
 ### Day 25: Read Tools
 ```
 src/tools/
-  recall-tool.ts          — noesis_recall
-  vault-search-tool.ts    — noesis_vault_search
+  state-inspect-tool.ts    — noesis_state_inspect
 ```
 
 ### Day 26-27: Preamble Hooks
@@ -244,7 +247,6 @@ src/vault/vault-retry.ts
 src/vault/
   local-vault-store.ts     — MEMORY.md
   mnemopi-vault-store.ts  — Bun.sqlite
-  hindsight-vault-store.ts — Hindsight API
 ```
 
 **Acceptance:** Vault projection is best-effort and never blocks tool success.

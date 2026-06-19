@@ -1,19 +1,20 @@
 # omp-noesis
 
-> **Version:** 0.1.0  
+> **Version:** 0.3.0  
 > **Runtime:** Bun 1.3+  
 > **Platform:** Oh My Pi (OMP) v15.6.0+
 
-The world's first enterprise-grade cognitive substrate for agentic engineering. Noesis transforms Oh My Pi from an execution harness into a self-aware, learning-capable agent system.
+A cognitive layer for Oh My Pi. Noesis extends OMP with structured attention, beliefs, and context discipline — making agents not just capable, but effective with finite context.
 
 ## What is Noesis?
 
 Noesis adds a structured, durable, and formally principled cognitive layer to OMP:
 
 - **Structured Beliefs** — AGM-compliant belief revision with audit trails
-- **Graph-Grounded Perception** — Codebase evidence via Graphify integration (Highly recommended: run locally via `uv tool install "graphify[ollama]"` for absolute privacy and zero token cost)
+- **Graph-Grounded Perception** — Codebase evidence via Graphify integration (core dependency). Install via `uv tool install graphifyy` with your preferred LLM backend — Ollama (local or cloud), OpenAI, or Anthropic. See [SETUP.md](SETUP.md) for provider-specific instructions. Autonomous lifecycle keeps the graph fresh during session start, agent queries, and session shutdown — no external cron, no MCP server.
 - **Compaction Survival** — Typed cognitive state survives OMP compaction
 - **Learning Loops** — Failure → root cause → fix → prevention
+- **Obsidian Projection** — Human-readable artifact export (optional, not runtime-critical)
 - **Smart-Zone Protection** — ≤2000-token bounded preamble
 
 ## Quick Start
@@ -43,10 +44,10 @@ ls .omp/config.yml
 │  ┌─────────┐         ┌─────────┐  │
 │  │  Hooks   │         │ Tools   │  │
 │  └────┬────┘         └────┬────┘  │
-└───────┼───────────────────┼───────┘
+│           omp-noesis v0.3.0             │
         │                   │        
 ┌───────▼───────────────────▼───────┐
-│           omp-noesis v0.1.0             │
+│           omp-noesis v0.3.0             │
 │  ┌─────────┐ ┌─────────┐ ┌─────────┐     │
 │  │Attention│ │ Belief  │ │Inference│     │
 │  └─────────┘ └─────────┘ └─────────┘     │
@@ -67,6 +68,8 @@ ls .omp/config.yml
 | [docs/BELIEF_REVISION.md](docs/BELIEF_REVISION.md) | AGM belief revision model |
 | [docs/BOUNDARY_MATRIX.md](docs/BOUNDARY_MATRIX.md) | System ownership matrix |
 | [docs/GRAPHIFY_CONTRACT.md](docs/GRAPHIFY_CONTRACT.md) | Graphify integration contract |
+| [docs/GRAPHIFY_BEST_PRACTICES_AUDIT.md](docs/GRAPHIFY_BEST_PRACTICES_AUDIT.md) | Graphify integration audit and best practices |
+| [docs/IMPLEMENTATION_GUIDE.md](docs/IMPLEMENTATION_GUIDE.md) | Implementation guide |
 | [docs/OBSIDIAN_CONTRACT.md](docs/OBSIDIAN_CONTRACT.md) | Projection contract |
 | [docs/GRAPHIFY_DEEP_DIVE.md](docs/GRAPHIFY_DEEP_DIVE.md) | Graphify integration deep dive |
 | [docs/TESTING_STRATEGY.md](docs/TESTING_STRATEGY.md) | Testing methodology |

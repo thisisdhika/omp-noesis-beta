@@ -589,11 +589,9 @@ type QueryResult = {
 
 Graphify's integration is **architecturally sound** but **operationally immature**. The core data flow, confidence model, and degradation patterns are well-designed. The gaps are in production hardening: error visibility, retry logic, circuit breaking, and observability.
 
-**Critical finding from reading the Graphify repo:** Noesis uses the CLI (`graphify query`) instead of the MCP server. This is the single biggest improvement opportunity — MCP would eliminate subprocess overhead, provide structured queries, and enable persistent state.
+**Key takeaway from reading the Graphify repo:** Noesis uses the CLI (`graphify query`) for all graph queries. Graphify's BFS/DFS traversal and community detection are the primary value — the CLI integration is the correct surface for automated preamble evidence.
 
-For v1, the current implementation is acceptable. For v2, the Priority 1-3 fixes should be implemented, and the MCP integration should be explored.
-
-**Bottom line:** Graphify follows ~60% of best practices. The missing 40% is mostly in error resilience, observability, and using the right integration surface (MCP vs CLI).
+**Bottom line:** Graphify follows ~60% of best practices. The missing 40% is mostly in error resilience, observability, and production hardening.
 ---
 
 ## 9. What I Learned from Reading the Graphify Repository
@@ -604,9 +602,7 @@ Graphify is a **comprehensive knowledge graph system** with:
 - **36+ tree-sitter grammars** for code extraction (Python, TypeScript, Go, Rust, Java, C++, etc.)
 - **LLM-based semantic extraction** for docs, PDFs, images, videos
 - **Community detection** via Leiden algorithm
-- **MCP server** for structured queries (query_graph, get_node, get_neighbors, shortest_path, etc.)
 - **Multiple LLM backends** (Ollama, OpenAI, Anthropic, Gemini, Bedrock, Azure)
-- **Incremental updates** (`--update` flag)
 - **Git hooks** for auto-rebuild on commit
 - **Query logging** for analytics
 - **Cross-project global graphs** (`graphify global`)
@@ -641,20 +637,6 @@ def _tool_query_graph(arguments):
 - Queries are fast (in-memory graph traversal)
 - No database dependency
 - But limited to graph algorithms (no complex joins)
-
-### 9.3 Noesis's Current Integration Gap
-
-**Noesis uses the CLI (`graphify query`)** instead of the MCP server. This means:
-
-| Aspect | CLI (Current) | MCP (Better) |
-|--------|---------------|--------------|
-| Startup | Spawns new process each query | Persistent server |
-| Latency | 30s timeout per query | Sub-second |
-| State | Stateless | In-memory graph |
-| Tools | query only | query_graph, get_node, get_neighbors, shortest_path, god_nodes, graph_stats |
-| Streaming | No | Yes (NDJSON) |
-
-**Recommendation:** For v2, consider using the MCP server instead of CLI.
 
 ### 9.4 Confidence Scoring in Graphify
 
@@ -724,153 +706,29 @@ From `ARCHITECTURE.md`:
 
 #### Gets Wrong ❌
 
-1. **CLI instead of MCP** — Spawns new process per query (30s timeout vs sub-second)
+1. **Subprocess overhead** — Each query spawns a new process (30s timeout)
 2. **Limited query tools** — Only `query`, not `get_node`, `get_neighbors`, `shortest_path`, `god_nodes`
 3. **No incremental updates** — Agent must manually run `graphify . --update`
 4. **No query caching** — Same query re-run every turn
 5. **No provenance tracking** — Can't trace belief → graph version
 
-### 9.7 Recommended v2 Architecture
+### 9.7 Recommended Improvements
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    Noesis v2                             │
-│                                                          │
-│  ┌──────────┐    ┌──────────┐    ┌──────────┐          │
-│  │ Attention│◄───│ Graphify │───►│  Belief  │          │
-│  │ (ephemeral) │ │ (MCP)    │    │ (durable) │          │
-│  └──────────┘    └──────────┘    └──────────┘          │
-│       │               │               │                  │
-│       │               │               │                  │
-│       ▼               ▼               ▼                  │
-│  ┌──────────┐    ┌──────────┐    ┌──────────┐          │
-│  │ Preamble │    │ Survivor │    │ Learning │          │
-│  │ (render) │    │ (compact)│    │ (ranked) │          │
-│  └──────────┘    └──────────┘    └──────────┘          │
-└─────────────────────────────────────────────────────────┘
-
-MCP Server (persistent):
-- query_graph (BFS/DFS)
-- get_node
-- get_neighbors
-- shortest_path
-- god_nodes
-- graph_stats
-```
-
-**Key changes:**
-1. Use MCP server instead of CLI
-2. Add query caching (5min TTL)
-3. Add provenance tracking (graphVersion, graphMtime)
-4. Add circuit breaker (3-failure threshold)
-5. Add retry with backoff (2 retries, exponential)
-6. Add metrics (queries, successes, failures, avgDuration)
+**Key improvements for future versions:**
+1. Add query caching (5min TTL)
+2. Add provenance tracking (graphVersion, graphMtime)
+3. Add circuit breaker (3-failure threshold)
+4. Add retry with backoff (2 retries, exponential)
+5. Add metrics (queries, successes, failures, avgDuration)
 
 ---
 
-## 10. MCP Integration
+## 10. OMP Graphify Lifecycle Management
 
-### 10.1 MCP as Primary Integration for LLM Graph Queries
-
-The Model Context Protocol (MCP) server is the **primary integration surface** for LLM graph queries. Instead of spawning a new CLI process per query (the current approach), the LLM calls MCP tools directly through OMP's MCP gateway.
-
-| Aspect | CLI (Legacy) | MCP (Primary) |
-|--------|--------------|---------------|
-| Process model | Spawns new process per query | Persistent server, zero overhead |
-| Latency | 30s timeout per query | Sub-second |
-| Tools available | `query` only | `query_graph`, `get_node`, `get_neighbors`, `shortest_path`, `god_nodes`, `graph_stats` |
-| Result format | JSON string (must parse) | Structured tool response |
-| Streaming | No | Yes (NDJSON) |
-
-**Best Practice:** "Use MCP as the primary integration for LLM-driven graph queries. The persistent server eliminates subprocess overhead, provides structured tool calls instead of string parsing, and enables rich query types (BFS, DFS, node lookup, shortest path) beyond simple text queries."
-
-**Verdict:** ✅ MCP is the correct pattern. The LLM can call specific graph tools (`get_node`, `get_neighbors`, `shortest_path`) with structured parameters, getting back typed responses without parsing CLI output.
-
-### 10.2 CLI as Fallback for attend-tool Automated Queries
-
-The attend-tool's preamble generation performs automated graph queries that don't need the full MCP tool surface. These queries are:
-- **Predefined** — the same question runs on every turn (e.g., "What changed recently?")
-- **Non-interactive** — no exploration, just fetch
-- **Low-risk** — preamble evidence is ephemeral, not durable
-
-For these cases, the CLI is a **simpler, lighter fallback**:
-
-```
-MCP available   → Use MCP `query_graph` tool
-MCP unavailable → Use CLI `graphify query`
-CLI unavailable → DEGRADED (no graph features)
-```
-
-**Best Practice (AWS Well-Architected):** "Maintain fallback orders in a central tool registry. When the primary integration fails, degrade to a simpler mechanism rather than failing entirely."
-
-**Verdict:** ✅ CLI fallback is correct for automated preamble queries. The attend-tool doesn't need the full MCP toolset — it just fetches a text summary for display.
-
-### 10.3 OMP Manages MCP Server Lifecycle
-
-OMP manages the MCP server process lifecycle transparently:
+Noesis manages graph freshness automatically through OMP lifecycle hooks:
 
 | Phase | Action |
 |-------|--------|
-| **Discovery** | OMP detects Graphify capability (CLI available, MCP config present) |
-| **Lazy start** | First graph query triggers MCP server launch; no startup cost if graph is never used |
-| **Session persistence** | Server stays alive for the entire agent session |
-| **Session end** | OMP terminates the MCP server process on session cleanup |
-| **Recovery** | If MCP server crashes, OMP falls back to CLI and logs the event |
-
-```typescript
-// OMP lifecycle hooks (conceptual)
-onFirstGraphQuery → spawnMcpServer()       // Lazy start
-onSessionEnd      → killMcpServer()         // Clean shutdown
-onMcpCrash        → logEvent(); useCliFallback()  // Graceful degradation
-```
-
-**Best Practice (MCP Specification):** "The host (OMP) is responsible for managing the MCP server lifecycle — spawning, monitoring, and terminating the server process. Servers should be long-lived, persisting for the duration of the client session."
-
-**Verdict:** ✅ OMP follows the MCP lifecycle specification. Lazy start avoids wasted resources when graph features aren't used. Session-scoped persistence matches the MCP design.
-
-### 10.4 No Custom MCP Client Needed
-
-The LLM calls MCP tools **directly** through OMP's built-in MCP gateway. There is no custom MCP client, adapter layer, or protocol bridging:
-
-- **Standard MCP tool definitions** are injected into the system prompt
-- **OMP's hook system** (`append-system.ts`, `context-hook.ts`) registers the tool schemas
-- **Transport handling** (stdio or HTTP SSE) is managed by OMP, not the agent
-- **No custom protocol parsing** — the LLM calls tools by name with typed parameters
-
-```typescript
-// OMP registers MCP tools as standard agent tools
-// No custom client needed — the LLM invokes them directly
-tools: [
-  {
-    name: "query_graph",
-    description: "Query the knowledge graph using BFS/DFS traversal",
-    inputSchema: {
-      type: "object",
-      properties: {
-        question: { type: "string" },
-        mode: { type: "string", enum: ["bfs", "dfs"] },
-        depth: { type: "number", maximum: 6 },
-      },
-    },
-  },
-  // ... get_node, get_neighbors, shortest_path, etc.
-]
-```
-
-**Best Practice (OMP Harness Design):** "Treat MCP tools as first-class agent tools. Register them in the system prompt with full JSON Schema definitions. The LLM calls them natively — no adapter, no custom client, no serialization layer."
-
-**Verdict:** ✅ No custom MCP client is the correct approach. OMP's MCP gateway makes graph tools available as standard tool calls, keeping the integration surface minimal and maintainable.
-
-### 10.5 Best Practices for MCP Tool Usage
-
-| Practice | Recommendation | Rationale |
-|----------|---------------|-----------|
-| **Prefer specific tools** | Use `get_node` / `get_neighbors` over generic `query_graph` | Structured responses are faster and more precise than text summaries |
-| **Depth limits** | Cap BFS/DFS depth at 3-4 hops | Deeper traversals return too many nodes and degrade relevance |
-| **Entry points first** | Use `god_nodes` to find starting nodes, then explore with `get_neighbors` | Avoids scanning the entire graph for query-relevant nodes |
-| **Cache hot nodes** | Store frequently accessed node IDs in working memory | Reduces redundant MCP calls for core project entities |
-| **Use `graph_stats` for freshness** | Check `graph_stats` before querying to verify staleness | Avoids querying a stale graph when `--update` is needed |
-| **Stream large results** | Request NDJSON streaming for queries expecting 50+ nodes | Avoids response truncation and token budget issues |
-| **Handle disconnects** | Expect `McpError` on server restart; retry with CLI fallback | MCP server may restart during long sessions |
-
-**Verdict:** ✅ Following these best practices maximizes MCP's advantages — speed, precision, and structured data — while maintaining robustness through the CLI fallback path. The key insight is that MCP and CLI serve different query profiles: MCP for interactive exploration, CLI for automated background tasks.
+|**Detection**|OMP checks `Bun.which("graphify")` + `graphify-out/graph.json`|
+|**Freshness**|Graph >24h old → STALE; no graph → NO_GRAPH; no CLI → DEGRADED|
+|**Auto-update**|`session_start` + `turn_end` hooks trigger background `--no-cluster --no-viz` updates|

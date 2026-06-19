@@ -24,15 +24,16 @@
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
     "prepublishOnly": "bun run typecheck",
-    "smoke": "SMOKE_WORKDIR=/Users/thisisdhika/Projects/kaa.ltd/LAB/experiments/noesis bun run tests/smoke/run.ts",
     "dev": "bun run --watch src/index.ts"
   },
   "dependencies": {
+    "yaml": "^2.9.0",
     "zod": "4"
   },
   "devDependencies": {
     "@types/bun": "^1.3.14",
     "@types/node": "^22.0.0",
+    "@types/yaml": "^1.9.7",
     "typescript": "^5.7.0"
   },
   "peerDependencies": {

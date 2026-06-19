@@ -27,6 +27,12 @@ export * from "../domains/learning/schema.js";
 export const NoesisStateSchema = z.object({
   version: z.literal(CURRENT_VERSION),
   lastPersisted: z.string().datetime(),
+  _lastGraphUpdate: z.string().datetime().optional(),
+  _noesisConfig: z.object({
+    autoUpdate: z.boolean().optional(),
+    updateOnAttend: z.boolean().optional(),
+    maxUpdateInterval: z.number().optional(),
+  }).optional(),
   attention: AttentionLayerSchema,
   belief: BeliefLayerSchema,
   inference: InferenceLayerSchema,
@@ -73,7 +79,7 @@ export const EMPTY_STATE: NoesisState = {
   learning: {
     successes: [],
     failures: [],
-    summary: { successCount: 0, failureCount: 0, resolvedCount: 0, diagnosedCount: 0 },
+    summary: { successCount: 0, failureCount: 0, resolvedCount: 0 },
   },
 };
 
@@ -112,7 +118,6 @@ export const RenderContextSchema = z.object({
   }).optional(),
   staleReviewFlags: z.array(z.string()).optional(),
   contextHookFired: z.boolean().default(false),
-  hasMcpGraphify: z.boolean().optional(),
   modelFamily: z.string().optional(),
 });
 export type RenderContext = z.infer<typeof RenderContextSchema>;

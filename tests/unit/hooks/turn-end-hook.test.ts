@@ -154,13 +154,11 @@ describe("registerTurnEndHook", () => {
     expect(committedState!.attention.updatedAt).not.toBe(EMPTY_STATE.attention.updatedAt);
   });
 
-  it("calls vaultStore.flush when vaultStore has flush method", async () => {
+  it("does not call vaultStore.flush (removed in v0.2)", async () => {
     let flushCalled = false;
     const vaultStoreWithFlush: VaultStore = {
       ...createMockVaultStore(false),
-      flush: async () => {
-        flushCalled = true;
-      },
+      flush: async () => { flushCalled = true; },
     };
 
     const pi = createMockPi();
@@ -173,7 +171,7 @@ describe("registerTurnEndHook", () => {
 
     const handler = pi._getHooks("turn_end")[0]!;
     await handler({});
-    expect(flushCalled).toBe(true);
+    expect(flushCalled).toBe(false);
   });
 
   it("handles turn_end gracefully when vaultStore lacks flush", async () => {

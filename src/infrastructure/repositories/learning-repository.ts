@@ -1,7 +1,6 @@
-import type { ILearningRepository } from "../../domains/learning/repository.js";
 import type { LearningLayer, LearningEntry, LearningSummary } from "../../domains/learning/schema.js";
 
-export class LearningRepository implements ILearningRepository {
+export class LearningRepository {
   constructor(private segment: LearningLayer) {}
 
   getSuccesses(): LearningEntry[] {
@@ -50,3 +49,4 @@ export class LearningRepository implements ILearningRepository {
     this.segment.failures = [...entries];
   }
 }
+export type ILearningRepo = Pick<LearningRepository, 'getSuccesses' | 'getFailures' | 'getSummary' | 'addSuccess' | 'addFailure' | 'updateSummary' | 'updateSuccess' | 'updateFailure' | 'setSuccesses' | 'setFailures'>;

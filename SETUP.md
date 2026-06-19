@@ -4,7 +4,7 @@
 
 - **Bun** >= 1.3.0 ([install](https://bun.sh))
 - **Oh My Pi** >= 15.6.0
-- **Graphify** >= 0.3.0 (`uv tool install "graphifyy[ollama]"` or `pip install "graphifyy[ollama]"`)
+- **Graphify** >= 0.3.0 (core dependency; without it noesis runs in degraded mode)
 - **Python** >= 3.10 (for Graphify)
 - **Ollama** (optional but highly recommended for local processing)
 
@@ -13,29 +13,67 @@
 
 ### Step 1: Install Graphify
 
-**Option A: 100% Private & Free via Ollama (Recommended)**
-1. Install [Ollama](https://ollama.com/) and ensure the service is running.
-2. Pull the required embedding and code models:
-   ```bash
-   ollama pull nomic-embed-text
-   ollama pull qwen2.5-coder:7b
-   ```
-3. Install the Graphify Ollama bundle (note the package name is `graphifyy`):
-   ```bash
-   uv tool install "graphifyy[ollama]"
-   ```
-4. Set environment variables to point Graphify to your Ollama models (add these to your `~/.zshrc` or `~/.bashrc`):
-   ```bash
-   export GRAPHIFY_EMBEDDING_MODEL="nomic-embed-text"
-   export GRAPHIFY_LLM_MODEL="qwen2.5-coder:7b"
-   # If running Ollama on a different host/port, set:
-   # export OLLAMA_HOST="http://127.0.0.1:11434"
-   ```
+**Option A: Ollama — Local or Cloud (Free)**
+
+```bash
+uv tool install "graphifyy[ollama]"
+```
+
+Then choose how to run models:
+
+**Local (requires GPU or good CPU):**
+```bash
+ollama pull qwen2.5-coder:7b
+
+export OLLAMA_MODEL="qwen2.5-coder:7b"        # Graphify's Ollama backend reads OLLAMA_MODEL, not GRAPHIFY_LLM_MODEL
+```
+
+To use a different local model, swap the model name in both `ollama pull` and `OLLAMA_MODEL`.
+
+**Ollama Cloud (no GPU needed, free tier available):**
+
+Cloud models run on Ollama's NVIDIA GPUs — no local pulling needed. Sign in with `ollama signin`, then set your env vars (make sure to include the API key for omp-noesis auto-detection):
+```bash
+ollama signin
+
+export OLLAMA_API_KEY="ol-..."              # required — enables omp-noesis auto-detection
+export OLLAMA_MODEL="minimax-m3:cloud"
+```
+
+**Important:** Ollama backend reads `OLLAMA_MODEL`, not `GRAPHIFY_LLM_MODEL`. That env var only works for OpenAI/Anthropic/Gemini backends.
+
+Get your API key by running `ollama signin` or visit [ollama.com/settings](https://ollama.com/settings/keys).
+
+**Note: omp-noesis auto-detects your Graphify backend.** If `OLLAMA_API_KEY` or `OLLAMA_HOST` is set, it passes `--backend ollama` automatically to all Graphify builds and updates. Otherwise it assumes a paid cloud API provider (Graphify auto-detects from your API keys). You don't need to configure anything.
+
+If running Graphify standalone (outside noesis), pass the flag explicitly:
+```bash
+graphify . --backend ollama --max-concurrency 1
+```
+`--max-concurrency 1` is recommended for local Ollama; cloud can use a higher value.
 
 **Option B: Standard Cloud APIs**
 ```bash
 uv tool install graphifyy
 ```
+
+Then configure your preferred LLM provider via environment variables:
+
+```bash
+export OPENAI_API_KEY="sk-..."
+export GRAPHIFY_LLM_MODEL="gpt-4o"
+```
+
+**Anthropic:**
+```bash
+export ANTHROPIC_API_KEY="sk-ant-..."
+export GRAPHIFY_LLM_MODEL="claude-sonnet-4-20250514"
+
+```
+
+Add these to your `~/.zshrc` or `~/.bashrc`.
+
+
 
 Verify installation:
 ```bash
@@ -138,7 +176,7 @@ Mnemopi backend is detected automatically when `.omp/mnemopi.db` exists.
 1. Start an OMP session
 2. The extension loads automatically from `~/.omp/plugins/` — no manual config needed
 3. The Noesis system prompt is injected via the before_agent_start hook (always present). The cognitive preamble (beliefs, workflow, learning) appears in the LLM context each turn.
-4. Use `noesis_attend`, `noesis_focus`, `noesis_believe`, `noesis_commit`, `noesis_infer`, `noesis_recall`, and `noesis_vault_search` as needed
+4. Use `noesis_attend`, `noesis_believe`, `noesis_commit`, `noesis_infer`, and `noesis_state_inspect` as needed
 
 ## Troubleshooting
 

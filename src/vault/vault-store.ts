@@ -6,7 +6,7 @@
  *
  * Defines the contract for persisting and retrieving cognitive vault
  * artifacts.  Implementations may back onto local files, Obsidian vaults,
- * Hindsight API, or other storage.
+ * or other storage.
  *
  * @module vault/vault-store
  */

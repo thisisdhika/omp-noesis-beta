@@ -73,7 +73,6 @@ describe("EMPTY_STATE", () => {
     expect(summary.successCount).toBe(0);
     expect(summary.failureCount).toBe(0);
     expect(summary.resolvedCount).toBe(0);
-    expect(summary.diagnosedCount).toBe(0);
   });
 
   it("returns a fresh deep clone each time structuredClone is used", () => {
@@ -237,7 +236,7 @@ describe("NoesisStateSchema", () => {
       learning: {
         successes: [],
         failures: [],
-        summary: { successCount: 0, failureCount: 0, resolvedCount: 0, diagnosedCount: 0 },
+        summary: { successCount: 0, failureCount: 0, resolvedCount: 0 },
       },
     };
     const result = NoesisStateSchema.parse(state);

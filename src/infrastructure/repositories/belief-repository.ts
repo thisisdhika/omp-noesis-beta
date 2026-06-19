@@ -1,8 +1,7 @@
-import type { IBeliefRepository } from "../../domains/belief/repository.js";
 import type { BeliefLayer, BeliefFact, BeliefDecision } from "../../domains/belief/schema.js";
 import { now } from "../../shared/time.js";
 
-export class BeliefRepository implements IBeliefRepository {
+export class BeliefRepository {
   constructor(private segment: BeliefLayer) {}
 
   addFact(fact: BeliefFact): void {
@@ -53,3 +52,4 @@ export class BeliefRepository implements IBeliefRepository {
     this.segment.decisions = [...decisions];
   }
 }
+export type IBeliefRepo = Pick<BeliefRepository, 'addFact' | 'addDecision' | 'findFactById' | 'findDecisionById' | 'getAllFacts' | 'getAllDecisions' | 'updateFact' | 'updateDecision' | 'setFacts' | 'setDecisions'>;

@@ -55,9 +55,9 @@ describe("evictStale", () => {
     expect(result[0]!.id).toBe("le-old-resolved");
   });
 
-  it("evicts diagnosed entries when stale (only resolved survives)", () => {
+  it("evicts captured (unresolved) entries when stale (only resolved survives)", () => {
     const entries: LearningEntry[] = [
-      entry({ id: "le-diagnosed", description: "Diagnosed but stale", status: "diagnosed", capturedAt: hoursAgo(5000) }),
+      entry({ id: "le-stale-captured", description: "Captured but stale", status: "captured", capturedAt: hoursAgo(5000) }),
     ];
 
     const result = evictStale(entries, 1);

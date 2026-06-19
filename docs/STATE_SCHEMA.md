@@ -231,7 +231,7 @@ interface LearningEntry {
   fix?: string;               // Max 1000 chars
   skillScope?: string;         // Domain tag
   toolName?: string;           // Tool that produced result
-  status: "captured" | "diagnosed" | "resolved";
+  status: "captured" | "resolved";
   capturedAt: string;
   resolvedAt?: string;
   impact?: number;            // 0-1, agent-assigned
@@ -241,7 +241,6 @@ interface LearningSummary {
   successCount: number;
   failureCount: number;
   resolvedCount: number;
-  diagnosedCount: number;
 }
 ```
 
@@ -303,6 +302,15 @@ rank = recency × taskRelevance × failureMultiplier × resolvedFixMultiplier
 6. Return validated state
 ```
 
+### 8.4 Persistence Authority
+
+`.omp/noesis/state.json` is the sole persistence authority. `preserveData.noesis` is a
+compaction-survival cache: the `session.compacting` hook writes the full state snapshot
+into the preserveData slot so OMP can carry it across compaction boundaries, but no
+startup bridge from OMP preserveData into `createRuntime()` exists today. On process
+restart the state is always read from `state.json`. If `state.json` is missing or
+corrupt the system falls back to `EMPTY_STATE`, not to preserveData.
+
 ## 9. Schema Versioning
 
 ```typescript
@@ -322,7 +330,7 @@ const EMPTY_STATE: NoesisState = {
   belief: { facts: [], decisions: [] },
   inference: { hypotheses: [], reasoning: [] },
   commitment: { workflow: { id: generateId("wf"), goal: "", status: "draft", steps: [], createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }, actions: [] },
-  learning: { successes: [], failures: [], summary: { successCount: 0, failureCount: 0, resolvedCount: 0, diagnosedCount: 0 } },
+  learning: { successes: [], failures: [], summary: { successCount: 0, failureCount: 0, resolvedCount: 0 } },
 };
 ```
 

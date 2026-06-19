@@ -106,7 +106,7 @@ describe("buildPreamble budget enforcement", () => {
   it("should stay under MAX_PREAMBLE_TOKENS for a populated state", () => {
     const state = populatedState();
     const result = buildPreamble(state, fullRender);
-    const estimatedTokens = Math.ceil(result.length / 4);
+    const estimatedTokens = estimateTokens(result);
     expect(estimatedTokens).toBeLessThanOrEqual(MAX_PREAMBLE_TOKENS);
   });
 
@@ -167,7 +167,7 @@ describe("buildPreamble budget enforcement", () => {
     }
 
     const result = buildPreamble(state, fullRender);
-    const estimatedTokens = Math.ceil(result.length / 4);
+    const estimatedTokens = estimateTokens(result);
     expect(estimatedTokens).toBeLessThanOrEqual(MAX_PREAMBLE_TOKENS);
   });
 
@@ -203,7 +203,7 @@ describe("buildPreamble budget enforcement", () => {
     expect(result).toContain("[Noesis:");
     expect(result).toContain("State: .omp/noesis/state.json");
     // The protected sections (indexes 1, 2, 3, 11) are always kept
-    const estimatedTokens = Math.ceil(result.length / 4);
+    const estimatedTokens = estimateTokens(result);
     expect(estimatedTokens).toBeLessThanOrEqual(MAX_PREAMBLE_TOKENS);
   });
 });

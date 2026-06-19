@@ -4,10 +4,14 @@
  * omp-noesis: Init Command
  * Version: 0.1.0
  *
- * `/noesis:init` — bootstrap a new noesis cognitive state directory,
- * write the initial EMPTY_STATE, configure .omp/config.yml with recommended
- * settings, and optionally set up the Graphify integration for codebase-aware
- * reasoning.
+ * Bootstraps a noesis cognitive state in the current project directory.
+ * Creates state file, config, RULES.md, Obsidian vault, and optionally
+ * installs + builds the graphify knowledge graph.
+ *
+ * Returns one of:
+ *   "initialized-full"              — everything set up
+ *   "initialized-degraded-no-cli"   — graphify CLI not found
+ *   "initialized-degraded-no-graphify" — graphify setup skipped
  */
 
 import type { ExtensionAPI } from "@oh-my-pi/pi-coding-agent";
@@ -16,8 +20,8 @@ import { mkdirSync, existsSync, readFileSync, writeFileSync, appendFileSync } fr
 import { ensureNoesisDir } from "../shared/paths.js";
 import { writeAtomic, fileExists } from "../infrastructure/filesystem-store.js";
 import { checkGraphifyCLI, installGraphifySkill, runGraphifyBuild } from "../infrastructure/graphify-setup.js";
+import { getBackendArgs } from "../infrastructure/graphify-client.js";
 import { EMPTY_STATE } from "../shared/schema.js";
-
 
 // ============================================================================
 // SETTINGS YAML TEMPLATE
@@ -28,6 +32,12 @@ const SETTINGS_YAML = `compaction:
   strategy: context-full
   autoContinue: true
   thresholdTokens: 160000
+
+noesis:
+  graphify:
+    autoUpdate: true
+    updateOnAttend: true
+    maxUpdateInterval: 15
 `;
 
 // ============================================================================
@@ -38,24 +48,22 @@ const RULES_MD = `# Noesis Rules
 
 **Always do these FIRST:**
 - **Task start:** Call noesis_attend. ALWAYS. No exceptions.
-- **Before assuming you don't know:** Call noesis_recall.
-- **Before rediscovering:** Call noesis_recall. Recall first, read second.
+- **Before assuming you don't know:** Call noesis_state_inspect.
+- **Before rediscovering:** Call noesis_state_inspect. Recall first, read second.
 
 **After events:**
 - After verifying a fact → noesis_believe_fact
 - After making a decision → noesis_believe_decision
-- After fixing a failure → noesis_believe_learning
 - When planning work → noesis_commit
 - When testing theories → noesis_infer (add→update cycle)
-- Quick context switch → noesis_focus (max 200 chars)
+- Quick context switch → noesis_attend (omit graphQueries, max 200 chars)
 
 **NEVER:**
 - Auto-believe INFERRED graph edges. Verify first.
 - Duplicate OMP plan surface. noesis_commit = cognition, not execution.
 - Capture every tool result as learning. Only significant events.
 - Delete beliefs. Supersede → archive for audit.
-- Use focus > 200 chars. Wastes preamble budget.
-- Use noesis_recall for vault queries — use noesis_vault_search for human artifacts.
+- **Outdated or unsure?** Use noesis_state_inspect (includes query:"search" for full-text search of live session state). For **durable cross-session artifacts** (decisions, beliefs, learnings persisted across turns) consider vault backends. Do NOT use noesis_state_inspect for vault queries.
 
 **Templates:**
 - Fact: {mechanism} at {path} {action} {target} using {method}
@@ -64,22 +72,17 @@ const RULES_MD = `# Noesis Rules
 
 **Confidence:** execution/user = 1.0 | graph EXTRACTED = 1.0 | INFERRED = 0.55–0.95 | AMBIGUOUS = 0.55 | deduced = 0.5–0.95 | resolved = 0.85
 
-**Boundaries:** noesis = task state | mnemopi = cross-session | hindsight = summaries | obsidian = human projection (write-only)
+**Boundaries:** noesis_state_inspect = current live session state (beliefs, decisions, learning, query:"search") | mnemopi = cross-session raw memory | local = durable local fallback | obsidian = human projection (write-only)
 
 **Compaction:** State survives via survivor set + preserveData.noesis + .omp/noesis/state.json
 
 **Graph modes:** FULL | STALE (−0.10 penalty, floor 0.55) | NO_GRAPH | DEGRADED
 
-**MCP Graphify tools** (when available):
-- mcp__graphify__query_graph — BFS/DFS traversal with keyword scoring
-- mcp__graphify__get_node — Full details for a specific node
-- mcp__graphify__get_neighbors — All direct neighbors with edge details
-- mcp__graphify__shortest_path — Shortest path between two concepts
-- mcp__graphify__god_nodes — Most connected nodes
-- mcp__graphify__graph_stats — Node/edge/community counts
-- mcp__graphify__get_community — All nodes in a community
-
-Use these for on-demand graph exploration. The attend-tool handles automated preamble evidence via CLI.`;
+**Graph Queries:**
+- Request fresh graph: \`noesis_attend(focus="...", graphQueries=[...], ensureFresh=true)\`
+- \`graphify-extract\` mode: Use \`skill://graphify\` for headless CI extraction
+- All graph interactions go through the attend-tool or skill file, never direct CLI
+- The attend-tool handles automated preamble evidence via CLI.`;
 
 // ============================================================================
 // OBSIDIAN DASHBOARD TEMPLATE
@@ -87,37 +90,44 @@ Use these for on-demand graph exploration. The attend-tool handles automated pre
 
 const NOESIS_DASHBOARD_MD = `# Noesis Dashboard
 
-Welcome to the **omp-noesis** cognitive state projection! This dashboard uses [Dataview](https://blacksmithgu.github.io/obsidian-dataview/) to give you a real-time, comprehensive overview of your agent's memory.
+Welcome to your Noesis cognitive state dashboard. This file is your window into what the AI assistant has learned, decided, and is tracking in this project.
 
-## 🧠 Active Beliefs
-\`\`\`dataview
-TABLE metadata.status AS "Status", metadata.confidence AS "Confidence"
-FROM ".obsidian/noesis/belief"
-WHERE metadata.status = "active"
-SORT metadata.confidence DESC
-\`\`\`
+## Quick Links
 
-## ⚖️ Decisions
-\`\`\`dataview
-TABLE metadata.rationale AS "Rationale", metadata.rejected AS "Rejected Options"
-FROM ".obsidian/noesis/decision"
-WHERE metadata.status = "active"
-\`\`\`
+| Link | Purpose |
+|------|---------|
+| [State File](.omp/noesis/state.json) | Raw cognitive state (beliefs, decisions, learning, attention, commitments) |
+| [Configuration](.omp/config.yml) | Noesis runtime settings |
+| [RULES.md](.omp/RULES.md) | AI assistant operating rules |
+| [Graph Knowledge Map](graphify-out/index.md) | Full knowledge graph index |
 
-## 📈 Learning & Failures
-\`\`\`dataview
-TABLE metadata.cause AS "Root Cause", metadata.fix AS "Fix"
-FROM ".obsidian/noesis/learning"
-SORT pushedAt DESC
-LIMIT 10
-\`\`\`
+## Cognitive Layers
 
-## 🔄 Workflow & Sessions
-\`\`\`dataview
-TABLE metadata.goal AS "Goal", metadata.status AS "Status"
-FROM ".obsidian/noesis/session"
-SORT pushedAt DESC
-\`\`\`
+### Beliefs
+What the assistant knows about this project - facts, decisions, and domain knowledge that persist across sessions.
+
+### Attention
+What the assistant is currently focused on - recent queries, active context windows, and priority areas.
+
+### Learning
+What the assistant has learned from experience - debugging insights, patterns, and validation results.
+
+### Commitments
+Active goals, promises, and intentions that the assistant is tracking and working toward.
+
+## Vault Operations
+
+The assistant maintains durable memory through:
+- **mnemopi** — Primary cross-session memory (auto-managed)
+- **local** — Local file-based fallback
+- **obsidian** — Human-readable projection (this vault)
+
+## Tips
+
+1. Review beliefs periodically to ensure accuracy
+2. Clear outdated information through state compaction
+3. Use the knowledge graph for codebase-wide reasoning
+4. Dashboard auto-updates at session start
 `;
 
 // ============================================================================
@@ -125,9 +135,9 @@ SORT pushedAt DESC
 // ============================================================================
 
 export interface InitArgs {
-  /** Overwrite state.json if it already exists */
+  /** Force-overwrite existing files (default false) */
   force?: boolean;
-  /** Build the project knowledge graph after initializing (default true) */
+  /** Build project knowledge graph after init (default true) */
   buildGraph?: boolean;
   /** Skip all Graphify-related setup (default false) */
   skipGraphify?: boolean;
@@ -138,93 +148,108 @@ export interface InitArgs {
 // ============================================================================
 
 /**
- * Deep-merge recommended compaction settings into an existing config.yml string.
- * Keeps all existing non-compaction sections. Within compaction, overrides keys
- * from SETTINGS_YAML and removes deprecated keys (reserveTokens, keepRecentTokens,
- * idleThresholdTokens).
+ * Deep-merge recommended settings into an existing config.yml string.
+ * Handles flat sections (compaction) and nested subsections (noesis.graphify).
+ * Keeps all existing keys, overrides recommended ones, removes deprecated keys.
  */
 function mergeConfigYaml(existing: string, recommended: string): string {
-  // Parse existing YAML into a section -> key -> value map
-  // Top-level keys (no indent) go under the "" pseudo-section
-  const data: Record<string, Record<string, string>> = {};
-  let currentSection = "";
-
-  for (const line of existing.split("\n")) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith("#")) continue;
-
-    // A line with no leading whitespace that ends with ":" starts a new section
-    const sectionMatch = trimmed.match(/^(\w[\w-]*):\s*$/);
-    if (sectionMatch && sectionMatch[1] && !line.startsWith(" ") && !line.startsWith("\t")) {
-      currentSection = sectionMatch[1];
-      if (!data[currentSection]) data[currentSection] = {};
-      continue;
-    }
-
-    // A key: value line (any indent level — always a child of current section)
-    const kvMatch = trimmed.match(/^(\w[\w-]*):\s*(.+)$/);
-    if (kvMatch && kvMatch[1] && kvMatch[2] && currentSection) {
-      const section = data[currentSection];
-      if (section) section[kvMatch[1]] = kvMatch[2].trim();
-      continue;
-    }
-
-    // Unindented top-level kv (no section context) — treat as root
-    const topKvMatch = trimmed.match(/^(\w[\w-]*):\s*(.+)$/);
-    if (topKvMatch && topKvMatch[1] && topKvMatch[2] && !line.startsWith(" ") && !line.startsWith("\t")) {
-      currentSection = "";
-      if (!data[""]) data[""] = {};
-      data[""][topKvMatch[1]] = topKvMatch[2].trim();
+  // Recursive deep-merge helper
+  function deepMerge(target: any, source: any): void {
+    for (const [key, value] of Object.entries(source)) {
+      if (value !== null && typeof value === "object" && !Array.isArray(value)) {
+        if (!(key in target) || target[key] === null || typeof target[key] !== "object") {
+          target[key] = {};
+        }
+        deepMerge(target[key], value);
+      } else {
+        target[key] = value;
+      }
     }
   }
 
-  // Parse recommended into same structure, overriding existing values
-  currentSection = "";
-  for (const line of recommended.split("\n")) {
-    const trimmed = line.trim();
-    if (!trimmed) continue;
+  // Parse YAML text into a nested Record<string, any>
+  function parseYaml(yaml: string): Record<string, any> {
+    const data: Record<string, any> = {};
+    let section = "";
+    let subSection = "";
 
-    const sectionMatch = trimmed.match(/^(\w[\w-]*):\s*$/);
-    if (sectionMatch && sectionMatch[1] && !line.startsWith(" ") && !line.startsWith("\t")) {
-      currentSection = sectionMatch[1];
-      if (!data[currentSection]) data[currentSection] = {};
-      continue;
+    for (const line of yaml.split("\n")) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith("#")) continue;
+
+      const indent = line.length - trimmed.length;
+      const isTopLevel = indent === 0;
+
+      // Section or subsection header (key: with no value after colon)
+      const headerMatch = trimmed.match(/^([\w-]+):\s*$/);
+      if (headerMatch) {
+        const headerKey = headerMatch[1]!;
+        if (isTopLevel) {
+          section = headerKey;
+          subSection = "";
+          if (!data[section]) data[section] = {};
+        } else if (section) {
+          subSection = headerKey;
+          if (!data[section]) data[section] = {};
+          if (!data[section][subSection]) data[section][subSection] = {};
+        }
+        continue;
+      }
+      // Key: value line
+      const kvMatch = trimmed.match(/^([\w-]+):\s*(.+)$/);
+      if (kvMatch) {
+        const key = kvMatch[1]!;
+        const value = kvMatch[2]!.trim();
+
+        if (subSection) {
+          if (!data[section]) data[section] = {};
+          if (!data[section][subSection]) data[section][subSection] = {};
+          data[section][subSection][key] = value;
+        } else if (section) {
+          if (!data[section]) data[section] = {};
+          data[section][key] = value;
+        } else if (isTopLevel) {
+          data[key] = value;
+        }
+      }
     }
 
-    const kvMatch = trimmed.match(/^(\w[\w-]*):\s*(.+)$/);
-    if (kvMatch && kvMatch[1] && kvMatch[2] && currentSection) {
-      if (!data[currentSection]) data[currentSection] = {};
-      const section = data[currentSection];
-      if (section) section[kvMatch[1]] = kvMatch[2].trim();
-    }
+    return data;
   }
+
+  // Serialize a nested Record back to YAML
+  function serializeYaml(data: Record<string, any>, indent: number = 0): string[] {
+    const lines: string[] = [];
+    const pad = " ".repeat(indent);
+
+    for (const [key, value] of Object.entries(data)) {
+      if (value !== null && typeof value === "object" && !Array.isArray(value)) {
+        if (Object.keys(value).length > 0) {
+          lines.push(`${pad}${key}:`);
+          lines.push(...serializeYaml(value, indent + 2));
+        }
+      } else {
+        lines.push(`${pad}${key}: ${value}`);
+      }
+    }
+
+    return lines;
+  }
+
+  // Parse both documents, then deep-merge
+  const existingData = parseYaml(existing);
+  const recommendedData = parseYaml(recommended);
+  deepMerge(existingData, recommendedData);
 
   // Remove deprecated compaction keys
-  const compaction = data.compaction;
-  if (compaction) {
+  if (existingData.compaction && typeof existingData.compaction === "object") {
     const deprecated = ["reserveTokens", "keepRecentTokens", "idleThresholdTokens"];
     for (const key of deprecated) {
-      delete compaction[key];
+      delete existingData.compaction[key];
     }
   }
 
-  // Serialize back to YAML: root keys first, then sections
-  const lines: string[] = [];
-  for (const [section, kvs] of Object.entries(data)) {
-    if (section === "") {
-      // Top-level keys (no section header)
-      for (const [key, value] of Object.entries(kvs)) {
-        lines.push(`${key}: ${value}`);
-      }
-    } else {
-      lines.push(`${section}:`);
-      for (const [key, value] of Object.entries(kvs)) {
-        lines.push(`  ${key}: ${value}`);
-      }
-    }
-  }
-
-  return lines.join("\n") + "\n";
+  return serializeYaml(existingData).join("\n") + "\n";
 }
 
 // ============================================================================
@@ -237,7 +262,7 @@ function mergeConfigYaml(existing: string, recommended: string): string {
  * 1. Creates `.omp/noesis/` directory.
  * 2. Writes `EMPTY_STATE` to `.omp/noesis/state.json` (unless it exists
  *    and `force` is false).
- * 3. Writes/merges `.omp/config.yml` with recommended compaction settings.
+ * 3. Writes/merges `.omp/config.yml` with recommended settings.
  * 4. Optionally installs and runs Graphify integration.
  *
  * Returns a status string: "initialized-full", "initialized-degraded-no-cli",
@@ -343,15 +368,6 @@ export async function initCommand(pi: ExtensionAPI, args: InitArgs = {}): Promis
     attribution: "agent",
   }, { deliverAs: "steer" });
 
-  // 6a. Check for Graphify Environment Config Warning
-  if (!process.env.GRAPHIFY_EMBEDDING_MODEL) {
-    pi.sendMessage({
-      customType: "noesis:graphify-warning",
-      content: "⚠️ **Graphify configuration warning:** `GRAPHIFY_EMBEDDING_MODEL` environment variable is not set. If you are using Ollama, ensure you set this (and `GRAPHIFY_LLM_MODEL`) to guarantee absolute privacy and zero token costs.",
-      display: true,
-      attribution: "agent",
-    });
-  }
 
   // 7. Build the project knowledge graph (unless opted out)
   if (buildGraph) {
@@ -361,7 +377,7 @@ export async function initCommand(pi: ExtensionAPI, args: InitArgs = {}): Promis
       display: true,
       attribution: "agent",
     });
-    const buildResult = await runGraphifyBuild(projectRoot);
+    const buildResult = await runGraphifyBuild(projectRoot, getBackendArgs());
     if (buildResult.success) {
       summary.push("Graph: built");
     } else {
@@ -369,37 +385,6 @@ export async function initCommand(pi: ExtensionAPI, args: InitArgs = {}): Promis
     }
   }
 
-  // 8. Write MCP config
-  const mcpConfigPath = join(ompDir, "mcp.json");
-  const mcpConfig = {
-    $schema: "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/src/config/mcp-schema.json",
-    mcpServers: {
-      graphify: {
-        command: "python3",
-        args: ["-m", "graphify.serve", "graphify-out/graph.json"],
-      },
-    },
-  };
-  let mcpAction = "written";
-  if (existsSync(mcpConfigPath)) {
-    try {
-      const existing = JSON.parse(readFileSync(mcpConfigPath, "utf-8"));
-      if (existing.mcpServers?.graphify) {
-        mcpAction = "already configured";
-      } else {
-        existing.mcpServers = existing.mcpServers || {};
-        existing.mcpServers.graphify = mcpConfig.mcpServers.graphify;
-        writeFileSync(mcpConfigPath, JSON.stringify(existing, null, 2) + "\n", "utf-8");
-        mcpAction = "added";
-      }
-    } catch {
-      writeFileSync(mcpConfigPath, JSON.stringify(mcpConfig, null, 2) + "\n", "utf-8");
-      mcpAction = "replaced";
-    }
-  } else {
-    writeFileSync(mcpConfigPath, JSON.stringify(mcpConfig, null, 2) + "\n", "utf-8");
-  }
-  summary.push(`MCP: ${mcpAction}`);
 
   // 8a. Ensure .omp/ is in local git exclude (best-effort)
   const excludePath = join('.git', 'info', 'exclude');
@@ -418,6 +403,24 @@ export async function initCommand(pi: ExtensionAPI, args: InitArgs = {}): Promis
     }
   }
 
+  // 8b. Write recommended .gitignore entries for graphify-out
+  const gitignorePath = join(projectRoot, ".gitignore");
+  const gitignoreLines = [
+    "# Noesis graph artifacts (local tracking only)",
+    "graphify-out/cost.json",
+    "graphify-out/manifest.json",
+  ];
+  if (existsSync(gitignorePath)) {
+    const existing = readFileSync(gitignorePath, "utf-8");
+    const missing = gitignoreLines.filter(line => !existing.includes(line));
+    if (missing.length > 0) {
+      appendFileSync(gitignorePath, "\n" + missing.join("\n") + "\n");
+      summary.push(".gitignore: updated");
+    }
+  } else {
+    writeFileSync(gitignorePath, gitignoreLines.join("\n") + "\n");
+    summary.push(".gitignore: created");
+  }
   // 9. Done — single status message
   pi.sendMessage({
     customType: "noesis:init-status",

@@ -14,9 +14,61 @@ import { validateGraphPath } from "../shared/paths.js";
 import { runGraphifyBuild } from "./graphify-setup.js";
 import { parseQueryOutput } from "./graphify-parser.js";
 import { stat } from "node:fs/promises";
+import { join } from "node:path";
 
 /** Flag to prevent repeated auto-heal attempts within a session. */
 let _autoHealAttempted = false;
+
+const MAX_GRAPH_SIZE_BYTES = 50 * 1024 * 1024; // 50MB
+
+/** Ollama environment variables that signal the user needs `--backend ollama`. */
+const OLLAMA_ENV_KEYS = ["OLLAMA_API_KEY", "OLLAMA_HOST"] as const;
+
+/**
+ * Check whether the user has Ollama-specific env vars set.
+ * If none are set, they're a paid cloud API user (Graphify auto-detects).
+ * If any are set, Graphify needs `--backend ollama` passed explicitly.
+ */
+export function needsOllamaBackend(): boolean {
+  return OLLAMA_ENV_KEYS.some(key => !!process.env[key]);
+}
+
+/**
+ * Return CLI args needed for Graphify's backend selection.
+ * Only needed when Ollama envs are present; paid cloud API users
+ * get auto-detection from Graphify's own API key scanning.
+ */
+export function getBackendArgs(): string[] {
+  return needsOllamaBackend() ? ["--backend", "ollama"] : [];
+}
+
+/**
+ * Check whether the existing graph file is within manageable size limits.
+ * Returns true when no graph exists yet (will be built fresh).
+ */
+export async function isGraphSizeManageable(projectRoot: string): Promise<boolean> {
+  const graphPath = join(projectRoot, "graphify-out", "graph.json");
+  try {
+    const stats = await stat(graphPath);
+    return stats.size <= MAX_GRAPH_SIZE_BYTES;
+  } catch {
+    return true; // No graph file yet = manageable (will build fresh)
+  }
+}
+
+/**
+ * Check if we can run a graph update based on rate limiting.
+ * Returns true if enough time has elapsed since the last update.
+ */
+export function canRunGraphUpdate(
+  lastUpdateTimestamp: string | undefined | null,
+  maxIntervalMinutes: number = 15,
+): boolean {
+  if (!lastUpdateTimestamp) return true; // Never updated = can update
+  const last = new Date(lastUpdateTimestamp).getTime();
+  const elapsed = Date.now() - last;
+  return elapsed >= maxIntervalMinutes * 60 * 1000;
+}
 
 // ============================================================================
 // CAPABILITY DETECTION
@@ -156,6 +208,7 @@ export async function query(
  *
  * Delegates to `runGraphifyBuild` from the setup module, which runs
  * `graphify . --no-viz` with a 2-minute timeout.
+ * Also passes `--backend ollama` automatically when no paid API key is detected.
  *
  * @param projectRoot - Absolute path to the project root.
  * @returns Build result with success flag and stdout/stderr output.
@@ -163,30 +216,56 @@ export async function query(
 export async function build(
   projectRoot: string,
 ): Promise<{ success: boolean; output: string }> {
-  return runGraphifyBuild(projectRoot);
+  return runGraphifyBuild(projectRoot, getBackendArgs());
 }
 
 // ============================================================================
 // UPDATE INVOCATION
 // ============================================================================
 
+/** Options for graphify update operations. */
+export interface UpdateOptions {
+  /** Whether to skip clustering (Leiden algorithm). Default: true */
+  skipCluster?: boolean;
+  /** Whether to skip viz generation. Default: true */
+  skipViz?: boolean;
+  /** Timeout in milliseconds. Default: 60000 (60s) */
+  timeout?: number;
+  /** Whether to force a full rebuild instead of incremental update. Default: false */
+  fullRebuild?: boolean;
+}
+
 /**
  * Run an incremental graphify update on the project.
- *
- * Uses `graphify . --update` to refresh the graph incrementally without
- * a full rebuild.  Timeout is 2 minutes.
+ * Uses `--update --no-cluster --no-viz` by default for fast incremental updates.
  *
  * @param projectRoot - Absolute path to the project root.
+ * @param options - Optional flags to control update behavior.
  * @returns Update result with success flag and stdout/stderr output.
  */
 export async function updateGraph(
   projectRoot: string,
+  options?: UpdateOptions,
 ): Promise<{ success: boolean; output: string }> {
+  const opts = {
+    skipCluster: options?.skipCluster ?? true,
+    skipViz: options?.skipViz ?? true,
+    timeout: options?.timeout ?? 60000,
+    fullRebuild: options?.fullRebuild ?? false,
+  };
+
   try {
-    const proc = Bun.spawn(
-      ["graphify", ".", "--update"],
-      { cwd: projectRoot, stdout: "pipe", timeout: 120000 },
-    );
+    const args = ["graphify", "."];
+    if (!opts.fullRebuild) args.push("--update");
+    if (opts.skipCluster) args.push("--no-cluster");
+    if (opts.skipViz) args.push("--no-viz");
+    args.push(...getBackendArgs());
+
+    const proc = Bun.spawn(args, {
+      cwd: projectRoot,
+      stdout: "pipe",
+      timeout: opts.timeout,
+    });
     const output = await new Response(proc.stdout).text();
     const exitCode = await proc.exited;
     return { success: exitCode === 0, output };
@@ -194,4 +273,42 @@ export async function updateGraph(
     const message = err instanceof Error ? err.message : String(err);
     return { success: false, output: message };
   }
+}
+
+// ============================================================================
+// BACKGROUND UPDATE HELPER
+// ============================================================================
+
+/** Options for the background graph update helper. */
+export interface BackgroundUpdateOptions {
+  fullRebuild?: boolean;
+  timeout?: number;
+}
+
+/**
+ * Try to run a background graph update and record the timestamp on success.
+ * Checks graph size before attempting; returns true on success, false otherwise.
+ */
+export async function tryBackgroundGraphUpdate(
+  projectRoot: string,
+  stateManager: { read: () => Readonly<{ _lastGraphUpdate?: string }>; mutate: (fn: (s: any) => void) => Promise<unknown> },
+  options?: BackgroundUpdateOptions,
+): Promise<boolean> {
+  // Check graph size before attempting update
+  if (!(await isGraphSizeManageable(projectRoot))) return false;
+
+  const result = await updateGraph(projectRoot, {
+    skipCluster: true,
+    skipViz: true,
+    fullRebuild: options?.fullRebuild,
+    timeout: options?.timeout,
+  });
+
+  if (result.success) {
+    await stateManager.mutate(s => {
+      s._lastGraphUpdate = new Date().toISOString();
+    });
+    return true;
+  }
+  return false;
 }

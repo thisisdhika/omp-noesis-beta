@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { CAPS } from "../../shared/schema-base.js";
 
-export const LearningStatusSchema = z.enum(["captured", "diagnosed", "resolved"]);
+export const LearningStatusSchema = z.enum(["captured", "resolved"]);
 export type LearningStatus = z.infer<typeof LearningStatusSchema>;
 
 export const LearningEntrySchema = z.object({
@@ -22,13 +22,12 @@ export const LearningSummarySchema = z.object({
   successCount: z.number().default(0),
   failureCount: z.number().default(0),
   resolvedCount: z.number().default(0),
-  diagnosedCount: z.number().default(0),
 });
 export type LearningSummary = z.infer<typeof LearningSummarySchema>;
 
 export const LearningLayerSchema = z.object({
   successes: z.array(LearningEntrySchema).default([]),
   failures: z.array(LearningEntrySchema).default([]),
-  summary: LearningSummarySchema.default({ successCount: 0, failureCount: 0, resolvedCount: 0, diagnosedCount: 0 }),
+  summary: LearningSummarySchema.default({ successCount: 0, failureCount: 0, resolvedCount: 0 }),
 });
 export type LearningLayer = z.infer<typeof LearningLayerSchema>;

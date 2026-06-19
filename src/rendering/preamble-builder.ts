@@ -198,31 +198,6 @@ function buildLowConfidenceSignal(state: NoesisState): string {
   return `Low-confidence beliefs: ${count}`;
 }
 
-function buildMcpSection(render: RenderContext): string {
-  if (!render.hasMcpGraphify) return "";
-  return [
-    "<graphify-mcp>",
-    "Tools:",
-    "- mcp__graphify__query_graph — BFS/DFS traversal with keyword scoring",
-    "- mcp__graphify__get_node — Full details for a specific node",
-    "- mcp__graphify__get_neighbors — All direct neighbors with edge details",
-    "- mcp__graphify__shortest_path — Shortest path between two concepts",
-    "- mcp__graphify__god_nodes — Most connected nodes",
-    "- mcp__graphify__graph_stats — Node/edge/community counts",
-    "- mcp__graphify__get_community — All nodes in a community",
-    "- mcp__graphify__list_prs — List pull requests",
-    "- mcp__graphify__get_pr_impact — PR impact analysis",
-    "- mcp__graphify__triage_prs — Triage PRs by priority",
-    "Resources:",
-    "- graphify://report — Full graph report",
-    "- graphify://stats — Graph statistics",
-    "- graphify://god-nodes — Most connected nodes",
-    "- graphify://surprises — Surprising connections",
-    "- graphify://audit — Graph audit",
-    "- graphify://questions — Suggested questions",
-    "</graphify-mcp>",
-  ].join("\n");
-}
 
 
 // ============================================================================
@@ -236,19 +211,20 @@ interface Section {
 }
 
 function buildSections(state: NoesisState, render: RenderContext): Section[] {
+  // Ordered by signal strength: highest-signal content first.
+  // Protected sections are always kept when dropping under budget.
   const allSections: Section[] = [
     { index: 1, content: buildCapabilityBlock(render), protected: true },
     { index: 2, content: buildContestedWarnings(state), protected: true },
     { index: 3, content: buildFocus(state), protected: true },
-    { index: 4, content: buildWorkflow(state), protected: false },
-    { index: 5, content: buildActiveDecisions(state), protected: false },
-    { index: 6, content: buildActiveBeliefs(state, render), protected: false },
+    { index: 4, content: buildActiveDecisions(state), protected: false },
+    { index: 5, content: buildActiveBeliefs(state, render), protected: false },
+    { index: 6, content: buildWorkflow(state), protected: false },
     { index: 7, content: buildUnresolvedHypotheses(state), protected: false },
     { index: 8, content: buildTopRankedLearning(state), protected: false },
     { index: 9, content: buildGraphEvidence(state), protected: false },
     { index: 10, content: buildLowConfidenceSignal(state), protected: false },
     { index: 11, content: "State: .omp/noesis/state.json", protected: true },
-    { index: 12, content: buildMcpSection(render), protected: false },
   ];
 
   // Limit non-protected sections for small models
@@ -263,6 +239,7 @@ function buildSections(state: NoesisState, render: RenderContext): Section[] {
     return allSections.filter(s => !toRemove.has(s.index));
   }
   return allSections;
+
 }
 
 
@@ -273,10 +250,10 @@ function buildSections(state: NoesisState, render: RenderContext): Section[] {
 /**
  * Build the context preamble string for the given state and render context.
  *
- * The preamble is assembled from up to 10 ordered sections. Sections with
+ * The preamble is assembled from up to 11 ordered sections. Sections with
  * no content are omitted. If the total exceeds MAX_PREAMBLE_TOKENS,
- * non-protected sections are dropped from the bottom upward (section 9
- * first, then 8, etc.) until the budget is met or only protected sections
+ * non-protected sections are dropped from the bottom upward (section 10
+ * first, then 9, etc.) until the budget is met or only protected sections
  * remain.
  */
 export function buildPreamble(

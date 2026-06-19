@@ -161,7 +161,7 @@ Tool-calling reliability varies dramatically across model families. Frontier mod
 
 The single biggest failure mode for small models (DeepSeek, Qwen, Mimo) is **Zod `.refine()` conditional validation**. These tools:
 
-- `noesis_believe` (now split into `noesis_believe_fact`, `noesis_believe_decision`, `noesis_believe_learning`) — previously used `.refine()` to validate fact vs decision vs learning branches
+- `noesis_believe` (now split into `noesis_believe_fact`, `noesis_believe_decision`) — previously used `.refine()` to validate fact vs decision vs learning branches
 - `noesis_commit` — `.refine()` to validate extend vs replace vs update_step vs add_action
 - `noesis_infer` — `.refine()` to validate add_hypothesis vs update_hypothesis vs add_reasoning
 
@@ -223,7 +223,7 @@ Adding explicit tool coercion to system prompts measurably increases tool call r
 
 ## Immediate Recommendations for omp-noesis
 
-1. **Split multi-action tools** — `noesis_believe` (fact/decision/learning) has been split into `noesis_believe_fact`, `noesis_believe_decision`, and `noesis_believe_learning` to eliminate `.refine()` validation. This matches ToolSchemaResearcher's finding as the #1 fix for DeepSeek.
+1. **Split multi-action tools** — `noesis_believe` (fact/decision/learning) has been split into `noesis_believe_fact` and `noesis_believe_decision` to eliminate `.refine()` validation. This matches ToolSchemaResearcher's finding as the #1 fix for DeepSeek.
 
 2. **Disable thinking for tool-only turns** — Add model-family detection to set `thinking: {"type": "disabled"}` when sending tool definitions to DeepSeek V4, Qwen3, or Kimi K2.6.
 

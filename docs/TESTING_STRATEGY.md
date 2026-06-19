@@ -17,8 +17,7 @@ Traditional code coverage measures lines executed. Product coverage measures beh
  | **Unit** | Domain logic, pure functions, strategies | 100% of branches | ~250 tests |
  | **Integration** | Tool + hook wiring, persistence, Graphify client | 100% of paths | ~140 tests |
  | **Behavioral** | Agent simulation, compaction survival, learning | 100% of behaviors | ~117 tests |
- | **MCP** | MCP config detection, init, context hook integration | 100% of MCP paths | ~10 tests |
- | **Total** | — | **300%** | **~517 tests** |
+ | **Total** | — | **300%** | **~507 tests** |
 
 ## 3. Unit Tests (`tests/unit/`)
 
@@ -135,10 +134,9 @@ describe("AGMRevisionStrategy", () => {
 | `noesis_attend` | Capability detection | 6 |
 | `noesis_believe_fact` | Fact persistence + revision | 10 |
 | `noesis_believe_decision` | Decision persistence | 6 |
-| `noesis_believe_learning` | Learning resolution | 8 |
 | `noesis_infer` | Hypothesis lifecycle | 8 |
 | `noesis_commit` | Workflow CRUD | 10 |
-| `noesis_recall` | Query filtering | 8 |
+| `noesis_state_inspect` | Query filtering | 8 |
 | `context-hook` | Preamble injection | 10 |
 | `context-hook` | Double-preamble prevention | 4 |
 | `compaction-hook` | Survivor selection | 8 |
@@ -215,7 +213,7 @@ describe("noesis_believe_* integration", () => {
 | Belief Revision | Agent commits fact A → later commits contradictory fact B | Fact A is superseded, not deleted |
 | Graceful Degradation | Graphify not installed → agent still functions | DEGRADED mode, no errors |
 | Vault Projection | Agent resolves learning → turn ends → artifact in vault | Markdown file exists |
-| Cross-Session Recall | Session 1 commits belief → Session 2 recalls it | `noesis_recall` returns correct belief |
+| Cross-Session Recall | Session 1 commits belief → Session 2 recalls it | `noesis_state_inspect` returns correct belief |
 | Double-Preamble Guard | Both context and before_agent_start hooks fire | Only one preamble injected |
 
 ### Planned Behavioral Tests (Future)
@@ -243,7 +241,7 @@ describe("Product: Learning Loop prevents repeated failures", () => {
     await sim.toolCall("bash", { command: "bun build" });
     await sim.toolResult("bash", { exitCode: 1, stderr: "Cannot find module 'zod'" });
 
-    await sim.agentAction("noesis_believe_learning", {
+    await sim.agentAction("noesis_believe_fact", {
       learningId: sim.lastLearningId,
       rootCause: "Missing 'zod' dependency in package.json",
       fix: "Add zod to dependencies and run bun install"
@@ -256,7 +254,7 @@ describe("Product: Learning Loop prevents repeated failures", () => {
     await sim.turn("Add another API endpoint with validation");
 
     const actions = sim.getActions();
-    const hasRecall = actions.some(a => a.tool === "noesis_recall" && a.params.query === "relevant_learning");
+    const hasRecall = actions.some(a => a.tool === "noesis_state_inspect" && a.params.query === "relevant_learning");
     const hasInstall = actions.some(a => a.tool === "bash" && a.params.command.includes("bun add zod"));
     const buildIndex = actions.findIndex(a => a.tool === "bash" && a.params.command.includes("bun build"));
     const installIndex = actions.findIndex(a => a.tool === "bash" && a.params.command.includes("bun add zod"));
@@ -301,42 +299,14 @@ bun test tests/behavioral/compaction-survival.test.ts
 | Integration | ≥ 90% | 100% of integration paths |
 | Behavioral | N/A (tests product, not code) | 100% of product behaviors |
 | Overall | ≥ 90% | 300% (3 layers × 100%) |
-## 9. MCP Integration Testing
+## 9. Autonomous Lifecycle Tests
 
-### Architecture
-
-MCP (Model Context Protocol) is the primary integration for LLM graph queries. The `attend` tool continues to use CLI for automated preamble evidence.
-
-### Test Coverage
-
-| Test Layer | MCP Coverage | Description |
+|Scenario|Type|Verification|
 |---|---|---|
-| Unit | MCP config detection | Verify `hasMcpGraphify()` detects config correctly |
-| Integration | Init command MCP writing | Verify `/noesis:init` writes `.omp/mcp.json` |
-| Integration | Context hook MCP detection | Verify preamble includes MCP tool hints |
-| Smoke | MCP config lifecycle | End-to-end MCP config creation and detection |
-
-### MCP Test Scenarios
-
-| Scenario | Layer | Validation |
-|---|---|---|
-| Init writes MCP config | Integration | `.omp/mcp.json` created with graphify entry |
-| Init preserves existing config | Integration | Existing graphify entry not overwritten |
-| Init merges into existing config | Integration | Graphify entry added to existing MCP config |
-| Init handles invalid JSON | Integration | Invalid `.omp/mcp.json` overwritten |
-| Context detects MCP config | Integration | Preamble includes MCP tool hints |
-| MCP config missing | Integration | Preamble does not include MCP hints |
-| MCP config in smoke test | Smoke | End-to-end MCP lifecycle |
-
-### Running MCP Tests
-
-```bash
-# Unit tests
-bun test tests/unit
-
-# Integration tests (includes MCP)
-bun test tests/integration
-
-# Smoke test (includes MCP)
-bun run tests/smoke/run.ts
-```
+|ensureFresh triggers update|Integration|Graph update runs before query when ensureFresh=true|
+|ensureFresh respects rate limit|Integration|Second request within 15min window does not update|
+|session_start proactive check|Integration|Background update fires on stale graph at session start|
+|turn-end background update|Integration|Update fires when graph stale + rate limit OK|
+|session_shutdown final update|Integration|Update fires on shutdown if graph stale|
+|config respects maxUpdateInterval|Unit|canRunGraphUpdate uses configured interval|
+|size safeguard prevents large updates|Unit|isGraphSizeManageable returns false for >50MB|

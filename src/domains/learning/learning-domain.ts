@@ -139,7 +139,7 @@ export function getRankedLearning(
  * Return all unresolved failures — entries in the failures array whose status
  * is not "resolved".
  *
- * These represent problems that have not yet been diagnosed, and are candidates
+ * These represent problems that have not yet been resolved, and are candidates
  * for agent attention.
  *
  * @param state  NoesisState (read-only).

@@ -3,8 +3,9 @@
 /**
  * Vault Projection Behavioral Tests
  *
- * Verifies that the turn-end hook triggers vault flush as specified in
- * OBSIDIAN_CONTRACT.md section 4 — "turn end projection".
+ * Verifies that the turn-end hook does not call vault flush
+ * (flush was removed in v0.2 when memory backends were deleted).
+ * Obsidian projection operates independently.
  */
 
 import { describe, it, expect } from "bun:test";
@@ -15,8 +16,8 @@ import { registerTurnEndHook } from "../../src/hooks/turn-end-hook.js";
 import type { VaultStore } from "../../src/vault/vault-store.js";
 import type { NoesisRuntime } from "../../src/runtime.js";
 
-describe("vault projection — turn-end hook flush", () => {
-  it("calls vaultStore.flush() when turn_end fires", async () => {
+describe("vault projection — turn-end hook (v0.2: no flush)", () => {
+  it("does not call vaultStore.flush() when turn_end fires", async () => {
     const dir = createTempDir();
     try {
       let flushCalled = 0;
@@ -44,19 +45,15 @@ describe("vault projection — turn-end hook flush", () => {
       const handlers = pi._getHooks("turn_end");
       expect(handlers).toHaveLength(1);
 
-      // Invoke the turn_end handler
+      // Invoke the turn_end handler — flush should NOT be called
       await (handlers[0] as (...args: unknown[]) => unknown)();
-      expect(flushCalled).toBe(1);
-
-      // Invoke again — flush should be called each time
-      await (handlers[0] as (...args: unknown[]) => unknown)();
-      expect(flushCalled).toBe(2);
+      expect(flushCalled).toBe(0);
     } finally {
       dir.cleanup();
     }
   });
 
-  it("skips flush when vault store does not implement flush", async () => {
+  it("turn_end hook runs without crash even if vaultStore lacks flush", async () => {
     const dir = createTempDir();
     try {
       const vaultStore: VaultStore = {

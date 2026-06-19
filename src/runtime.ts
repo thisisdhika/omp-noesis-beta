@@ -17,15 +17,20 @@ export interface NoesisRuntime {
   projectRoot: string;
   stateManager: StateManager;
   vaultStore: VaultStore;
+  /**
+   * Optional callback to bridge durable retention to OMP's memory backend.
+   * Called after a belief fact is stored locally, enabling cross-session persistence.
+   * The implementation may be undefined if OMP memory backend is unavailable.
+   */
+  retainToOmp?: (items: Array<{ content: string; context?: string }>) => Promise<void>;
 }
 
 export async function createRuntime(pi: ExtensionAPI): Promise<NoesisRuntime> {
   const projectRoot = process.cwd();
   const stateManager = new StateManager(projectRoot);
+  // v0.2: state.json is the primary persistence authority. preserveData
+  // from OMP compaction lifecycle is handled via ExtensionAPI hooks.
   await stateManager.initialize();
   const vaultStore = await createVaultStore(projectRoot);
-  if (vaultStore.sync) {
-    await vaultStore.sync();
-  }
   return { projectRoot, stateManager, vaultStore };
 }

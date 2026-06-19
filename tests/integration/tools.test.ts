@@ -74,11 +74,10 @@ function toolExecutor(
 describe("tool registration", () => {
   it("registers all expected tools by name", async () => {
     const { pi } = await setup();
-    expect(pi._getTool("noesis_focus")).toBeTruthy();
     expect(pi._getTool("noesis_believe_fact")).toBeTruthy();
     expect(pi._getTool("noesis_infer")).toBeTruthy();
     expect(pi._getTool("noesis_commit")).toBeTruthy();
-    expect(pi._getTool("noesis_recall")).toBeTruthy();
+    expect(pi._getTool("noesis_state_inspect")).toBeTruthy();
     expect(pi._getTool("noesis_attend")).toBeTruthy();
   });
 
@@ -86,11 +85,10 @@ describe("tool registration", () => {
     const { pi } = await setup();
     const names = [
       "noesis_attend",
-      "noesis_focus",
       "noesis_believe_fact",
       "noesis_infer",
       "noesis_commit",
-      "noesis_recall",
+      "noesis_state_inspect",
     ];
     for (const name of names) {
       expect(pi._getTool(name)).toBeTruthy();
@@ -188,7 +186,7 @@ describe("noesis_commit", () => {
   });
 });
 
-describe("noesis_recall", () => {
+describe("noesis_state_inspect — current in-memory state", () => {
   it("returns active beliefs after a fact has been created", async () => {
     const { pi } = await setup();
 
@@ -201,7 +199,7 @@ describe("noesis_recall", () => {
     });
 
     // Act — query active beliefs
-    const recall = toolExecutor(pi, "noesis_recall");
+    const recall = toolExecutor(pi, "noesis_state_inspect");
     const result = await recall({
       query: "active_beliefs",
       minConfidence: 0.75,
@@ -271,61 +269,7 @@ describe("noesis_believe_decision", () => {
   });
 });
 
-describe("noesis_believe_learning", () => {
-  it("resolves learning into belief fact when executed", async () => {
-    const { pi, runtime } = await setup();
-    const execute = toolExecutor(pi, "noesis_believe_learning");
 
-    // Arrange — seed a learning failure entry
-    const learningId = "le-learning-1";
-    await runtime.stateManager.mutate((state) => {
-      state.learning.failures.push({
-        id: learningId,
-        status: "captured",
-        description: "Module resolution failed for @scope/package",
-        capturedAt: now(),
-      });
-    });
-
-    // Act — promote learning to belief
-    const result = await execute({
-      learningId,
-      rootCause: "Missing export map in package.json",
-      fix: "Add exports field to package.json",
-    });
-
-    expect(result.isError).toBe(false);
-    expect(result.details.kind).toBe("fact (from learning)");
-
-    const state = runtime.stateManager.read();
-    expect(state.belief.facts).toHaveLength(1);
-    expect(state.belief.facts[0]!.content).toContain("Module resolution failed");
-    expect(state.belief.facts[0]!.content).toContain("Missing export map");
-    expect(state.belief.facts[0]!.source).toBe("inference");
-  });
-
-  it("returns error when missing learningId", async () => {
-    const { pi } = await setup();
-    const def = pi._getTool("noesis_believe_learning") as Record<string, unknown>;
-    const schema = def.parameters as { safeParse: (d: unknown) => { success: boolean } };
-    const result = schema.safeParse({
-      rootCause: "Missing config",
-      fix: "Add config file",
-    });
-    expect(result.success).toBe(false);
-  });
-
-  it("returns error when missing rootCause", async () => {
-    const { pi } = await setup();
-    const def = pi._getTool("noesis_believe_learning") as Record<string, unknown>;
-    const schema = def.parameters as { safeParse: (d: unknown) => { success: boolean } };
-    const result = schema.safeParse({
-      learningId: "test-l-1",
-      fix: "Fix the issue",
-    });
-    expect(result.success).toBe(false);
-  });
-});
 
 describe("noesis_believe_fact contradictions", () => {
   it("supersedes contradicting facts when contradicts provided", async () => {
@@ -764,10 +708,10 @@ describe("noesis_commit add_action", () => {
 });
 
 // ===========================================================================
-// Additional noesis_recall coverage — all query variants
+// Additional noesis_state_inspect coverage — current in-memory state query variants
 // ===========================================================================
 
-describe("noesis_recall decisions", () => {
+describe("noesis_state_inspect decisions — in-memory state", () => {
   it("returns active decisions", async () => {
     const { pi } = await setup();
 
@@ -780,7 +724,7 @@ describe("noesis_recall decisions", () => {
     });
 
     // Act
-    const recall = toolExecutor(pi, "noesis_recall");
+    const recall = toolExecutor(pi, "noesis_state_inspect");
     const result = await recall({
       query: "active_decisions",
     });
@@ -792,7 +736,7 @@ describe("noesis_recall decisions", () => {
   });
 });
 
-describe("noesis_recall hypotheses", () => {
+describe("noesis_state_inspect hypotheses — in-memory state", () => {
   it("returns unresolved hypotheses", async () => {
     const { pi } = await setup();
 
@@ -805,7 +749,7 @@ describe("noesis_recall hypotheses", () => {
     });
 
     // Act
-    const recall = toolExecutor(pi, "noesis_recall");
+    const recall = toolExecutor(pi, "noesis_state_inspect");
     const result = await recall({
       query: "unresolved_hypotheses",
     });
@@ -832,7 +776,7 @@ describe("noesis_recall hypotheses", () => {
     });
 
     // Act — filter by database tag
-    const recall = toolExecutor(pi, "noesis_recall");
+    const recall = toolExecutor(pi, "noesis_state_inspect");
     const result = await recall({
       query: "unresolved_hypotheses",
       tagFilter: ["database"],
@@ -845,7 +789,7 @@ describe("noesis_recall hypotheses", () => {
   });
 });
 
-describe("noesis_recall learning", () => {
+describe("noesis_state_inspect learning — in-memory state", () => {
   it("returns relevant learning entries with query=relevant_learning", async () => {
     const { pi, runtime } = await setup();
 
@@ -868,7 +812,7 @@ describe("noesis_recall learning", () => {
     });
 
     // Act
-    const recall = toolExecutor(pi, "noesis_recall");
+    const recall = toolExecutor(pi, "noesis_state_inspect");
     const result = await recall({
       query: "relevant_learning",
       limit: 5,
@@ -902,7 +846,7 @@ describe("noesis_recall learning", () => {
     });
 
     // Act — filter by database skillScope
-    const recall = toolExecutor(pi, "noesis_recall");
+    const recall = toolExecutor(pi, "noesis_state_inspect");
     const result = await recall({
       query: "relevant_learning",
       skillScope: "database",
@@ -916,7 +860,7 @@ describe("noesis_recall learning", () => {
   });
 });
 
-describe("noesis_recall workflow", () => {
+describe("noesis_state_inspect workflow — in-memory state", () => {
   it("returns current workflow with query=current_workflow", async () => {
     const { pi } = await setup();
 
@@ -934,7 +878,7 @@ describe("noesis_recall workflow", () => {
     });
 
     // Act
-    const recall = toolExecutor(pi, "noesis_recall");
+    const recall = toolExecutor(pi, "noesis_state_inspect");
     const result = await recall({
       query: "current_workflow",
     });
@@ -951,7 +895,7 @@ describe("noesis_recall workflow", () => {
     const { pi, runtime } = await setup();
 
     // Arrange — use the empty default state
-    const recall = toolExecutor(pi, "noesis_recall");
+    const recall = toolExecutor(pi, "noesis_state_inspect");
 
     // The EMPTY_STATE has a workflow object with empty fields — verify it still works
     const result = await recall({
@@ -964,7 +908,7 @@ describe("noesis_recall workflow", () => {
   });
 });
 
-describe("noesis_recall digest", () => {
+describe("noesis_state_inspect digest — in-memory state full snapshot", () => {
   it("returns full state digest with query=full_state_digest", async () => {
     const { pi, runtime } = await setup();
 
@@ -984,7 +928,7 @@ describe("noesis_recall digest", () => {
     });
 
     // Act
-    const recall = toolExecutor(pi, "noesis_recall");
+    const recall = toolExecutor(pi, "noesis_state_inspect");
     const result = await recall({
       query: "full_state_digest",
     });
@@ -999,8 +943,8 @@ describe("noesis_recall digest", () => {
   });
 });
 
-describe("noesis_recall search", () => {
-  it("searches across all layers with query=search", async () => {
+describe("noesis_state_inspect search — in-memory keyword search", () => {
+  it("searches across all in-memory state layers with query=search", async () => {
     const { pi } = await setup();
 
     // Arrange — seed data with a keyword
@@ -1012,7 +956,7 @@ describe("noesis_recall search", () => {
     });
 
     // Act — search for "Database"
-    const recall = toolExecutor(pi, "noesis_recall");
+    const recall = toolExecutor(pi, "noesis_state_inspect");
     const result = await recall({
       query: "search",
       keyword: "Database",
@@ -1027,7 +971,7 @@ describe("noesis_recall search", () => {
 
   it("returns error when missing keyword for search", async () => {
     const { pi } = await setup();
-    const execute = toolExecutor(pi, "noesis_recall");
+    const execute = toolExecutor(pi, "noesis_state_inspect");
 
     const result = await execute({
       query: "search",
@@ -1115,30 +1059,6 @@ describe("noesis_believe_decision refine", () => {
   });
 });
 
-describe("noesis_believe_learning refine", () => {
-  it("passes refinement for valid learning", async () => {
-    const { pi } = await setup();
-    const def = pi._getTool("noesis_believe_learning") as Record<string, unknown>;
-    const schema = def.parameters as { safeParse: (d: unknown) => { success: boolean } };
-    const result = schema.safeParse({
-      learningId: "le-1",
-      rootCause: "Missing config",
-      fix: "Add config file",
-    });
-    expect(result.success).toBe(true);
-  });
-
-  it("rejects learning without fix", async () => {
-    const { pi } = await setup();
-    const def = pi._getTool("noesis_believe_learning") as Record<string, unknown>;
-    const schema = def.parameters as { safeParse: (d: unknown) => { success: boolean } };
-    const result = schema.safeParse({
-      learningId: "le-1",
-      rootCause: "Missing config",
-    });
-    expect(result.success).toBe(false);
-  });
-});
 
 describe("noesis_commit refine", () => {
   it("passes refinement for valid extend_workflow", async () => {
@@ -1308,10 +1228,10 @@ describe("noesis_infer refine", () => {
   });
 });
 
-describe("noesis_recall refine", () => {
+describe("noesis_state_inspect refine — keyword required for in-memory search", () => {
   it("passes refinement for search with keyword", async () => {
     const { pi } = await setup();
-    const def = pi._getTool("noesis_recall") as Record<string, unknown>;
+    const def = pi._getTool("noesis_state_inspect") as Record<string, unknown>;
     const schema = def.parameters as { safeParse: (d: unknown) => { success: boolean } };
     const result = schema.safeParse({
       query: "search",
@@ -1322,7 +1242,7 @@ describe("noesis_recall refine", () => {
 
   it("rejects search without keyword", async () => {
     const { pi } = await setup();
-    const def = pi._getTool("noesis_recall") as Record<string, unknown>;
+    const def = pi._getTool("noesis_state_inspect") as Record<string, unknown>;
     const schema = def.parameters as { safeParse: (d: unknown) => { success: boolean } };
     const result = schema.safeParse({
       query: "search",
@@ -1332,7 +1252,7 @@ describe("noesis_recall refine", () => {
 
   it("passes refinement for non-search queries without keyword", async () => {
     const { pi } = await setup();
-    const def = pi._getTool("noesis_recall") as Record<string, unknown>;
+    const def = pi._getTool("noesis_state_inspect") as Record<string, unknown>;
     const schema = def.parameters as { safeParse: (d: unknown) => { success: boolean } };
     const result = schema.safeParse({
       query: "active_beliefs",
@@ -1450,7 +1370,7 @@ describe("noesis_infer execute edge cases", () => {
   });
 });
 
-describe("noesis_recall current_workflow no workflow", () => {
+describe("noesis_state_inspect current_workflow no workflow — in-memory state", () => {
   it("returns no-workflow response when workflow is undefined", async () => {
     const { pi, runtime } = await setup();
 
@@ -1459,7 +1379,7 @@ describe("noesis_recall current_workflow no workflow", () => {
       (state.commitment as Record<string, unknown>).workflow = undefined;
     });
 
-    const recall = toolExecutor(pi, "noesis_recall");
+    const recall = toolExecutor(pi, "noesis_state_inspect");
     const result = await recall({
       query: "current_workflow",
     });
@@ -1471,7 +1391,7 @@ describe("noesis_recall current_workflow no workflow", () => {
   });
 });
 
-describe("noesis_recall search edge cases", () => {
+describe("noesis_state_inspect search edge cases — in-memory state", () => {
   it("matches decisions by alternatives", async () => {
     const { pi, runtime } = await setup();
 
@@ -1489,7 +1409,7 @@ describe("noesis_recall search edge cases", () => {
       });
     });
 
-    const recall = toolExecutor(pi, "noesis_recall");
+    const recall = toolExecutor(pi, "noesis_state_inspect");
     const result = await recall({
       query: "search",
       keyword: "XYZ",
@@ -1517,7 +1437,7 @@ describe("noesis_recall search edge cases", () => {
       });
     });
 
-    const recall = toolExecutor(pi, "noesis_recall");
+    const recall = toolExecutor(pi, "noesis_state_inspect");
     const result = await recall({
       query: "search",
       keyword: "EVIDENCE_MATCH",
@@ -1543,7 +1463,7 @@ describe("noesis_recall search edge cases", () => {
       });
     });
 
-    const recall = toolExecutor(pi, "noesis_recall");
+    const recall = toolExecutor(pi, "noesis_state_inspect");
     const result = await recall({
       query: "search",
       keyword: "ROOTCAUSE_MATCH",
@@ -1569,7 +1489,7 @@ describe("noesis_recall search edge cases", () => {
       });
     });
 
-    const recall = toolExecutor(pi, "noesis_recall");
+    const recall = toolExecutor(pi, "noesis_state_inspect");
     const result = await recall({
       query: "search",
       keyword: "FIX_MATCH",

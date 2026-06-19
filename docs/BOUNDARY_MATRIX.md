@@ -54,6 +54,7 @@
 | Skill loading and routing | **OMP** |
 | Compaction pipeline | **OMP** |
 | Long-term general memory | **OMP / Mnemopi / Hindsight** |
+| Structured durable vault search | **Noesis** (structured cognitive artifacts; vault backends provide storage, Noesis owns the schema and search contract) |
 | Code graph construction | **Graphify** |
 | Graph query semantics | **Graphify** |
 | Structural evidence | **Graphify** |
@@ -62,7 +63,7 @@
 | Beliefs and decisions | **Noesis** |
 | Belief revision | **Noesis** |
 | Learning from execution | **Noesis** |
-| Workflow artifact | **Noesis** |
+| Workflow cognition metadata | **Noesis** (ephemeral; OMP owns execution) |
 | Human-readable projection | **Obsidian** |
 
 ## 5. Hard Ownership Rules
@@ -138,5 +139,5 @@ A design stays aligned only if all statements remain true:
 - Noesis is the cognitive substrate.
 - Obsidian is optional.
 - Removing Obsidian does not break runtime behavior.
-- Removing Graphify weakens core cognition and context selection.
+- Removing Graphify degrades noesis at its core.
 - Noesis adds continuity and smart-zone discipline, not platform sprawl.

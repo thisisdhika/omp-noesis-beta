@@ -83,7 +83,7 @@ function getSchema(pi: MockPi, name: string): z.ZodType<unknown> {
 describe("registerToolAliases", () => {
   it("registers all 9 aliases", async () => {
     const { pi } = await setup();
-    expect(pi._toolCount()).toBe(9);
+    expect(pi._toolCount()).toBe(7);
   });
 
   it("registers focus_task with correct metadata", async () => {
@@ -103,7 +103,7 @@ describe("registerToolAliases", () => {
     expect(tool).toBeDefined();
     expect(tool!.name).toBe("switch_focus");
     expect(tool!.label).toBe("Noesis: Switch Focus");
-    expect(tool!.description).toContain("Alias for noesis_focus");
+    expect(tool!.description).toContain("Alias for noesis_attend");
   });
 
   it("registers store_memory with correct metadata", async () => {
@@ -133,23 +133,17 @@ describe("registerToolAliases", () => {
     expect(tool!.description).toContain("Alias for noesis_commit");
   });
 
-  it("registers read_memory with correct metadata", async () => {
+  it("registers read_memory with correct metadata and boundary wording", async () => {
     const { pi } = await setup();
     const tool = pi._getTool("read_memory");
     expect(tool).toBeDefined();
     expect(tool!.name).toBe("read_memory");
     expect(tool!.label).toBe("Noesis: Read Memory");
-    expect(tool!.description).toContain("Alias for noesis_recall");
+    expect(tool!.description).toContain("Alias for noesis_state_inspect");
+    // Phase 2 boundary: proves read_memory targets in-memory state
+    expect(tool!.description as string).toMatch(/in-memory/i);
   });
 
-  it("registers search_archives with correct metadata", async () => {
-    const { pi } = await setup();
-    const tool = pi._getTool("search_archives");
-    expect(tool).toBeDefined();
-    expect(tool!.name).toBe("search_archives");
-    expect(tool!.label).toBe("Noesis: Search Archives");
-    expect(tool!.description).toContain("Alias for noesis_vault_search");
-  });
 
   it("registers store_decision with correct metadata", async () => {
     const { pi } = await setup();
@@ -160,24 +154,16 @@ describe("registerToolAliases", () => {
     expect(tool!.description).toContain("Alias for noesis_believe_decision");
   });
 
-  it("registers store_learning with correct metadata", async () => {
-    const { pi } = await setup();
-    const tool = pi._getTool("store_learning");
-    expect(tool).toBeDefined();
-    expect(tool!.name).toBe("store_learning");
-    expect(tool!.label).toBe("Noesis: Store Learning");
-    expect(tool!.description).toContain("Alias for noesis_believe_learning");
-  });
 
   it("each alias description mentions the canonical tool name", async () => {
     const { pi } = await setup();
-    const canonical = ["noesis_attend", "noesis_focus", "noesis_believe_fact",
-      "noesis_believe_decision", "noesis_believe_learning",
-      "noesis_infer", "noesis_commit", "noesis_recall", "noesis_vault_search"];
+    const canonical = ["noesis_attend", "noesis_attend", "noesis_believe_fact",
+      "noesis_believe_decision",
+      "noesis_infer", "noesis_commit", "noesis_state_inspect"];
 
     for (const [idx, name] of ["focus_task", "switch_focus", "store_memory",
-      "store_decision", "store_learning",
-      "test_hypothesis", "track_workflow", "read_memory", "search_archives"].entries()) {
+      "store_decision",
+      "test_hypothesis", "track_workflow", "read_memory"].entries()) {
       const tool = pi._getTool(name);
       expect(tool).toBeDefined();
       expect(tool!.description as string).toContain(canonical[idx]!);
@@ -265,16 +251,6 @@ describe("registerToolAliases", () => {
     expect(result.success).toBe(true);
   });
 
-  it("store_learning schema accepts valid learning input", async () => {
-    const { pi } = await setup();
-    const schema = getSchema(pi, "store_learning");
-    const result = schema.safeParse({
-      learningId: "LRN-001",
-      rootCause: "Null pointer",
-      fix: "Add null check",
-    });
-    expect(result.success).toBe(true);
-  });
 
   it("test_hypothesis schema accepts missing content for add_hypothesis (no refine)", async () => {
     const { pi } = await setup();
@@ -327,36 +303,6 @@ describe("registerToolAliases", () => {
     expect(result.success).toBe(true);
   });
 
-  it("search_archives schema accepts valid input", async () => {
-    const { pi } = await setup();
-    const schema = getSchema(pi, "search_archives");
-    const result = schema.safeParse({
-      query: "test query",
-      kind: "belief",
-      maxResults: 5,
-    });
-    expect(result.success).toBe(true);
-  });
-
-  it("search_archives schema rejects maxResults over 20", async () => {
-    const { pi } = await setup();
-    const schema = getSchema(pi, "search_archives");
-    const result = schema.safeParse({
-      query: "test",
-      maxResults: 100,
-    });
-    expect(result.success).toBe(false);
-  });
-
-  it("search_archives schema rejects invalid kind", async () => {
-    const { pi } = await setup();
-    const schema = getSchema(pi, "search_archives");
-    const result = schema.safeParse({
-      query: "test",
-      kind: "invalid",
-    });
-    expect(result.success).toBe(false);
-  });
 
   // ── Execution tests ──
 
@@ -494,16 +440,4 @@ describe("registerToolAliases", () => {
     expect(result.content[0]!.text).toContain("(none)");
   });
 
-  it("search_archives execution handles no vault", async () => {
-    const { pi } = await setup();
-    const execute = toolExecutor(pi, "search_archives");
-
-    const result = await execute({
-      query: "test query",
-    });
-
-    // Vault is not configured in test environment
-    expect(result.isError).toBe(true);
-    expect(result.content[0]!.text).toContain("Vault not available");
-  });
 });

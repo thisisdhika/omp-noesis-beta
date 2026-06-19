@@ -13,16 +13,16 @@ bun -e "JSON.parse(await Bun.file('.omp/noesis/state.json').text())"
 ls -la .omp/noesis/state.json
 ```
 
-> The following commands do NOT exist and are not planned: `omp noesis status`, `omp noesis preamble --dry-run`, `omp noesis validate-state`, `omp noesis reset`. State inspection is done via `noesis_recall` tool during an active session.
+> The following commands do NOT exist and are not planned: `omp noesis status`, `omp noesis preamble --dry-run`, `omp noesis validate-state`, `omp noesis reset`. State inspection is done via `noesis_state_inspect` tool during an active session.
 
 ## Symptom Matrix
 
 | Symptom | Likely Cause | Quick Fix | Deep Fix |
 |---|---|---|---|
-| "Preamble missing beliefs" | Beliefs below 0.75 threshold | Lower `minConfidence` in `noesis_recall` call | Verify beliefs have correct confidence or archive low-confidence entries |
+| "Preamble missing beliefs" | Beliefs below 0.75 threshold | Lower `minConfidence` in `noesis_state_inspect` call | Verify beliefs have correct confidence or archive low-confidence entries |
 | "Graph may be stale" | Source files newer than graph | `graphify . --update` | Enable `autoUpdate: true` |
-| Agent repeats mistakes | Learning not captured | Check `noesis_recall` for learning | Ensure `autoCaptureFailures: true` |
-| State file corrupted | Disk write interrupted | Restore from backup or remove state.json to recreate fresh state | Restore from `preserveData.noesis` if available |
+| Agent repeats mistakes | Learning not captured | Check `noesis_state_inspect` for learning | Ensure `autoCaptureFailures: true` |
+| State file corrupted | Disk write interrupted | Remove state.json to recreate fresh state (learning/workflow lost) | `.omp/noesis/state.json` is the sole persistence authority; `preserveData.noesis` is a compaction cache, not a recoverable backup |
 | Double preamble | Hook precedence bug | Restart session | Check `contextHookFired` flag |
 | Vault not writing | Path not writable | Check permissions | Switch to `backend: "noop"` |
 | Agent never uses noesis | System prompt hook not firing | Check `before_agent_start` hook registration in extension logs | Verify extension loaded via `omp doctor` |

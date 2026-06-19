@@ -1,8 +1,7 @@
-import type { IAttentionRepository } from "../../domains/attention/repository.js";
 import type { AttentionLayer } from "../../domains/attention/schema.js";
 import { now } from "../../shared/time.js";
 
-export class AttentionRepository implements IAttentionRepository {
+export class AttentionRepository {
   constructor(private segment: AttentionLayer) {}
 
   get(): AttentionLayer {
@@ -29,3 +28,4 @@ export class AttentionRepository implements IAttentionRepository {
     this.segment.updatedAt = updates.updatedAt ?? now();
   }
 }
+export type IAttentionRepo = Pick<AttentionRepository, 'get' | 'set' | 'update'>;

@@ -17,7 +17,7 @@ import { isStaleHours } from "../../shared/time.js";
  * Remove unresolved entries that are older than `staleHours`.
  *
  * Resolved entries (status === "resolved") are always kept regardless of age,
- * since they represent diagnosed knowledge worth retaining.
+ * since they represent resolved knowledge worth retaining.
  *
  * @param entries     Full list of learning entries.
  * @param staleHours  Age threshold in hours (default 720 = 30 days).

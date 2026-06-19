@@ -91,7 +91,7 @@ metadata:
 
 ## 6. What Noesis Never Does
 
-- Read from the Obsidian vault during runtime for cognition (pull/search methods exist for `noesis_vault_search` but are optional and separate from core cognition)
+- Read from the Obsidian vault during runtime for cognition (vault read/search methods query the **memory backends** — Mnemopi, Local — never Obsidian; Obsidian is a write-only projection target)
 - Require Obsidian for correctness
 - Create its own note editor or viewer
 - Index or search the vault (Obsidian has built-in search)
@@ -99,12 +99,11 @@ metadata:
 - Replace Graphify's `--obsidian` export
 - Build a custom graph view
 
-## 7. Relationship to Mnemopi and Hindsight
+## 7. Relationship to Mnemopi
 
 | System | Role | Format | Direction |
 |---|---|---|---|
 | **Mnemopi** | Cross-session long-term memory | SQLite / internal | Read/write |
-| **Hindsight** | Session reflection | Internal | Read/write |
 | **Noesis Obsidian** | Human-reviewable projection | Markdown vault | Write-only |
 
 ### CompositeVaultStore Architecture
@@ -113,7 +112,7 @@ The system uses a composite pattern combining two categories of backends detecte
 
 | Role | Backends | Purpose |
 |---|---|---|
-| **Memory** | Mnemopi / Hindsight / Local | Source of truth for reads and search (pull, search) |
+| **Memory** | Mnemopi / Local | Source of truth for reads and search (pull, search) |
 | **Projection** | Obsidian | Human-reviewable display (push/write only) |
 
 When both a memory and projection backend are detected, `CompositeVaultStore` bridges them:
@@ -139,7 +138,7 @@ vault always up to date for human review.
 
 At startup, the system detects backends independently via `vault-detector.ts`:
 
-- **Memory backend**: checked in priority order — mnemopi (.omp/mnemopi.db) > hindsight (.omp/hindsight/) > local (MEMORY.md) > none
+- **Memory backend**: checked in priority order — mnemopi (.omp/mnemopi.db) > local (MEMORY.md) > none
 - **Projection backend**: obsidian (.obsidian/) or none
 - **Composite**: When both a memory and projection backend exist, CompositeVaultStore combines them; otherwise the single detected backend is used directly, and NoopVaultStore provides a no-op fallback
 

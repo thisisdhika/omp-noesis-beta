@@ -1,8 +1,7 @@
-import type { IInferenceRepository } from "../../domains/inference/repository.js";
 import type { InferenceLayer, Hypothesis, ReasoningStep } from "../../domains/inference/schema.js";
 import { now } from "../../shared/time.js";
 
-export class InferenceRepository implements IInferenceRepository {
+export class InferenceRepository {
   constructor(private segment: InferenceLayer) {}
 
   addHypothesis(hypothesis: Hypothesis): void {
@@ -37,3 +36,4 @@ export class InferenceRepository implements IInferenceRepository {
     this.segment.hypotheses = [...hypotheses];
   }
 }
+export type IInferenceRepo = Pick<InferenceRepository, 'addHypothesis' | 'addReasoningStep' | 'findHypothesisById' | 'getAllHypotheses' | 'getAllReasoningSteps' | 'updateHypothesis' | 'setHypotheses'>;

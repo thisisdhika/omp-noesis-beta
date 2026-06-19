@@ -234,7 +234,7 @@ export function registerInferTool(pi: ExtensionAPI, runtime: NoesisRuntime): voi
     description:
       "Manages hypotheses and reasoning steps in the cognitive state. " +
       "Call when testing a theory, confirming or refuting a hypothesis, or recording a reasoning step. " +
-      "Do NOT call for simple facts — use noesis_believe_fact instead, or noesis_believe_decision / noesis_believe_learning for those subtypes. " +
+      "Do NOT call for simple facts — use noesis_believe_fact instead, or noesis_believe_decision for those subtypes. " +
       "Confirmed hypotheses auto-promote to beliefs. " +
       "Runtime validates required fields per action and returns clear error messages, " +
       "so partial or incomplete payloads are not rejected at parse time. " +

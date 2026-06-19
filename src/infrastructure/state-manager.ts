@@ -61,8 +61,8 @@ export class StateManager {
       }
     }
 
-    if (loaded === null && preserveData && preserveData.noesis) {
-      loaded = preserveData.noesis;
+    if (loaded === null && preserveData && preserveData["omp-noesis"]) {
+      loaded = preserveData["omp-noesis"];
     }
 
     if (loaded === null) {

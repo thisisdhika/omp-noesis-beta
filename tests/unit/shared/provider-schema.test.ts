@@ -118,7 +118,7 @@ describe("deepseek — strips additionalProperties", () => {
   });
 
   it("removes additionalProperties from nested object properties", () => {
-    const tool = makeTool("noesis_recall", "Query state", {
+    const tool = makeTool("noesis_state_inspect", "Query state", {
       type: "object",
       properties: {
         query: { type: "string" },

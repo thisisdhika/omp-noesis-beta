@@ -1,10 +1,13 @@
 "use strict";
 
 /**
- * Cross-Session Recall Behavioral Tests
+ * Cross-Session State Persistence Behavioral Tests
  *
- * Verifies that cognitive state persists across session boundaries:
- * init -> mutate -> destroy -> re-init -> verify data survives.
+ * Tests the StateManager's ability to persist cognitive state across session
+ * boundaries via file I/O (init -> mutate -> destroy -> re-init).
+ *
+ * NOTE: This tests infrastructure-level state survival, NOT the noesis_state_inspect
+ * tool. For noesis_state_inspect / executeRecall unit tests, see tests/unit/tools/.
  */
 
 import { describe, it, expect } from "bun:test";

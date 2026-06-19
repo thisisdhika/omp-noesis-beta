@@ -92,9 +92,10 @@ export async function installGraphifySkill(projectRoot: string): Promise<string>
  */
 export async function runGraphifyBuild(
   projectRoot: string,
+  extraArgs?: string[],
 ): Promise<{ success: boolean; output: string }> {
   try {
-    const proc = Bun.spawn(["graphify", ".", "--no-viz"], {
+    const proc = Bun.spawn(["graphify", ".", "--no-viz", ...(extraArgs ?? [])], {
       cwd: projectRoot,
       stdout: "pipe",
       stderr: "pipe",
