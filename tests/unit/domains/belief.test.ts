@@ -100,7 +100,149 @@ describe("addFact", () => {
     expect(fact.status).toBe("active");
     expect(state.belief.facts).toHaveLength(1);
   });
+
+  it("auto-supersedes existing active facts with the same content (K*6 equivalence)", () => {
+    const state = freshState();
+    const first = addFact(state, {
+      content: "Duplicate content",
+      confidence: 0.7,
+      source: "execution",
+    });
+
+    const second = addFact(state, {
+      content: "Duplicate content",
+      confidence: 0.9,
+      source: "execution",
+    });
+
+    // First fact should be superseded by the content-match
+    const refreshedFirst = state.belief.facts.find((f) => f.id === first.id)!;
+    expect(refreshedFirst.status).toBe("superseded");
+    expect(refreshedFirst.supersededBy).toBe(second.id);
+
+    // Second fact is active
+    expect(second.status).toBe("active");
+
+    // getActiveFacts should only return the second fact
+    const active = getActiveFacts(state);
+    expect(active).toHaveLength(1);
+    expect(active[0]!.id).toBe(second.id);
+  });
+
+  it("prefers explicit contradicts over content-match for unrelated content", () => {
+    const state = freshState();
+    const unrelated = addFact(state, {
+      content: "Unrelated content",
+      confidence: 0.7,
+      source: "execution",
+    });
+
+    // Create new fact with different content but explicitly contradicts the unrelated one
+    const newFact = addFact(state, {
+      content: "New content",
+      confidence: 0.9,
+      source: "execution",
+      contradicts: [unrelated.id],
+    });
+
+    // Unrelated fact should be superseded via explicit contradicts
+    expect(state.belief.facts.find((f) => f.id === unrelated.id)!.status).toBe("superseded");
+    expect(state.belief.facts.find((f) => f.id === unrelated.id)!.supersededBy).toBe(newFact.id);
+  });
+
+  it("does not supersede already-superseded facts with same content", () => {
+    const state = freshState();
+    const first = addFact(state, {
+      content: "Superseded then re-added",
+      confidence: 0.6,
+      source: "user",
+    });
+
+    // Second fact supersedes the first (higher confidence content match)
+    const second = addFact(state, {
+      content: "Superseded then re-added",
+      confidence: 0.8,
+      source: "execution",
+    });
+
+    // Count superseded before the third add
+    const supersededBefore = state.belief.facts.filter((f) => f.status === "superseded").length;
+
+    // Third fact with same content, higher confidence — replaces second only
+    const third = addFact(state, {
+      content: "Superseded then re-added",
+      confidence: 0.9,
+      source: "inference",
+    });
+
+    const supersededAfter = state.belief.facts.filter((f) => f.status === "superseded").length;
+    // Only second gets newly superseded (first was already superseded)
+    expect(supersededAfter - supersededBefore).toBe(1);
+
+    const refreshedFirst = state.belief.facts.find((f) => f.id === first.id)!;
+    expect(refreshedFirst.status).toBe("superseded");
+    expect(refreshedFirst.supersededBy).toBe(second.id); // first was superseded by second, not third
+
+    const refreshedSecond = state.belief.facts.find((f) => f.id === second.id)!;
+    expect(refreshedSecond.status).toBe("superseded");
+    expect(refreshedSecond.supersededBy).toBe(third.id); // second superseded by third
+
+    const active = getActiveFacts(state);
+    expect(active).toHaveLength(1);
+    expect(active[0]!.id).toBe(third.id);
+  });
+
+  it("records lower-confidence duplicate as superseded without creating an active head", () => {
+    const state = freshState();
+    const original = addFact(state, {
+      content: "Existing high-confidence fact",
+      confidence: 0.9,
+      source: "execution",
+    });
+
+    // New fact with same content but lower confidence
+    const duplicate = addFact(state, {
+      content: "Existing high-confidence fact",
+      confidence: 0.5,
+      source: "user",
+    });
+
+    // Original should still be active — new fact should be superseded by it
+    const refreshedOriginal = state.belief.facts.find((f) => f.id === original.id)!;
+    expect(refreshedOriginal.status).toBe("active");
+    expect(refreshedOriginal.supersededBy).toBeUndefined();
+
+    // Duplicate should be superseded by the original
+    const refreshedDuplicate = state.belief.facts.find((f) => f.id === duplicate.id)!;
+    expect(refreshedDuplicate.status).toBe("superseded");
+    expect(refreshedDuplicate.supersededBy).toBe(original.id);
+
+    // getActiveFacts should return only the original
+    const active = getActiveFacts(state);
+    expect(active).toHaveLength(1);
+    expect(active[0]!.id).toBe(original.id);
+  });
+
+  it("equal-confidence duplicate replaces existing active head", () => {
+    const state = freshState();
+    const original = addFact(state, {
+      content: "Equal confidence test",
+      confidence: 0.8,
+      source: "execution",
+    });
+
+    const replacement = addFact(state, {
+      content: "Equal confidence test",
+      confidence: 0.8,
+      source: "user",
+    });
+
+    // Original should be superseded (new one has >= confidence)
+    expect(state.belief.facts.find((f) => f.id === original.id)!.status).toBe("superseded");
+    expect(replacement.status).toBe("active");
+  });
 });
+
 
 // ---------------------------------------------------------------------------
 // addDecision

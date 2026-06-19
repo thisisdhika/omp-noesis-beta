@@ -97,6 +97,23 @@ export async function executeBelieveFact(
     });
   }
 
+  // v0.3: Project belief fact to vault as best-effort side effect
+  runtime.vaultStore.push({
+    kind: "belief",
+    projectPath: runtime.projectRoot,
+    id: fact.id,
+    pushedAt: fact.createdAt,
+    content: fact.content,
+    metadata: {
+      confidence: fact.confidence,
+      source: fact.source,
+      tags: fact.tags?.join(", ") ?? null,
+      evidence: fact.evidence ?? null,
+    },
+  }).catch(() => {
+    // Best-effort vault projection; failure must not break the belief write
+  });
+
   const warningText = contestedWarnings.length > 0 ? `\n\nWarnings:\n${contestedWarnings.join("\n")}` : "";
 
   return {
@@ -167,6 +184,23 @@ export async function executeBelieveDecision(
   if (!decision) {
     throw new Error(`Failed to retrieve created decision: ${decisionId}`);
   }
+
+  // v0.3: Project decision to vault as best-effort side effect
+  runtime.vaultStore.push({
+    kind: "decision",
+    projectPath: runtime.projectRoot,
+    id: decision.id,
+    pushedAt: decision.createdAt,
+    content: decision.content,
+    metadata: {
+      rationale: decision.rationale,
+      source: decision.source,
+      alternatives: decision.alternatives?.join(", ") ?? null,
+      tags: decision.tags?.join(", ") ?? null,
+    },
+  }).catch(() => {
+    // Best-effort vault projection; failure must not break the belief write
+  });
 
   const warningText = contestedWarnings.length > 0 ? `\n\nWarnings:\n${contestedWarnings.join("\n")}` : "";
 

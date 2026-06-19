@@ -38,15 +38,49 @@ export function addFact(
     contradicts?: string[];
   },
 ): BeliefFact {
+  // K*6 Content Equivalence: detect existing active fact with the same
+  // content to prevent active duplicates.
+  const existingActive = state.belief.facts.find(
+    (f) => f.status === "active" && f.content === params.content,
+  );
+
   const timestamp = now();
+  const factId = generateId("bf");
+
+  // Decide whether the new fact should be active or recorded as
+  // superseded by the existing higher-confidence fact.
+  let isActiveHead = true;
+  let supersedeTargets: string[] = [];
+
+  if (existingActive !== undefined) {
+    if (params.confidence >= existingActive.confidence) {
+      // Incoming fact replaces the existing active head.
+      supersedeTargets.push(existingActive.id);
+    } else {
+      // Incoming fact is lower-confidence — record it as superseded
+      // by the existing higher-confidence active fact (no duplicate head).
+      isActiveHead = false;
+    }
+  }
+
+  // Merge with explicit contradicts.
+  if (params.contradicts !== undefined) {
+    for (const id of params.contradicts) {
+      if (!supersedeTargets.includes(id)) {
+        supersedeTargets.push(id);
+      }
+    }
+  }
+
   const fact: BeliefFact = {
-    id: generateId("bf"),
+    id: factId,
     content: params.content,
     confidence: params.confidence,
     source: params.source,
     createdAt: timestamp,
     updatedAt: timestamp,
-    status: "active",
+    status: isActiveHead ? "active" : "superseded",
+    supersededBy: isActiveHead ? undefined : existingActive!.id,
   };
 
   if (params.tags !== undefined) {
@@ -57,8 +91,8 @@ export function addFact(
     fact.evidence = params.evidence;
   }
 
-  if (params.contradicts !== undefined && params.contradicts.length > 0) {
-    supersede(state, fact.id, params.contradicts);
+  if (supersedeTargets.length > 0) {
+    supersede(state, factId, supersedeTargets);
   }
 
   state.belief.facts.push(fact);

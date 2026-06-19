@@ -300,7 +300,36 @@ describe("AddBeliefFactUseCase", () => {
     expect(newFact!.confidence).toBe(0.95);
     expect(uow.committed).toBe(true);
   });
+
+  it("rejects belief facts with confidence below minimum threshold", async () => {
+    const uow = new MockUnitOfWork();
+    const useCase = new AddBeliefFactUseCase(uow);
+
+    await expect(useCase.execute({
+      content: "Low confidence fact",
+      confidence: 0.3,
+      source: "user",
+    })).rejects.toThrow(/below minimum threshold/);
+
+    // UoW should not have committed
+    expect(uow.committed).toBe(false);
+  });
+
+  it("accepts belief facts at the minimum threshold boundary", async () => {
+    const uow = new MockUnitOfWork();
+    const useCase = new AddBeliefFactUseCase(uow);
+
+    const result = await useCase.execute({
+      content: "Boundary fact",
+      confidence: 0.5,
+      source: "user",
+    });
+
+    expect(result.factId).toBeDefined();
+    expect(uow.committed).toBe(true);
+  });
 });
+
 
 describe("AttendUseCase", () => {
   it("updates focus and files in attention layer", async () => {

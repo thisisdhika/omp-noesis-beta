@@ -1,7 +1,7 @@
 import type { IUnitOfWork } from "../../infrastructure/unit-of-work.js";
 import type { BeliefSource } from "../../domains/belief/schema.js";
 import { generateId } from "../../shared/schema-base.js";
-
+const MIN_BELIEF_CONFIDENCE = 0.5;
 export interface AddBeliefFactInput {
   content: string;
   confidence: number;
@@ -15,6 +15,13 @@ export class AddBeliefFactUseCase {
   constructor(private uow: IUnitOfWork) {}
 
   async execute(input: AddBeliefFactInput): Promise<{ factId: string; contestedWarnings: string[] }> {
+    // Creation-time confidence gate — reject below threshold before any work
+    if (input.confidence < MIN_BELIEF_CONFIDENCE) {
+      throw new Error(
+        `Belief fact confidence ${input.confidence} is below minimum threshold ${MIN_BELIEF_CONFIDENCE}`,
+      );
+    }
+
     const beliefRepo = this.uow.belief;
     const inferenceRepo = this.uow.inference;
     const timestamp = new Date().toISOString();

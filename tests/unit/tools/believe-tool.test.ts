@@ -132,7 +132,7 @@ describe("noesis_believe_fact", () => {
 
     await execute({
       content: "Low confidence fact",
-      confidence: 0.4,
+      confidence: 0.55,
       source: "inference",
     });
 
