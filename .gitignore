@@ -11,3 +11,7 @@ Thumbs.db
 !graphify-out/
 !.obsidian/
 !Noesis Index.md
+
+# Noesis graph artifacts (local tracking only)
+graphify-out/cost.json
+graphify-out/manifest.json

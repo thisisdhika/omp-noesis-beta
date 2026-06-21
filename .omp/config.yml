@@ -3,7 +3,6 @@ compaction:
   strategy: context-full
   autoContinue: true
   thresholdTokens: 160000
-
 noesis:
   graphify:
     autoUpdate: true

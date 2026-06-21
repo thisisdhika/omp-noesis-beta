@@ -1,18 +1,50 @@
 {
   "version": 1,
-  "lastPersisted": "2026-06-21T17:03:02.956Z",
+  "lastPersisted": "2026-06-21T17:57:30.555Z",
   "attention": {
-    "focus": "",
-    "priority": "normal",
-    "graphQueries": [],
-    "files": [],
+    "focus": "Create a plan to make omp-noesis fully implemented against its documented contract, with web research for latest references before execution.",
+    "priority": "high",
+    "graphQueries": [
+      "Which documented contracts are missing in implementation and what downstream tests should lock them down?"
+    ],
+    "files": [
+      "src/runtime.ts",
+      "src/hooks/context-hook.ts",
+      "src/commands/init-command.ts",
+      "docs/OBSIDIAN_CONTRACT.md",
+      "README.md",
+      "package.json",
+      "docs/ARCHITECTURE.md",
+      "docs/LATEST_RESEARCH.md"
+    ],
     "graphFindings": [],
     "pendingEvidence": [],
-    "updatedAt": "2026-06-21T17:03:02.956Z"
+    "updatedAt": "2026-06-21T17:57:30.554Z"
   },
   "belief": {
     "facts": [],
-    "decisions": []
+    "decisions": [
+      {
+        "id": "bd-a01ae9ce-fccf-4c2d-a34b-d5e043b57359",
+        "content": "Treat omp-noesis target release as stable v1.0.0 and align all user-facing/versioned artifacts to 1.0.0 during finalization.",
+        "rationale": "The user explicitly asked to finalize as stable v1.0, so the release target should be a real semver major bump rather than preserving the current internal 0.x baseline. This also resolves the README/package/doc drift under a single release number.",
+        "alternatives": [
+          "Keep 0.1.0 and only align docs",
+          "Adopt 0.3.0 as the canonical version",
+          "Bump to 1.0.0 as the stable release target"
+        ],
+        "source": "user",
+        "createdAt": "2026-06-21T17:56:48.701Z",
+        "updatedAt": "2026-06-21T17:56:48.701Z",
+        "status": "active",
+        "tags": [
+          "versioning",
+          "release",
+          "v1.0",
+          "contract"
+        ]
+      }
+    ]
   },
   "inference": {
     "hypotheses": [],
@@ -20,21 +52,313 @@
   },
   "commitment": {
     "workflow": {
-      "id": "wf-c6e0a01a-057f-4a6e-8a9c-267ad65c0065",
-      "goal": "",
-      "status": "draft",
-      "steps": [],
-      "createdAt": "2026-06-21T17:03:02.956Z",
-      "updatedAt": "2026-06-21T17:03:02.956Z"
+      "id": "wf-11ac7e52-89f9-4e26-8d8c-84a673653046",
+      "goal": "Finalize omp-noesis as a stable v1.0 by closing real implementation gaps, aligning docs/contracts, and preserving token-efficient context behavior.",
+      "status": "active",
+      "steps": [
+        {
+          "id": "ws-5ad9081a-8b2e-411e-bfe7-efd4a15622fb",
+          "description": "Confirm contract and version baseline",
+          "status": "pending",
+          "dependsOn": [],
+          "verification": "Canonical version and scope agreed from current repo state and research.",
+          "createdAt": "2026-06-21T17:51:18.571Z",
+          "updatedAt": "2026-06-21T17:51:18.571Z"
+        },
+        {
+          "id": "ws-3b762ca9-09be-4cd9-b394-8301562fa24a",
+          "description": "Fix runtime wiring and capability refresh",
+          "status": "pending",
+          "dependsOn": [
+            "Confirm contract and version baseline"
+          ],
+          "verification": "Runtime bridge and context detection behave correctly under tests.",
+          "createdAt": "2026-06-21T17:51:18.571Z",
+          "updatedAt": "2026-06-21T17:51:18.571Z"
+        },
+        {
+          "id": "ws-b5223a7f-e211-4d94-8d3d-be3bb8791e95",
+          "description": "Implement Obsidian index contract",
+          "status": "pending",
+          "dependsOn": [
+            "Confirm contract and version baseline"
+          ],
+          "verification": "Generated vault index matches docs and writes to the documented path.",
+          "createdAt": "2026-06-21T17:51:18.571Z",
+          "updatedAt": "2026-06-21T17:51:18.571Z"
+        },
+        {
+          "id": "ws-986fbe26-bf06-492b-a78a-35e68a161c1e",
+          "description": "Prune stale docs and align versioning",
+          "status": "pending",
+          "dependsOn": [
+            "Fix runtime wiring and capability refresh",
+            "Implement Obsidian index contract"
+          ],
+          "verification": "Docs match actual modules, filenames, and version number.",
+          "createdAt": "2026-06-21T17:51:18.571Z",
+          "updatedAt": "2026-06-21T17:51:18.571Z"
+        },
+        {
+          "id": "ws-39dbc4a0-5a35-4216-a219-34bc35f09332",
+          "description": "Strengthen token-budget behavior",
+          "status": "pending",
+          "dependsOn": [
+            "Fix runtime wiring and capability refresh"
+          ],
+          "verification": "Preamble/context outputs stay lean and are covered by regression tests.",
+          "createdAt": "2026-06-21T17:51:18.571Z",
+          "updatedAt": "2026-06-21T17:51:18.571Z"
+        },
+        {
+          "id": "ws-a1c00c86-1526-4543-b66d-cf69a20067fd",
+          "description": "Run final verification suite",
+          "status": "pending",
+          "dependsOn": [
+            "Prune stale docs and align versioning",
+            "Strengthen token-budget behavior"
+          ],
+          "verification": "Typecheck and full tests pass with stable coverage.",
+          "createdAt": "2026-06-21T17:51:18.571Z",
+          "updatedAt": "2026-06-21T17:51:18.571Z"
+        }
+      ],
+      "createdAt": "2026-06-21T17:51:18.571Z",
+      "updatedAt": "2026-06-21T17:51:18.571Z"
     },
     "actions": []
   },
   "learning": {
     "successes": [],
-    "failures": [],
+    "failures": [
+      {
+        "id": "le-3210db48-c529-4583-977b-056e42bcd59b",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-21T17:37:12.555Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-301c6048-24e7-4761-8e96-c0aff4426cf4",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-21T17:37:12.563Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-79909169-c35d-4df2-8e5a-7cd9acdbc103",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-21T17:37:56.282Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-5da51bc4-8837-4175-9191-089e5689f3e3",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-21T17:37:56.300Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-7e1a99de-ba01-4928-b649-be5a3121541e",
+        "description": "Tool search failed",
+        "status": "captured",
+        "capturedAt": "2026-06-21T17:37:56.333Z",
+        "toolName": "search"
+      },
+      {
+        "id": "le-ad00663f-c516-4c94-9087-792aee73d3c2",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-21T17:38:09.985Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-17eea641-0e54-4c73-b99e-31be216dc67a",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-21T17:38:10.007Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-4c1c9235-c5e3-41b8-b39b-5f8add3796f2",
+        "description": "Tool search failed",
+        "status": "captured",
+        "capturedAt": "2026-06-21T17:38:19.768Z",
+        "toolName": "search"
+      },
+      {
+        "id": "le-f43c8fcb-2975-407d-879d-d1cf57989578",
+        "description": "Tool search failed",
+        "status": "captured",
+        "capturedAt": "2026-06-21T17:38:19.789Z",
+        "toolName": "search"
+      },
+      {
+        "id": "le-8b745037-e45b-4c09-9e7d-f7c98d700ac0",
+        "description": "Tool search failed",
+        "status": "captured",
+        "capturedAt": "2026-06-21T17:38:19.808Z",
+        "toolName": "search"
+      },
+      {
+        "id": "le-2ea5e009-70a5-44dd-ae60-885f8430f331",
+        "description": "Tool search failed",
+        "status": "captured",
+        "capturedAt": "2026-06-21T17:38:24.460Z",
+        "toolName": "search"
+      },
+      {
+        "id": "le-b0296cf3-612e-4dd8-872b-6b3acf3cf0ad",
+        "description": "Tool job failed",
+        "status": "captured",
+        "capturedAt": "2026-06-21T17:39:06.926Z",
+        "toolName": "job"
+      },
+      {
+        "id": "le-27556682-2ca0-4035-b583-cac520f2eefa",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-21T17:40:27.401Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-5512e651-5a69-409b-9c3a-0fda7d8d6d98",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-21T17:40:27.407Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-a4bd1ad4-81eb-45d2-baa1-0688ce6a9edb",
+        "description": "Tool search failed",
+        "status": "captured",
+        "capturedAt": "2026-06-21T17:40:34.258Z",
+        "toolName": "search"
+      },
+      {
+        "id": "le-64185543-ae66-402f-8356-e3897fdf6c13",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-21T17:41:51.967Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-26764afa-b41c-4d08-9f35-8221081d5b8e",
+        "description": "Tool search failed",
+        "status": "captured",
+        "capturedAt": "2026-06-21T17:41:52.004Z",
+        "toolName": "search"
+      },
+      {
+        "id": "le-4a1c25a6-6527-4763-a688-4e9e6bc71b7a",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-21T17:41:58.013Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-403b4719-3e6f-423d-9037-7adfa328c279",
+        "description": "Tool search failed",
+        "status": "captured",
+        "capturedAt": "2026-06-21T17:42:38.000Z",
+        "toolName": "search"
+      },
+      {
+        "id": "le-1e41ce34-0ac9-4fc5-8972-a0406f43924e",
+        "description": "Tool search failed",
+        "status": "captured",
+        "capturedAt": "2026-06-21T17:42:38.007Z",
+        "toolName": "search"
+      },
+      {
+        "id": "le-d0e7f9ab-9ff2-4d2f-96b4-ee1a84603a2c",
+        "description": "Tool search failed",
+        "status": "captured",
+        "capturedAt": "2026-06-21T17:42:38.024Z",
+        "toolName": "search"
+      },
+      {
+        "id": "le-f4683b4d-684e-48cb-83b8-857ae10fedee",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-21T17:42:42.363Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-a2af8570-d4df-44c3-8ea7-002e55dc2214",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-21T17:42:42.377Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-00456d65-7e4f-4487-8af8-8628d2b2f7bb",
+        "description": "Tool bash failed",
+        "status": "captured",
+        "capturedAt": "2026-06-21T17:43:08.101Z",
+        "toolName": "bash"
+      },
+      {
+        "id": "le-4bb665a2-8dfa-40f2-866c-602a4fb15267",
+        "description": "Tool search failed",
+        "status": "captured",
+        "capturedAt": "2026-06-21T17:43:25.858Z",
+        "toolName": "search"
+      },
+      {
+        "id": "le-25cfec9f-3319-496e-8fa6-e107ee4e8383",
+        "description": "Tool job failed",
+        "status": "captured",
+        "capturedAt": "2026-06-21T17:43:34.500Z",
+        "toolName": "job"
+      },
+      {
+        "id": "le-5529935b-b9fd-40a9-b817-c16a6a7e9f88",
+        "description": "Tool job failed",
+        "status": "captured",
+        "capturedAt": "2026-06-21T17:44:23.670Z",
+        "toolName": "job"
+      },
+      {
+        "id": "le-28304c0e-f46b-4ca8-aa29-20c5f08ebcfa",
+        "description": "Tool rewind failed",
+        "status": "captured",
+        "capturedAt": "2026-06-21T17:45:02.374Z",
+        "toolName": "rewind"
+      },
+      {
+        "id": "le-9a1327a6-5673-4964-9495-9b4e5c8e2845",
+        "description": "Tool web_search failed",
+        "status": "captured",
+        "capturedAt": "2026-06-21T17:46:01.076Z",
+        "toolName": "web_search"
+      },
+      {
+        "id": "le-2f751fa0-f49b-4119-a87c-9b05d7b239a4",
+        "description": "Tool web_search failed",
+        "status": "captured",
+        "capturedAt": "2026-06-21T17:46:40.756Z",
+        "toolName": "web_search"
+      },
+      {
+        "id": "le-8af9a3c6-81e4-4bae-96f0-f398808e70dd",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-21T17:51:18.591Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-b2907e0f-595c-4cf7-8dcf-a933a88d0d28",
+        "description": "Tool noesis_commit failed",
+        "status": "captured",
+        "capturedAt": "2026-06-21T17:56:56.404Z",
+        "toolName": "noesis_commit"
+      }
+    ],
     "summary": {
       "successCount": 0,
-      "failureCount": 0,
+      "failureCount": 32,
       "resolvedCount": 0
     }
   }
