@@ -5,3 +5,9 @@ dist/
 .DS_Store
 Thumbs.db
 *.tsbuildinfo
+
+# Noesis
+!.omp/
+!graphify-out/
+!.obsidian/
+!Noesis Index.md

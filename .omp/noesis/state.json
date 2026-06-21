@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "lastPersisted": "2026-06-21T17:03:02.956Z",
+  "attention": {
+    "focus": "",
+    "priority": "normal",
+    "graphQueries": [],
+    "files": [],
+    "graphFindings": [],
+    "pendingEvidence": [],
+    "updatedAt": "2026-06-21T17:03:02.956Z"
+  },
+  "belief": {
+    "facts": [],
+    "decisions": []
+  },
+  "inference": {
+    "hypotheses": [],
+    "reasoning": []
+  },
+  "commitment": {
+    "workflow": {
+      "id": "wf-c6e0a01a-057f-4a6e-8a9c-267ad65c0065",
+      "goal": "",
+      "status": "draft",
+      "steps": [],
+      "createdAt": "2026-06-21T17:03:02.956Z",
+      "updatedAt": "2026-06-21T17:03:02.956Z"
+    },
+    "actions": []
+  },
+  "learning": {
+    "successes": [],
+    "failures": [],
+    "summary": {
+      "successCount": 0,
+      "failureCount": 0,
+      "resolvedCount": 0
+    }
+  }
+}

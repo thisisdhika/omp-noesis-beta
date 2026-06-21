@@ -1,0 +1,387 @@
+{
+  "communities": {
+    "0": [
+      "architecture_append_system",
+      "architecture_commit_tool",
+      "architecture_commitment_domain",
+      "architecture_compaction_hook",
+      "architecture_consistency_strategy",
+      "architecture_end_turn_cleanup",
+      "architecture_eviction_strategy",
+      "architecture_index_entry",
+      "architecture_infer_tool",
+      "architecture_inference_domain",
+      "architecture_learning_domain",
+      "architecture_ranking_strategy",
+      "architecture_rules_md",
+      "architecture_state_inspect_tool",
+      "architecture_state_manager",
+      "architecture_survivor_builder",
+      "architecture_tool_result_hook",
+      "architecture_turn_end_hook",
+      "architecture_vault_retry",
+      "state_schema_belief_decision",
+      "state_schema_empty_state",
+      "state_schema_hypothesis",
+      "state_schema_learning_entry",
+      "state_schema_noesis_state",
+      "state_schema_planned_action",
+      "state_schema_workflow",
+      "state_schema_workflow_step",
+      "troubleshooting_vault_retry"
+    ],
+    "1": [
+      "architecture_attend_tool",
+      "architecture_context_hook",
+      "architecture_focus_resolver",
+      "architecture_graphify_client",
+      "architecture_graphify_setup",
+      "architecture_init_command",
+      "architecture_preamble_builder",
+      "architecture_revision_strategy",
+      "architecture_section_formatters",
+      "belief_revision_supersession",
+      "graphify_audit_no_circuit_breaker",
+      "graphify_audit_no_observability",
+      "graphify_audit_no_provenance",
+      "graphify_audit_no_retry",
+      "graphify_audit_no_update_strategy",
+      "graphify_audit_p0_2",
+      "graphify_audit_silent_failures",
+      "graphify_contract_mcp_integration",
+      "graphify_contract_query",
+      "graphify_deep_dive_confidence_model",
+      "qa_prompt_test_suite",
+      "testing_strategy_three_layers"
+    ],
+    "2": [
+      "architecture_attention_domain",
+      "architecture_belief_domain",
+      "architecture_believe_tool",
+      "architecture_confidence_strategy",
+      "belief_revision_active_tier",
+      "belief_revision_agm_k3",
+      "belief_revision_agm_k4",
+      "belief_revision_agm_k5",
+      "belief_revision_agm_k6",
+      "belief_revision_archive_tier",
+      "belief_revision_recovery_rejected",
+      "graphify_contract_confidence",
+      "graphify_contract_evidence",
+      "provider_quirks_deepseek",
+      "provider_quirks_kimi",
+      "provider_quirks_llama",
+      "provider_quirks_mimo",
+      "provider_quirks_qwen",
+      "state_schema_attention",
+      "state_schema_belief_fact",
+      "state_schema_graph_finding"
+    ],
+    "3": [
+      "setup_anthropic_api_key",
+      "setup_before_agent_start",
+      "setup_bun",
+      "setup_claude_sonnet_4",
+      "setup_compaction",
+      "setup_context_full",
+      "setup_gpt_4o",
+      "setup_graphify",
+      "setup_graphify_llm_model",
+      "setup_minimax_m3_cloud",
+      "setup_mnemopi_plugin",
+      "setup_oh_my_pi",
+      "setup_ollama",
+      "setup_ollama_api_key",
+      "setup_ollama_model",
+      "setup_omp_doctor",
+      "setup_omp_noesis",
+      "setup_openai_api_key",
+      "setup_python",
+      "setup_qwen25_coder_7b",
+      "setup_setup"
+    ],
+    "4": [
+      "application_use_cases_test",
+      "application_use_cases_test_mockattentionrepository",
+      "application_use_cases_test_mockattentionrepository_get",
+      "application_use_cases_test_mockattentionrepository_set",
+      "application_use_cases_test_mockattentionrepository_update",
+      "application_use_cases_test_mockcommitmentrepository",
+      "application_use_cases_test_mockcommitmentrepository_addaction",
+      "application_use_cases_test_mockcommitmentrepository_getactions",
+      "application_use_cases_test_mockcommitmentrepository_getworkflow",
+      "application_use_cases_test_mockcommitmentrepository_setactions",
+      "application_use_cases_test_mockcommitmentrepository_setworkflow",
+      "application_use_cases_test_mockunitofwork",
+      "application_use_cases_test_mockunitofwork_commit",
+      "application_use_cases_test_mockunitofwork_rollback",
+      "use_cases_add_belief_fact",
+      "use_cases_add_belief_fact_addbelieffactinput",
+      "use_cases_add_belief_fact_addbelieffactusecase",
+      "use_cases_add_belief_fact_addbelieffactusecase_constructor",
+      "use_cases_add_belief_fact_addbelieffactusecase_execute"
+    ],
+    "5": [
+      "behavioral_vault_projection_test",
+      "tools_believe_tool",
+      "tools_believe_tool_believedecisionparams",
+      "tools_believe_tool_believefactparams",
+      "tools_believe_tool_believelearningparams",
+      "tools_believe_tool_buildbelievedecisionparams",
+      "tools_believe_tool_buildbelievefactparams",
+      "tools_believe_tool_buildbelievelearningparams",
+      "tools_believe_tool_executebelievedecision",
+      "tools_believe_tool_executebelievefact",
+      "tools_believe_tool_executebelievelearning",
+      "tools_believe_tool_registerbelievedecisiontool",
+      "tools_believe_tool_registerbelievefacttool",
+      "tools_believe_tool_test",
+      "tools_believe_tool_test_cleanstate",
+      "tools_believe_tool_test_setup",
+      "tools_believe_tool_test_toolexecuteresult",
+      "tools_believe_tool_test_toolexecutor"
+    ],
+    "6": [
+      "noesis_dashboard_attention",
+      "noesis_dashboard_beliefs",
+      "noesis_dashboard_commitments",
+      "noesis_dashboard_dashboard",
+      "noesis_dashboard_learning",
+      "noesis_dashboard_local_vault",
+      "noesis_dashboard_mnemopi",
+      "noesis_dashboard_obsidian",
+      "setup_config_yml",
+      "setup_graphify_out_index",
+      "setup_noesis_init",
+      "setup_noop_vault",
+      "setup_rules_md",
+      "setup_state_json",
+      "setup_vault_detector_ts"
+    ],
+    "7": [
+      "application_use_cases_test_mockbeliefrepository",
+      "application_use_cases_test_mockbeliefrepository_adddecision",
+      "application_use_cases_test_mockbeliefrepository_addfact",
+      "application_use_cases_test_mockbeliefrepository_finddecisionbyid",
+      "application_use_cases_test_mockbeliefrepository_findfactbyid",
+      "application_use_cases_test_mockbeliefrepository_getalldecisions",
+      "application_use_cases_test_mockbeliefrepository_getallfacts",
+      "application_use_cases_test_mockbeliefrepository_setdecisions",
+      "application_use_cases_test_mockbeliefrepository_setfacts",
+      "application_use_cases_test_mockbeliefrepository_updatedecision",
+      "application_use_cases_test_mockbeliefrepository_updatefact"
+    ],
+    "8": [
+      "application_use_cases_test_mocklearningrepository",
+      "application_use_cases_test_mocklearningrepository_addfailure",
+      "application_use_cases_test_mocklearningrepository_addsuccess",
+      "application_use_cases_test_mocklearningrepository_getfailures",
+      "application_use_cases_test_mocklearningrepository_getsuccesses",
+      "application_use_cases_test_mocklearningrepository_getsummary",
+      "application_use_cases_test_mocklearningrepository_setfailures",
+      "application_use_cases_test_mocklearningrepository_setsuccesses",
+      "application_use_cases_test_mocklearningrepository_updatefailure",
+      "application_use_cases_test_mocklearningrepository_updatesuccess",
+      "application_use_cases_test_mocklearningrepository_updatesummary"
+    ],
+    "9": [
+      "architecture_composite_vault_store",
+      "architecture_local_vault_store",
+      "architecture_mnemopi_vault_store",
+      "architecture_noop_vault_store",
+      "architecture_obsidian_vault_store",
+      "architecture_obsidian_writer",
+      "architecture_vault_detector",
+      "architecture_vault_store",
+      "obsidian_contract_composite_arch",
+      "obsidian_contract_optionality",
+      "obsidian_contract_vault_structure"
+    ],
+    "10": [
+      "boundary_graphify",
+      "boundary_noesis",
+      "boundary_obsidian",
+      "boundary_omp",
+      "graphify_deep_dive_autonomous_lifecycle",
+      "readme_graphify",
+      "readme_obsidian",
+      "readme_omp_noesis",
+      "readme_omp_platform"
+    ],
+    "11": [
+      "application_use_cases_test_mockinferencerepository",
+      "application_use_cases_test_mockinferencerepository_addhypothesis",
+      "application_use_cases_test_mockinferencerepository_addreasoningstep",
+      "application_use_cases_test_mockinferencerepository_findhypothesisbyid",
+      "application_use_cases_test_mockinferencerepository_getallhypotheses",
+      "application_use_cases_test_mockinferencerepository_getallreasoningsteps",
+      "application_use_cases_test_mockinferencerepository_sethypotheses",
+      "application_use_cases_test_mockinferencerepository_updatehypothesis"
+    ],
+    "12": [
+      "architecture_filesystem_store",
+      "architecture_graphify_parser",
+      "architecture_migrations",
+      "architecture_schema",
+      "graphify_audit_p0_1",
+      "implementation_guide_phases"
+    ],
+    "13": [
+      "belief_belief_domain",
+      "belief_belief_domain_adddecision",
+      "belief_belief_domain_addfact",
+      "belief_belief_domain_getactivedecisions",
+      "belief_belief_domain_getactivefacts",
+      "domains_belief_test"
+    ],
+    "14": [
+      "commands_init_command",
+      "commands_init_command_initargs",
+      "commands_init_command_initcommand",
+      "commands_init_command_mergeconfigyaml"
+    ],
+    "15": [
+      "provider_quirks_claude",
+      "provider_quirks_gpt"
+    ],
+    "16": [
+      "provider_quirks_gemini"
+    ],
+    "17": [
+      "troubleshooting_state_json"
+    ]
+  },
+  "cohesion": {
+    "0": 0.09259259259259259,
+    "1": 0.09523809523809523,
+    "2": 0.10952380952380952,
+    "3": 0.11904761904761904,
+    "4": 0.1111111111111111,
+    "5": 0.16993464052287582,
+    "6": 0.2,
+    "7": 0.21818181818181817,
+    "8": 0.18181818181818182,
+    "9": 0.2545454545454545,
+    "10": 0.2222222222222222,
+    "11": 0.2857142857142857,
+    "12": 0.4,
+    "13": 0.6,
+    "14": 0.6666666666666666,
+    "15": 1.0,
+    "16": 1.0,
+    "17": 1.0
+  },
+  "gods": [
+    {
+      "id": "application_use_cases_test_mockbeliefrepository",
+      "label": "MockBeliefRepository",
+      "degree": 11
+    },
+    {
+      "id": "application_use_cases_test_mocklearningrepository",
+      "label": "MockLearningRepository",
+      "degree": 11
+    },
+    {
+      "id": "noesis_dashboard_dashboard",
+      "label": "Noesis Dashboard",
+      "degree": 11
+    },
+    {
+      "id": "setup_setup",
+      "label": "Setup Guide",
+      "degree": 11
+    },
+    {
+      "id": "architecture_index_entry",
+      "label": "src/index.ts (Entry Point)",
+      "degree": 10
+    },
+    {
+      "id": "architecture_graphify_client",
+      "label": "graphify-client.ts (CLI Subprocess)",
+      "degree": 9
+    },
+    {
+      "id": "architecture_belief_domain",
+      "label": "belief-domain.ts",
+      "degree": 9
+    },
+    {
+      "id": "application_use_cases_test_mockinferencerepository",
+      "label": "MockInferenceRepository",
+      "degree": 8
+    },
+    {
+      "id": "architecture_believe_tool",
+      "label": "noesis_believe_fact / noesis_believe_decision Tool",
+      "degree": 8
+    },
+    {
+      "id": "state_schema_noesis_state",
+      "label": "NoesisState (Top-level)",
+      "degree": 8
+    }
+  ],
+  "surprises": [
+    {
+      "source": "Graphify",
+      "target": "graphify-out/index.md",
+      "source_files": [
+        "SETUP.md",
+        "Noesis Dashboard.md"
+      ],
+      "confidence": "INFERRED",
+      "relation": "shares_data_with",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities; peripheral node `graphify-out/index.md` unexpectedly reaches hub `Graphify`"
+    },
+    {
+      "source": "omp-noesis extension",
+      "target": "mnemopi (cross-session memory)",
+      "source_files": [
+        "SETUP.md",
+        "Noesis Dashboard.md"
+      ],
+      "confidence": "INFERRED",
+      "relation": "references",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities"
+    },
+    {
+      "source": "vault-retry.ts",
+      "target": "Vault Retry Buffer (.omp/noesis/vault-retry.json)",
+      "source_files": [
+        "docs/ARCHITECTURE.md",
+        "TROUBLESHOOTING.md"
+      ],
+      "confidence": "INFERRED",
+      "relation": "conceptually_related_to",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories"
+    },
+    {
+      "source": "turn-end-hook.ts (Eviction + Vault Flush)",
+      "target": "Autonomous Graph Lifecycle (v0.3+)",
+      "source_files": [
+        "docs/ARCHITECTURE.md",
+        "docs/GRAPHIFY_DEEP_DIVE.md"
+      ],
+      "confidence": "INFERRED",
+      "relation": "implements",
+      "why": "inferred connection - not explicitly stated in source; bridges separate communities; peripheral node `Autonomous Graph Lifecycle (v0.3+)` unexpectedly reaches hub `turn-end-hook.ts (Eviction + Vault Flush)`"
+    },
+    {
+      "source": "vault-detector.ts",
+      "target": "local vault",
+      "source_files": [
+        "SETUP.md",
+        "Noesis Dashboard.md"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "references",
+      "why": "connects across different repos/directories; peripheral node `local vault` unexpectedly reaches hub `vault-detector.ts`"
+    }
+  ],
+  "tokens": {
+    "input": 2482,
+    "output": 5535
+  }
+}

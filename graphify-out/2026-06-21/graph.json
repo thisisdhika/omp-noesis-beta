@@ -1,0 +1,4857 @@
+{
+  "nodes": [
+    {
+      "id": "use_cases_add_belief_fact",
+      "label": "add-belief-fact.ts",
+      "file_type": "code",
+      "source_file": "src/application/use-cases/add-belief-fact.ts",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "use_cases_add_belief_fact_addbelieffactinput",
+      "label": "AddBeliefFactInput",
+      "file_type": "code",
+      "source_file": "src/application/use-cases/add-belief-fact.ts",
+      "source_location": "L5",
+      "_origin": "ast"
+    },
+    {
+      "id": "use_cases_add_belief_fact_addbelieffactusecase",
+      "label": "AddBeliefFactUseCase",
+      "file_type": "code",
+      "source_file": "src/application/use-cases/add-belief-fact.ts",
+      "source_location": "L14",
+      "_origin": "ast"
+    },
+    {
+      "id": "use_cases_add_belief_fact_addbelieffactusecase_constructor",
+      "label": ".constructor()",
+      "file_type": "code",
+      "source_file": "src/application/use-cases/add-belief-fact.ts",
+      "source_location": "L15",
+      "_origin": "ast"
+    },
+    {
+      "id": "use_cases_add_belief_fact_addbelieffactusecase_execute",
+      "label": ".execute()",
+      "file_type": "code",
+      "source_file": "src/application/use-cases/add-belief-fact.ts",
+      "source_location": "L17",
+      "_origin": "ast"
+    },
+    {
+      "id": "commands_init_command",
+      "label": "init-command.ts",
+      "file_type": "code",
+      "source_file": "src/commands/init-command.ts",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "commands_init_command_initargs",
+      "label": "InitArgs",
+      "file_type": "code",
+      "source_file": "src/commands/init-command.ts",
+      "source_location": "L137",
+      "_origin": "ast"
+    },
+    {
+      "id": "commands_init_command_mergeconfigyaml",
+      "label": "mergeConfigYaml()",
+      "file_type": "code",
+      "source_file": "src/commands/init-command.ts",
+      "source_location": "L155",
+      "_origin": "ast"
+    },
+    {
+      "id": "commands_init_command_initcommand",
+      "label": "initCommand()",
+      "file_type": "code",
+      "source_file": "src/commands/init-command.ts",
+      "source_location": "L271",
+      "_origin": "ast"
+    },
+    {
+      "id": "belief_belief_domain",
+      "label": "belief-domain.ts",
+      "file_type": "code",
+      "source_file": "src/domains/belief/belief-domain.ts",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "belief_belief_domain_addfact",
+      "label": "addFact()",
+      "file_type": "code",
+      "source_file": "src/domains/belief/belief-domain.ts",
+      "source_location": "L30",
+      "_origin": "ast"
+    },
+    {
+      "id": "belief_belief_domain_adddecision",
+      "label": "addDecision()",
+      "file_type": "code",
+      "source_file": "src/domains/belief/belief-domain.ts",
+      "source_location": "L110",
+      "_origin": "ast"
+    },
+    {
+      "id": "belief_belief_domain_getactivefacts",
+      "label": "getActiveFacts()",
+      "file_type": "code",
+      "source_file": "src/domains/belief/belief-domain.ts",
+      "source_location": "L155",
+      "_origin": "ast"
+    },
+    {
+      "id": "belief_belief_domain_getactivedecisions",
+      "label": "getActiveDecisions()",
+      "file_type": "code",
+      "source_file": "src/domains/belief/belief-domain.ts",
+      "source_location": "L179",
+      "_origin": "ast"
+    },
+    {
+      "id": "tools_believe_tool",
+      "label": "believe-tool.ts",
+      "file_type": "code",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "tools_believe_tool_believefactparams",
+      "label": "BelieveFactParams",
+      "file_type": "code",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L28",
+      "_origin": "ast"
+    },
+    {
+      "id": "tools_believe_tool_buildbelievefactparams",
+      "label": "buildBelieveFactParams()",
+      "file_type": "code",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L46",
+      "_origin": "ast"
+    },
+    {
+      "id": "tools_believe_tool_executebelievefact",
+      "label": "executeBelieveFact()",
+      "file_type": "code",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L66",
+      "_origin": "ast"
+    },
+    {
+      "id": "tools_believe_tool_registerbelievefacttool",
+      "label": "registerBelieveFactTool()",
+      "file_type": "code",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L126",
+      "_origin": "ast"
+    },
+    {
+      "id": "tools_believe_tool_believedecisionparams",
+      "label": "BelieveDecisionParams",
+      "file_type": "code",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L148",
+      "_origin": "ast"
+    },
+    {
+      "id": "tools_believe_tool_buildbelievedecisionparams",
+      "label": "buildBelieveDecisionParams()",
+      "file_type": "code",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L157",
+      "_origin": "ast"
+    },
+    {
+      "id": "tools_believe_tool_executebelievedecision",
+      "label": "executeBelieveDecision()",
+      "file_type": "code",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L168",
+      "_origin": "ast"
+    },
+    {
+      "id": "tools_believe_tool_registerbelievedecisiontool",
+      "label": "registerBelieveDecisionTool()",
+      "file_type": "code",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L214",
+      "_origin": "ast"
+    },
+    {
+      "id": "tools_believe_tool_believelearningparams",
+      "label": "BelieveLearningParams",
+      "file_type": "code",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L235",
+      "_origin": "ast"
+    },
+    {
+      "id": "tools_believe_tool_buildbelievelearningparams",
+      "label": "buildBelieveLearningParams()",
+      "file_type": "code",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L243",
+      "_origin": "ast"
+    },
+    {
+      "id": "tools_believe_tool_executebelievelearning",
+      "label": "executeBelieveLearning()",
+      "file_type": "code",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L253",
+      "_origin": "ast"
+    },
+    {
+      "id": "behavioral_vault_projection_test",
+      "label": "vault-projection.test.ts",
+      "file_type": "code",
+      "source_file": "tests/behavioral/vault-projection.test.ts",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test",
+      "label": "use-cases.test.ts",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mockattentionrepository",
+      "label": "MockAttentionRepository",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L10",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mockattentionrepository_get",
+      "label": ".get()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L20",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mockattentionrepository_set",
+      "label": ".set()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L23",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mockattentionrepository_update",
+      "label": ".update()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L26",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mockbeliefrepository",
+      "label": "MockBeliefRepository",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L31",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mockbeliefrepository_addfact",
+      "label": ".addFact()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L34",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mockbeliefrepository_adddecision",
+      "label": ".addDecision()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L37",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mockbeliefrepository_findfactbyid",
+      "label": ".findFactById()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L40",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mockbeliefrepository_finddecisionbyid",
+      "label": ".findDecisionById()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L43",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mockbeliefrepository_getallfacts",
+      "label": ".getAllFacts()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L46",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mockbeliefrepository_getalldecisions",
+      "label": ".getAllDecisions()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L49",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mockbeliefrepository_updatefact",
+      "label": ".updateFact()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L52",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mockbeliefrepository_updatedecision",
+      "label": ".updateDecision()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L56",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mockbeliefrepository_setfacts",
+      "label": ".setFacts()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L60",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mockbeliefrepository_setdecisions",
+      "label": ".setDecisions()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L63",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mockinferencerepository",
+      "label": "MockInferenceRepository",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L68",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mockinferencerepository_addhypothesis",
+      "label": ".addHypothesis()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L71",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mockinferencerepository_addreasoningstep",
+      "label": ".addReasoningStep()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L74",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mockinferencerepository_findhypothesisbyid",
+      "label": ".findHypothesisById()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L77",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mockinferencerepository_getallhypotheses",
+      "label": ".getAllHypotheses()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L80",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mockinferencerepository_getallreasoningsteps",
+      "label": ".getAllReasoningSteps()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L83",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mockinferencerepository_updatehypothesis",
+      "label": ".updateHypothesis()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L86",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mockinferencerepository_sethypotheses",
+      "label": ".setHypotheses()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L90",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mockcommitmentrepository",
+      "label": "MockCommitmentRepository",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L95",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mockcommitmentrepository_getworkflow",
+      "label": ".getWorkflow()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L105",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mockcommitmentrepository_setworkflow",
+      "label": ".setWorkflow()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L108",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mockcommitmentrepository_getactions",
+      "label": ".getActions()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L111",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mockcommitmentrepository_addaction",
+      "label": ".addAction()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L114",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mockcommitmentrepository_setactions",
+      "label": ".setActions()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L117",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mocklearningrepository",
+      "label": "MockLearningRepository",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L122",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mocklearningrepository_getsuccesses",
+      "label": ".getSuccesses()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L126",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mocklearningrepository_getfailures",
+      "label": ".getFailures()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L129",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mocklearningrepository_getsummary",
+      "label": ".getSummary()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L132",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mocklearningrepository_addsuccess",
+      "label": ".addSuccess()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L135",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mocklearningrepository_addfailure",
+      "label": ".addFailure()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L138",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mocklearningrepository_updatesummary",
+      "label": ".updateSummary()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L141",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mocklearningrepository_updatesuccess",
+      "label": ".updateSuccess()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L144",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mocklearningrepository_updatefailure",
+      "label": ".updateFailure()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L148",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mocklearningrepository_setsuccesses",
+      "label": ".setSuccesses()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L152",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mocklearningrepository_setfailures",
+      "label": ".setFailures()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L155",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mockunitofwork",
+      "label": "MockUnitOfWork",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L160",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mockunitofwork_commit",
+      "label": ".commit()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L167",
+      "_origin": "ast"
+    },
+    {
+      "id": "application_use_cases_test_mockunitofwork_rollback",
+      "label": ".rollback()",
+      "file_type": "code",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L170",
+      "_origin": "ast"
+    },
+    {
+      "id": "domains_belief_test",
+      "label": "belief.test.ts",
+      "file_type": "code",
+      "source_file": "tests/unit/domains/belief.test.ts",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "tools_believe_tool_test",
+      "label": "believe-tool.test.ts",
+      "file_type": "code",
+      "source_file": "tests/unit/tools/believe-tool.test.ts",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "tools_believe_tool_test_toolexecuteresult",
+      "label": "ToolExecuteResult",
+      "file_type": "code",
+      "source_file": "tests/unit/tools/believe-tool.test.ts",
+      "source_location": "L21",
+      "_origin": "ast"
+    },
+    {
+      "id": "tools_believe_tool_test_cleanstate",
+      "label": "cleanState()",
+      "file_type": "code",
+      "source_file": "tests/unit/tools/believe-tool.test.ts",
+      "source_location": "L31",
+      "_origin": "ast"
+    },
+    {
+      "id": "tools_believe_tool_test_setup",
+      "label": "setup()",
+      "file_type": "code",
+      "source_file": "tests/unit/tools/believe-tool.test.ts",
+      "source_location": "L40",
+      "_origin": "ast"
+    },
+    {
+      "id": "tools_believe_tool_test_toolexecutor",
+      "label": "toolExecutor()",
+      "file_type": "code",
+      "source_file": "tests/unit/tools/believe-tool.test.ts",
+      "source_location": "L54",
+      "_origin": "ast"
+    },
+    {
+      "id": "readme_omp_noesis",
+      "label": "omp-noesis Extension (v0.3.0)",
+      "file_type": "document",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": "Dhika Putra Ardana",
+      "contributor": null
+    },
+    {
+      "id": "readme_omp_platform",
+      "label": "Oh My Pi (OMP) v15.6.0+",
+      "file_type": "document",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "readme_graphify",
+      "label": "Graphify (Perception Substrate)",
+      "file_type": "document",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "readme_obsidian",
+      "label": "Obsidian (Reflection Substrate)",
+      "file_type": "document",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "troubleshooting_state_json",
+      "label": ".omp/noesis/state.json (Persistence Authority)",
+      "file_type": "document",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/TROUBLESHOOTING.md",
+      "source_location": "Symptom Matrix",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "troubleshooting_vault_retry",
+      "label": "Vault Retry Buffer (.omp/noesis/vault-retry.json)",
+      "file_type": "document",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/TROUBLESHOOTING.md",
+      "source_location": "Vault push failed",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_index_entry",
+      "label": "src/index.ts (Entry Point)",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.1",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_schema",
+      "label": "src/shared/schema.ts",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.2",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_filesystem_store",
+      "label": "filesystem-store.ts (Atomic Write)",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.3",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_state_manager",
+      "label": "state-manager.ts (Mutation Bottleneck)",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.3",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_migrations",
+      "label": "migrations.ts (Schema Versioning)",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.3",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_graphify_client",
+      "label": "graphify-client.ts (CLI Subprocess)",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.3",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_graphify_parser",
+      "label": "graphify-parser.ts (Output Parser)",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.3",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_graphify_setup",
+      "label": "graphify-setup.ts (CLI Bootstrap)",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.3",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_attention_domain",
+      "label": "attention-domain.ts",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.4",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_belief_domain",
+      "label": "belief-domain.ts",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.4",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_revision_strategy",
+      "label": "revision-strategy.ts (AGM)",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.4",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_confidence_strategy",
+      "label": "confidence-strategy.ts",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.4",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_inference_domain",
+      "label": "inference-domain.ts",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.4",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_commitment_domain",
+      "label": "commitment-domain.ts",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.4",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_consistency_strategy",
+      "label": "consistency-strategy.ts",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.4",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_learning_domain",
+      "label": "learning-domain.ts",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.4",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_ranking_strategy",
+      "label": "ranking-strategy.ts",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.4",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_eviction_strategy",
+      "label": "eviction-strategy.ts",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.4",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_preamble_builder",
+      "label": "preamble-builder.ts (\u22642000 tokens)",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_survivor_builder",
+      "label": "survivor-builder.ts (Compaction)",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_section_formatters",
+      "label": "section-formatters.ts",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_focus_resolver",
+      "label": "focus-resolver.ts",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_attend_tool",
+      "label": "noesis_attend Tool",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.6",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_believe_tool",
+      "label": "noesis_believe_fact / noesis_believe_decision Tool",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.6",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_infer_tool",
+      "label": "noesis_infer Tool",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.6",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_commit_tool",
+      "label": "noesis_commit Tool",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.6",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_state_inspect_tool",
+      "label": "noesis_state_inspect Tool",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.6",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_context_hook",
+      "label": "context-hook.ts (Preamble Injector)",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.7",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_append_system",
+      "label": "append-system.ts (before_agent_start)",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.7a",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_compaction_hook",
+      "label": "compaction-hook.ts",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.7",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_tool_result_hook",
+      "label": "tool-result-hook.ts (Phase-1 Learning)",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.7",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_turn_end_hook",
+      "label": "turn-end-hook.ts (Eviction + Vault Flush)",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.7",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_vault_store",
+      "label": "vault-store.ts (Interface)",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.8",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_noop_vault_store",
+      "label": "noop-vault-store.ts (Fallback)",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.8",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_obsidian_vault_store",
+      "label": "obsidian-vault-store.ts",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.8",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_obsidian_writer",
+      "label": "obsidian-writer.ts (Atomic Note)",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.8",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_vault_detector",
+      "label": "vault-detector.ts (Backend Resolution)",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.8",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_composite_vault_store",
+      "label": "composite-vault-store.ts",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.8",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_vault_retry",
+      "label": "vault-retry.ts",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.8",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_local_vault_store",
+      "label": "local-vault-store.ts (MEMORY.md)",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.8",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_mnemopi_vault_store",
+      "label": "mnemopi-vault-store.ts (Bun.sqlite)",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.8",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_init_command",
+      "label": "init-command.ts (/noesis:init)",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.9",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_end_turn_cleanup",
+      "label": "end-turn-cleanup.ts (UseCase)",
+      "file_type": "code",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_rules_md",
+      "label": ".omp/RULES.md (static prompt)",
+      "file_type": "concept",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.7a",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "belief_revision_agm_k3",
+      "label": "AGM K*3 (Inclusion)",
+      "file_type": "concept",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/BELIEF_REVISION.md",
+      "source_location": "2",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "belief_revision_agm_k4",
+      "label": "AGM K*4 (Preservation)",
+      "file_type": "concept",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/BELIEF_REVISION.md",
+      "source_location": "2",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "belief_revision_agm_k5",
+      "label": "AGM K*5 (Consistency)",
+      "file_type": "concept",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/BELIEF_REVISION.md",
+      "source_location": "2",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "belief_revision_agm_k6",
+      "label": "AGM K*6 (Equivalence)",
+      "file_type": "concept",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/BELIEF_REVISION.md",
+      "source_location": "2",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "belief_revision_recovery_rejected",
+      "label": "AGM Recovery Postulate (Explicitly Rejected)",
+      "file_type": "concept",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/BELIEF_REVISION.md",
+      "source_location": "2",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "belief_revision_active_tier",
+      "label": "Active Tier (Source of Truth)",
+      "file_type": "concept",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/BELIEF_REVISION.md",
+      "source_location": "3",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "belief_revision_archive_tier",
+      "label": "Archive Tier (Superseded/Archived)",
+      "file_type": "concept",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/BELIEF_REVISION.md",
+      "source_location": "3",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "belief_revision_supersession",
+      "label": "Supersession Algorithm",
+      "file_type": "concept",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/BELIEF_REVISION.md",
+      "source_location": "4",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "boundary_omp",
+      "label": "OMP Boundary (Execution)",
+      "file_type": "concept",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/BOUNDARY_MATRIX.md",
+      "source_location": "3",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "boundary_graphify",
+      "label": "Graphify Boundary (Retrieval)",
+      "file_type": "concept",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/BOUNDARY_MATRIX.md",
+      "source_location": "3",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "boundary_noesis",
+      "label": "Noesis Boundary (Cognition)",
+      "file_type": "concept",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/BOUNDARY_MATRIX.md",
+      "source_location": "3",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "boundary_obsidian",
+      "label": "Obsidian Boundary (Reflection)",
+      "file_type": "concept",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/BOUNDARY_MATRIX.md",
+      "source_location": "3",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "graphify_audit_p0_1",
+      "label": "P0-1: Parser drops inferredConfidence",
+      "file_type": "document",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/GRAPHIFY_BEST_PRACTICES_AUDIT.md",
+      "source_location": "P0-1",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "graphify_audit_p0_2",
+      "label": "P0-2: Capability detection cache never refreshes",
+      "file_type": "document",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/GRAPHIFY_BEST_PRACTICES_AUDIT.md",
+      "source_location": "P0-2",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "graphify_audit_silent_failures",
+      "label": "Gap: Silent Query Failures",
+      "file_type": "document",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/GRAPHIFY_BEST_PRACTICES_AUDIT.md",
+      "source_location": "Gap #1",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "graphify_audit_no_circuit_breaker",
+      "label": "Gap: No Circuit Breaker",
+      "file_type": "document",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/GRAPHIFY_BEST_PRACTICES_AUDIT.md",
+      "source_location": "Gap #2",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "graphify_audit_no_provenance",
+      "label": "Gap: No Provenance Tracking",
+      "file_type": "document",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/GRAPHIFY_BEST_PRACTICES_AUDIT.md",
+      "source_location": "Gap #4",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "graphify_audit_no_retry",
+      "label": "Gap: No Retry with Backoff",
+      "file_type": "document",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/GRAPHIFY_BEST_PRACTICES_AUDIT.md",
+      "source_location": "Gap #5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "graphify_audit_no_observability",
+      "label": "Gap: No Observability/Metrics",
+      "file_type": "document",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/GRAPHIFY_BEST_PRACTICES_AUDIT.md",
+      "source_location": "Gap #6",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "graphify_audit_no_update_strategy",
+      "label": "Gap: No Automatic Graph Update",
+      "file_type": "document",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/GRAPHIFY_BEST_PRACTICES_AUDIT.md",
+      "source_location": "Gap #7",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "graphify_contract_query",
+      "label": "Graphify Query Execution Contract",
+      "file_type": "document",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/GRAPHIFY_CONTRACT.md",
+      "source_location": "5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "graphify_contract_confidence",
+      "label": "Confidence Handling (EXTRACTED/INFERRED/AMBIGUOUS)",
+      "file_type": "document",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/GRAPHIFY_CONTRACT.md",
+      "source_location": "6",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "graphify_contract_evidence",
+      "label": "Evidence-to-Belief Pipeline",
+      "file_type": "document",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/GRAPHIFY_CONTRACT.md",
+      "source_location": "7",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "graphify_contract_mcp_integration",
+      "label": "MCP Integration (LLM-to-Graphify)",
+      "file_type": "document",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/GRAPHIFY_CONTRACT.md",
+      "source_location": "10",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "graphify_deep_dive_autonomous_lifecycle",
+      "label": "Autonomous Graph Lifecycle (v0.3+)",
+      "file_type": "document",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/GRAPHIFY_DEEP_DIVE.md",
+      "source_location": "4.1",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "graphify_deep_dive_confidence_model",
+      "label": "Confidence Translation Model",
+      "file_type": "document",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/GRAPHIFY_DEEP_DIVE.md",
+      "source_location": "5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "implementation_guide_phases",
+      "label": "Implementation Phases (0-6)",
+      "file_type": "document",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/IMPLEMENTATION_GUIDE.md",
+      "source_location": "Phases 0-6",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "obsidian_contract_optionality",
+      "label": "Obsidian Optionality Rule",
+      "file_type": "document",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/OBSIDIAN_CONTRACT.md",
+      "source_location": "1",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "obsidian_contract_vault_structure",
+      "label": "Obsidian Vault Structure",
+      "file_type": "document",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/OBSIDIAN_CONTRACT.md",
+      "source_location": "3",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "obsidian_contract_composite_arch",
+      "label": "CompositeVaultStore Architecture",
+      "file_type": "document",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/OBSIDIAN_CONTRACT.md",
+      "source_location": "7",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "qa_prompt_test_suite",
+      "label": "v0.3 Full Feature QA Test Suite",
+      "file_type": "document",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/QA_PROMPT.md",
+      "source_location": "Test Suite",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "state_schema_noesis_state",
+      "label": "NoesisState (Top-level)",
+      "file_type": "concept",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/STATE_SCHEMA.md",
+      "source_location": "2",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "state_schema_attention",
+      "label": "AttentionLayer",
+      "file_type": "concept",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/STATE_SCHEMA.md",
+      "source_location": "3",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "state_schema_belief_fact",
+      "label": "BeliefFact",
+      "file_type": "concept",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/STATE_SCHEMA.md",
+      "source_location": "4.1",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "state_schema_belief_decision",
+      "label": "BeliefDecision",
+      "file_type": "concept",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/STATE_SCHEMA.md",
+      "source_location": "4.2",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "state_schema_hypothesis",
+      "label": "Hypothesis",
+      "file_type": "concept",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/STATE_SCHEMA.md",
+      "source_location": "5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "state_schema_workflow",
+      "label": "Workflow",
+      "file_type": "concept",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/STATE_SCHEMA.md",
+      "source_location": "6",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "state_schema_workflow_step",
+      "label": "WorkflowStep",
+      "file_type": "concept",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/STATE_SCHEMA.md",
+      "source_location": "6",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "state_schema_planned_action",
+      "label": "PlannedAction",
+      "file_type": "concept",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/STATE_SCHEMA.md",
+      "source_location": "6",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "state_schema_learning_entry",
+      "label": "LearningEntry",
+      "file_type": "concept",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/STATE_SCHEMA.md",
+      "source_location": "7",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "state_schema_graph_finding",
+      "label": "GraphFinding",
+      "file_type": "concept",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/STATE_SCHEMA.md",
+      "source_location": "3",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "state_schema_empty_state",
+      "label": "EMPTY_STATE Factory",
+      "file_type": "concept",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/STATE_SCHEMA.md",
+      "source_location": "10",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "testing_strategy_three_layers",
+      "label": "Three-Layer Testing Strategy (300%)",
+      "file_type": "document",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/TESTING_STRATEGY.md",
+      "source_location": "1",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "provider_quirks_deepseek",
+      "label": "DeepSeek Tool-Calling Quirks",
+      "file_type": "document",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/provider-quirks-research.md",
+      "source_location": "1",
+      "source_url": null,
+      "captured_at": null,
+      "author": "ProviderQuirksResearcher",
+      "contributor": null
+    },
+    {
+      "id": "provider_quirks_qwen",
+      "label": "Qwen Tool-Calling Quirks",
+      "file_type": "document",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/provider-quirks-research.md",
+      "source_location": "2",
+      "source_url": null,
+      "captured_at": null,
+      "author": "ProviderQuirksResearcher",
+      "contributor": null
+    },
+    {
+      "id": "provider_quirks_mimo",
+      "label": "Mimo Tool-Calling Quirks",
+      "file_type": "document",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/provider-quirks-research.md",
+      "source_location": "4",
+      "source_url": null,
+      "captured_at": null,
+      "author": "ProviderQuirksResearcher",
+      "contributor": null
+    },
+    {
+      "id": "provider_quirks_kimi",
+      "label": "Kimi Tool-Calling Quirks",
+      "file_type": "document",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/provider-quirks-research.md",
+      "source_location": "5",
+      "source_url": null,
+      "captured_at": null,
+      "author": "ProviderQuirksResearcher",
+      "contributor": null
+    },
+    {
+      "id": "provider_quirks_llama",
+      "label": "Llama Tool-Calling Quirks",
+      "file_type": "document",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/provider-quirks-research.md",
+      "source_location": "3",
+      "source_url": null,
+      "captured_at": null,
+      "author": "ProviderQuirksResearcher",
+      "contributor": null
+    },
+    {
+      "id": "provider_quirks_claude",
+      "label": "Claude Tool-Calling Quirks",
+      "file_type": "document",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/provider-quirks-research.md",
+      "source_location": "6",
+      "source_url": null,
+      "captured_at": null,
+      "author": "ProviderQuirksResearcher",
+      "contributor": null
+    },
+    {
+      "id": "provider_quirks_gpt",
+      "label": "GPT Tool-Calling Quirks",
+      "file_type": "document",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/provider-quirks-research.md",
+      "source_location": "7",
+      "source_url": null,
+      "captured_at": null,
+      "author": "ProviderQuirksResearcher",
+      "contributor": null
+    },
+    {
+      "id": "provider_quirks_gemini",
+      "label": "Gemini Tool-Calling Quirks",
+      "file_type": "document",
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/provider-quirks-research.md",
+      "source_location": "8",
+      "source_url": null,
+      "captured_at": null,
+      "author": "ProviderQuirksResearcher",
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "use_cases_add_belief_fact",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_src_infrastructure_unit_of_work_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/application/use-cases/add-belief-fact.ts",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "use_cases_add_belief_fact",
+      "target": "infrastructure_unit_of_work_iunitofwork",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/application/use-cases/add-belief-fact.ts",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "use_cases_add_belief_fact",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_src_domains_belief_schema_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/application/use-cases/add-belief-fact.ts",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "use_cases_add_belief_fact",
+      "target": "belief_schema_beliefsource",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/application/use-cases/add-belief-fact.ts",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "use_cases_add_belief_fact",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_src_shared_schema_base_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/application/use-cases/add-belief-fact.ts",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "use_cases_add_belief_fact",
+      "target": "shared_schema_base_generateid",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/application/use-cases/add-belief-fact.ts",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "use_cases_add_belief_fact",
+      "target": "use_cases_add_belief_fact_addbelieffactinput",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/application/use-cases/add-belief-fact.ts",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "use_cases_add_belief_fact",
+      "target": "use_cases_add_belief_fact_addbelieffactusecase",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/application/use-cases/add-belief-fact.ts",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "use_cases_add_belief_fact_addbelieffactusecase",
+      "target": "use_cases_add_belief_fact_addbelieffactusecase_constructor",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/application/use-cases/add-belief-fact.ts",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "use_cases_add_belief_fact_addbelieffactusecase",
+      "target": "use_cases_add_belief_fact_addbelieffactusecase_execute",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/application/use-cases/add-belief-fact.ts",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_init_command",
+      "target": "pi_coding_agent",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/commands/init-command.ts",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_init_command",
+      "target": "node_path",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/commands/init-command.ts",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_init_command",
+      "target": "node_fs",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/commands/init-command.ts",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_init_command",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_src_shared_paths_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/commands/init-command.ts",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_init_command",
+      "target": "shared_paths_ensurenoesisdir",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/commands/init-command.ts",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_init_command",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_src_infrastructure_filesystem_store_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/commands/init-command.ts",
+      "source_location": "L21",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_init_command",
+      "target": "infrastructure_filesystem_store_writeatomic",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/commands/init-command.ts",
+      "source_location": "L21",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_init_command",
+      "target": "infrastructure_filesystem_store_fileexists",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/commands/init-command.ts",
+      "source_location": "L21",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_init_command",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_src_infrastructure_graphify_setup_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/commands/init-command.ts",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_init_command",
+      "target": "infrastructure_graphify_setup_checkgraphifycli",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/commands/init-command.ts",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_init_command",
+      "target": "infrastructure_graphify_setup_installgraphifyskill",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/commands/init-command.ts",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_init_command",
+      "target": "infrastructure_graphify_setup_rungraphifybuild",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/commands/init-command.ts",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_init_command",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_src_infrastructure_graphify_client_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/commands/init-command.ts",
+      "source_location": "L23",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_init_command",
+      "target": "infrastructure_graphify_client_getbackendargs",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/commands/init-command.ts",
+      "source_location": "L23",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_init_command",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_src_shared_schema_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/commands/init-command.ts",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_init_command",
+      "target": "shared_schema_empty_state",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/commands/init-command.ts",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_init_command",
+      "target": "commands_init_command_initargs",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/commands/init-command.ts",
+      "source_location": "L137",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_init_command",
+      "target": "commands_init_command_mergeconfigyaml",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/commands/init-command.ts",
+      "source_location": "L155",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_init_command",
+      "target": "commands_init_command_initcommand",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/commands/init-command.ts",
+      "source_location": "L271",
+      "weight": 1.0
+    },
+    {
+      "source": "commands_init_command_initcommand",
+      "target": "commands_init_command_mergeconfigyaml",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/commands/init-command.ts",
+      "source_location": "L299",
+      "weight": 1.0
+    },
+    {
+      "source": "belief_belief_domain",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_src_shared_schema_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/domains/belief/belief-domain.ts",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "belief_belief_domain",
+      "target": "shared_schema_noesisstate",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/domains/belief/belief-domain.ts",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "belief_belief_domain",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_src_domains_belief_schema_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/domains/belief/belief-domain.ts",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "belief_belief_domain",
+      "target": "belief_schema_belieffact",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/domains/belief/belief-domain.ts",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "belief_belief_domain",
+      "target": "belief_schema_beliefdecision",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/domains/belief/belief-domain.ts",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "belief_belief_domain",
+      "target": "belief_schema_beliefsource",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/domains/belief/belief-domain.ts",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "belief_belief_domain",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_src_shared_schema_base_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/domains/belief/belief-domain.ts",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "belief_belief_domain",
+      "target": "shared_schema_base_caps",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/domains/belief/belief-domain.ts",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "belief_belief_domain",
+      "target": "shared_schema_base_generateid",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/domains/belief/belief-domain.ts",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "belief_belief_domain",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_src_shared_time_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/domains/belief/belief-domain.ts",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "belief_belief_domain",
+      "target": "shared_time_now",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/domains/belief/belief-domain.ts",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "belief_belief_domain",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_src_domains_belief_revision_strategy_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/domains/belief/belief-domain.ts",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "belief_belief_domain",
+      "target": "belief_revision_strategy_supersede",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/domains/belief/belief-domain.ts",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "belief_belief_domain",
+      "target": "belief_belief_domain_addfact",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/domains/belief/belief-domain.ts",
+      "source_location": "L30",
+      "weight": 1.0
+    },
+    {
+      "source": "belief_belief_domain",
+      "target": "belief_belief_domain_adddecision",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/domains/belief/belief-domain.ts",
+      "source_location": "L110",
+      "weight": 1.0
+    },
+    {
+      "source": "belief_belief_domain",
+      "target": "belief_belief_domain_getactivefacts",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/domains/belief/belief-domain.ts",
+      "source_location": "L155",
+      "weight": 1.0
+    },
+    {
+      "source": "belief_belief_domain",
+      "target": "belief_belief_domain_getactivedecisions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/domains/belief/belief-domain.ts",
+      "source_location": "L179",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool",
+      "target": "pi_coding_agent",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_src_runtime_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool",
+      "target": "src_runtime_noesisruntime",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_src_shared_schema_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool",
+      "target": "shared_schema_graphfinding",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool",
+      "target": "shared_schema_belieffact",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool",
+      "target": "shared_schema_beliefdecision",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool",
+      "target": "use_cases_add_belief_fact",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool",
+      "target": "use_cases_add_belief_fact_addbelieffactusecase",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_src_application_use_cases_add_belief_decision_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool",
+      "target": "use_cases_add_belief_decision_addbeliefdecisionusecase",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_src_application_use_cases_resolve_learning_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L21",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool",
+      "target": "use_cases_resolve_learning_resolvelearningusecase",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L21",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_src_domains_belief_confidence_strategy_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool",
+      "target": "belief_confidence_strategy_mapgraphconfidence",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool",
+      "target": "tools_believe_tool_believefactparams",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L28",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool",
+      "target": "tools_believe_tool_buildbelievefactparams",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L46",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool",
+      "target": "tools_believe_tool_executebelievefact",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L66",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool",
+      "target": "tools_believe_tool_registerbelievefacttool",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L126",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool",
+      "target": "tools_believe_tool_believedecisionparams",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L148",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool",
+      "target": "tools_believe_tool_buildbelievedecisionparams",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L157",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool",
+      "target": "tools_believe_tool_executebelievedecision",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L168",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool",
+      "target": "tools_believe_tool_registerbelievedecisiontool",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L214",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool",
+      "target": "tools_believe_tool_believelearningparams",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L235",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool",
+      "target": "tools_believe_tool_buildbelievelearningparams",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L243",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool",
+      "target": "tools_believe_tool_executebelievelearning",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L253",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool_registerbelievefacttool",
+      "target": "tools_believe_tool_buildbelievefactparams",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L137",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool_registerbelievedecisiontool",
+      "target": "tools_believe_tool_buildbelievedecisionparams",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tools/believe-tool.ts",
+      "source_location": "L224",
+      "weight": 1.0
+    },
+    {
+      "source": "behavioral_vault_projection_test",
+      "target": "bun_test",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/behavioral/vault-projection.test.ts",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "behavioral_vault_projection_test",
+      "target": "node_fs",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/behavioral/vault-projection.test.ts",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "behavioral_vault_projection_test",
+      "target": "node_path",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/behavioral/vault-projection.test.ts",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "behavioral_vault_projection_test",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_tests_helpers_temp_dir_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/behavioral/vault-projection.test.ts",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "behavioral_vault_projection_test",
+      "target": "helpers_temp_dir_createtempdir",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/behavioral/vault-projection.test.ts",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "behavioral_vault_projection_test",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_tests_helpers_mock_pi_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/behavioral/vault-projection.test.ts",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "behavioral_vault_projection_test",
+      "target": "helpers_mock_pi_createmockpi",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/behavioral/vault-projection.test.ts",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "behavioral_vault_projection_test",
+      "target": "helpers_mock_pi_toextensionapi",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/behavioral/vault-projection.test.ts",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "behavioral_vault_projection_test",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_src_infrastructure_state_manager_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/behavioral/vault-projection.test.ts",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "behavioral_vault_projection_test",
+      "target": "infrastructure_state_manager_statemanager",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/behavioral/vault-projection.test.ts",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "behavioral_vault_projection_test",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_src_hooks_turn_end_hook_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/behavioral/vault-projection.test.ts",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "behavioral_vault_projection_test",
+      "target": "hooks_turn_end_hook_registerturnendhook",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/behavioral/vault-projection.test.ts",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "behavioral_vault_projection_test",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_src_vault_vault_detector_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/behavioral/vault-projection.test.ts",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "behavioral_vault_projection_test",
+      "target": "vault_vault_detector_createvaultstore",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/behavioral/vault-projection.test.ts",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "behavioral_vault_projection_test",
+      "target": "tools_believe_tool",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/behavioral/vault-projection.test.ts",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "behavioral_vault_projection_test",
+      "target": "tools_believe_tool_executebelievefact",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/behavioral/vault-projection.test.ts",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "behavioral_vault_projection_test",
+      "target": "tools_believe_tool_executebelievedecision",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/behavioral/vault-projection.test.ts",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "behavioral_vault_projection_test",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_src_vault_vault_store_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/behavioral/vault-projection.test.ts",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "behavioral_vault_projection_test",
+      "target": "vault_vault_store_vaultstore",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/behavioral/vault-projection.test.ts",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "behavioral_vault_projection_test",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_src_runtime_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/behavioral/vault-projection.test.ts",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "behavioral_vault_projection_test",
+      "target": "src_runtime_noesisruntime",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/behavioral/vault-projection.test.ts",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test",
+      "target": "bun_test",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_src_application_use_cases_resolve_learning_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test",
+      "target": "use_cases_resolve_learning_resolvelearningusecase",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_src_application_use_cases_confirm_hypothesis_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test",
+      "target": "use_cases_confirm_hypothesis_confirmhypothesisusecase",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test",
+      "target": "use_cases_add_belief_fact",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test",
+      "target": "use_cases_add_belief_fact_addbelieffactusecase",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_src_application_use_cases_attend_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test",
+      "target": "use_cases_attend_attendusecase",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_src_application_use_cases_end_turn_cleanup_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test",
+      "target": "use_cases_end_turn_cleanup_endturncleanupusecase",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_src_infrastructure_unit_of_work_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test",
+      "target": "infrastructure_unit_of_work_iunitofwork",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_src_shared_schema_base_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test",
+      "target": "shared_schema_base_caps",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test",
+      "target": "application_use_cases_test_mockattentionrepository",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mockattentionrepository",
+      "target": "application_use_cases_test_mockattentionrepository_get",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mockattentionrepository",
+      "target": "application_use_cases_test_mockattentionrepository_set",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L23",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mockattentionrepository",
+      "target": "application_use_cases_test_mockattentionrepository_update",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L26",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test",
+      "target": "application_use_cases_test_mockbeliefrepository",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L31",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mockbeliefrepository",
+      "target": "application_use_cases_test_mockbeliefrepository_addfact",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L34",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mockbeliefrepository",
+      "target": "application_use_cases_test_mockbeliefrepository_adddecision",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L37",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mockbeliefrepository",
+      "target": "application_use_cases_test_mockbeliefrepository_findfactbyid",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L40",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mockbeliefrepository",
+      "target": "application_use_cases_test_mockbeliefrepository_finddecisionbyid",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L43",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mockbeliefrepository",
+      "target": "application_use_cases_test_mockbeliefrepository_getallfacts",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L46",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mockbeliefrepository",
+      "target": "application_use_cases_test_mockbeliefrepository_getalldecisions",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L49",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mockbeliefrepository",
+      "target": "application_use_cases_test_mockbeliefrepository_updatefact",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L52",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mockbeliefrepository",
+      "target": "application_use_cases_test_mockbeliefrepository_updatedecision",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L56",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mockbeliefrepository",
+      "target": "application_use_cases_test_mockbeliefrepository_setfacts",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L60",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mockbeliefrepository",
+      "target": "application_use_cases_test_mockbeliefrepository_setdecisions",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L63",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test",
+      "target": "application_use_cases_test_mockinferencerepository",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L68",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mockinferencerepository",
+      "target": "application_use_cases_test_mockinferencerepository_addhypothesis",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L71",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mockinferencerepository",
+      "target": "application_use_cases_test_mockinferencerepository_addreasoningstep",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L74",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mockinferencerepository",
+      "target": "application_use_cases_test_mockinferencerepository_findhypothesisbyid",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L77",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mockinferencerepository",
+      "target": "application_use_cases_test_mockinferencerepository_getallhypotheses",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L80",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mockinferencerepository",
+      "target": "application_use_cases_test_mockinferencerepository_getallreasoningsteps",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L83",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mockinferencerepository",
+      "target": "application_use_cases_test_mockinferencerepository_updatehypothesis",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L86",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mockinferencerepository",
+      "target": "application_use_cases_test_mockinferencerepository_sethypotheses",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L90",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test",
+      "target": "application_use_cases_test_mockcommitmentrepository",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L95",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mockcommitmentrepository",
+      "target": "application_use_cases_test_mockcommitmentrepository_getworkflow",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L105",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mockcommitmentrepository",
+      "target": "application_use_cases_test_mockcommitmentrepository_setworkflow",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L108",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mockcommitmentrepository",
+      "target": "application_use_cases_test_mockcommitmentrepository_getactions",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L111",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mockcommitmentrepository",
+      "target": "application_use_cases_test_mockcommitmentrepository_addaction",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L114",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mockcommitmentrepository",
+      "target": "application_use_cases_test_mockcommitmentrepository_setactions",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L117",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test",
+      "target": "application_use_cases_test_mocklearningrepository",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L122",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mocklearningrepository",
+      "target": "application_use_cases_test_mocklearningrepository_getsuccesses",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L126",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mocklearningrepository",
+      "target": "application_use_cases_test_mocklearningrepository_getfailures",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L129",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mocklearningrepository",
+      "target": "application_use_cases_test_mocklearningrepository_getsummary",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L132",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mocklearningrepository",
+      "target": "application_use_cases_test_mocklearningrepository_addsuccess",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L135",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mocklearningrepository",
+      "target": "application_use_cases_test_mocklearningrepository_addfailure",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L138",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mocklearningrepository",
+      "target": "application_use_cases_test_mocklearningrepository_updatesummary",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L141",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mocklearningrepository",
+      "target": "application_use_cases_test_mocklearningrepository_updatesuccess",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L144",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mocklearningrepository",
+      "target": "application_use_cases_test_mocklearningrepository_updatefailure",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L148",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mocklearningrepository",
+      "target": "application_use_cases_test_mocklearningrepository_setsuccesses",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L152",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mocklearningrepository",
+      "target": "application_use_cases_test_mocklearningrepository_setfailures",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L155",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test",
+      "target": "application_use_cases_test_mockunitofwork",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L160",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mockunitofwork",
+      "target": "application_use_cases_test_mockunitofwork_commit",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L167",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mockunitofwork",
+      "target": "application_use_cases_test_mockunitofwork_rollback",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L170",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mockbeliefrepository_updatefact",
+      "target": "application_use_cases_test_mockbeliefrepository_findfactbyid",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L53",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mockbeliefrepository_updatedecision",
+      "target": "application_use_cases_test_mockbeliefrepository_finddecisionbyid",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L57",
+      "weight": 1.0
+    },
+    {
+      "source": "application_use_cases_test_mockinferencerepository_updatehypothesis",
+      "target": "application_use_cases_test_mockinferencerepository_findhypothesisbyid",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/application/use-cases.test.ts",
+      "source_location": "L87",
+      "weight": 1.0
+    },
+    {
+      "source": "domains_belief_test",
+      "target": "bun_test",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/domains/belief.test.ts",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "domains_belief_test",
+      "target": "belief_belief_domain",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/domains/belief.test.ts",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "domains_belief_test",
+      "target": "belief_belief_domain_addfact",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/domains/belief.test.ts",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "domains_belief_test",
+      "target": "belief_belief_domain_adddecision",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/domains/belief.test.ts",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "domains_belief_test",
+      "target": "belief_belief_domain_getactivefacts",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/domains/belief.test.ts",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "domains_belief_test",
+      "target": "belief_belief_domain_getactivedecisions",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/domains/belief.test.ts",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "domains_belief_test",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_src_shared_schema_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/domains/belief.test.ts",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "domains_belief_test",
+      "target": "shared_schema_noesisstate",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/domains/belief.test.ts",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "domains_belief_test",
+      "target": "shared_schema_belieffact",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/domains/belief.test.ts",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "domains_belief_test",
+      "target": "shared_schema_beliefdecision",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/domains/belief.test.ts",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "domains_belief_test",
+      "target": "shared_schema_beliefsource",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/domains/belief.test.ts",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "domains_belief_test",
+      "target": "shared_schema_empty_state",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/domains/belief.test.ts",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "domains_belief_test",
+      "target": "shared_schema_caps",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/domains/belief.test.ts",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "domains_belief_test",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_tests_helpers_fixtures_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/domains/belief.test.ts",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "domains_belief_test",
+      "target": "helpers_fixtures_freshstate",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/domains/belief.test.ts",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool_test",
+      "target": "bun_test",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/tools/believe-tool.test.ts",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool_test",
+      "target": "node_fs",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/tools/believe-tool.test.ts",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool_test",
+      "target": "node_path",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/tools/believe-tool.test.ts",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool_test",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_tests_helpers_mock_pi_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/tools/believe-tool.test.ts",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool_test",
+      "target": "helpers_mock_pi_createmockpi",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/tools/believe-tool.test.ts",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool_test",
+      "target": "helpers_mock_pi_toextensionapi",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/tools/believe-tool.test.ts",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool_test",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_src_runtime_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/tools/believe-tool.test.ts",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool_test",
+      "target": "src_runtime_createruntime",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/tools/believe-tool.test.ts",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool_test",
+      "target": "src_runtime_noesisruntime",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/tools/believe-tool.test.ts",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool_test",
+      "target": "tools_believe_tool",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/tools/believe-tool.test.ts",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool_test",
+      "target": "tools_believe_tool_registerbelievefacttool",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/tools/believe-tool.test.ts",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool_test",
+      "target": "tools_believe_tool_registerbelievedecisiontool",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/tools/believe-tool.test.ts",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool_test",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_src_shared_schema_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/tools/believe-tool.test.ts",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool_test",
+      "target": "shared_schema_empty_state",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/tools/believe-tool.test.ts",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool_test",
+      "target": "users_thisisdhika_projects_kaa_ltd_lab_omp_noesis_src_shared_clone_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/tools/believe-tool.test.ts",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool_test",
+      "target": "shared_clone_deepclone",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/tools/believe-tool.test.ts",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool_test",
+      "target": "helpers_mock_pi_mockpi",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/tools/believe-tool.test.ts",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool_test",
+      "target": "tools_believe_tool_test_toolexecuteresult",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/tools/believe-tool.test.ts",
+      "source_location": "L21",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool_test",
+      "target": "tools_believe_tool_test_cleanstate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/tools/believe-tool.test.ts",
+      "source_location": "L31",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool_test",
+      "target": "tools_believe_tool_test_setup",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/tools/believe-tool.test.ts",
+      "source_location": "L40",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool_test",
+      "target": "tools_believe_tool_test_toolexecutor",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/tools/believe-tool.test.ts",
+      "source_location": "L54",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool_test_setup",
+      "target": "tools_believe_tool_test_cleanstate",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/tools/believe-tool.test.ts",
+      "source_location": "L41",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool_test_setup",
+      "target": "tools_believe_tool_registerbelievefacttool",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/tools/believe-tool.test.ts",
+      "source_location": "L44",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_believe_tool_test_setup",
+      "target": "tools_believe_tool_registerbelievedecisiontool",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/unit/tools/believe-tool.test.ts",
+      "source_location": "L45",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_omp_noesis",
+      "target": "readme_omp_platform",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/README.md",
+      "source_location": "Architecture",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_omp_noesis",
+      "target": "readme_graphify",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/README.md",
+      "source_location": "What is Noesis",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_omp_noesis",
+      "target": "readme_obsidian",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/README.md",
+      "source_location": "Obsidian Projection",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_graphify",
+      "target": "graphify_deep_dive_autonomous_lifecycle",
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/README.md",
+      "source_location": "What is Noesis",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_vault_retry",
+      "target": "troubleshooting_vault_retry",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/TROUBLESHOOTING.md",
+      "source_location": null,
+      "weight": 0.9
+    },
+    {
+      "source": "architecture_index_entry",
+      "target": "architecture_attend_tool",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.1",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_index_entry",
+      "target": "architecture_believe_tool",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.1",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_index_entry",
+      "target": "architecture_infer_tool",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.1",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_index_entry",
+      "target": "architecture_commit_tool",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.1",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_index_entry",
+      "target": "architecture_state_inspect_tool",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.1",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_index_entry",
+      "target": "architecture_context_hook",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.1",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_index_entry",
+      "target": "architecture_append_system",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.1",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_index_entry",
+      "target": "architecture_compaction_hook",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.1",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_index_entry",
+      "target": "architecture_tool_result_hook",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.1",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_index_entry",
+      "target": "architecture_turn_end_hook",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.1",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_attend_tool",
+      "target": "architecture_attention_domain",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.6",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_attend_tool",
+      "target": "architecture_graphify_client",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.6",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_believe_tool",
+      "target": "architecture_belief_domain",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.6",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_believe_tool",
+      "target": "architecture_revision_strategy",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.6",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_believe_tool",
+      "target": "architecture_confidence_strategy",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.6",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_infer_tool",
+      "target": "architecture_inference_domain",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.6",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_commit_tool",
+      "target": "architecture_commitment_domain",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.6",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_commit_tool",
+      "target": "architecture_consistency_strategy",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.6",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_state_inspect_tool",
+      "target": "architecture_state_manager",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.6",
+      "weight": 0.8
+    },
+    {
+      "source": "architecture_turn_end_hook",
+      "target": "architecture_end_turn_cleanup",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.7",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_turn_end_hook",
+      "target": "architecture_eviction_strategy",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.7",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_compaction_hook",
+      "target": "architecture_survivor_builder",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.7",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_context_hook",
+      "target": "architecture_preamble_builder",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.7",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_context_hook",
+      "target": "architecture_graphify_client",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.7",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_append_system",
+      "target": "architecture_rules_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.7a",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_state_manager",
+      "target": "architecture_filesystem_store",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.3",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_filesystem_store",
+      "target": "architecture_schema",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.3",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_migrations",
+      "target": "architecture_schema",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.3",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_graphify_parser",
+      "target": "architecture_schema",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.3",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_init_command",
+      "target": "architecture_graphify_setup",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.9",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_noop_vault_store",
+      "target": "architecture_vault_store",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.8",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_obsidian_vault_store",
+      "target": "architecture_vault_store",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.8",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_local_vault_store",
+      "target": "architecture_vault_store",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.8",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_mnemopi_vault_store",
+      "target": "architecture_vault_store",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.8",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_composite_vault_store",
+      "target": "architecture_vault_store",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.8",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_vault_detector",
+      "target": "architecture_vault_store",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.8",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_obsidian_vault_store",
+      "target": "architecture_obsidian_writer",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.8",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_turn_end_hook",
+      "target": "architecture_vault_retry",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.7",
+      "weight": 0.9
+    },
+    {
+      "source": "architecture_attention_domain",
+      "target": "state_schema_graph_finding",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.4",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_believe_tool",
+      "target": "state_schema_belief_fact",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.6",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_infer_tool",
+      "target": "state_schema_hypothesis",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.6",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_commit_tool",
+      "target": "state_schema_workflow",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.6",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_tool_result_hook",
+      "target": "architecture_learning_domain",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.7",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_learning_domain",
+      "target": "architecture_ranking_strategy",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.4",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_learning_domain",
+      "target": "architecture_eviction_strategy",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.4",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_preamble_builder",
+      "target": "architecture_section_formatters",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.5",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_preamble_builder",
+      "target": "architecture_focus_resolver",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.5",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_survivor_builder",
+      "target": "state_schema_belief_fact",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.5",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_survivor_builder",
+      "target": "state_schema_workflow_step",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.5",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_survivor_builder",
+      "target": "state_schema_learning_entry",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.5",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_init_command",
+      "target": "architecture_vault_detector",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.9",
+      "weight": 0.85
+    },
+    {
+      "source": "architecture_vault_detector",
+      "target": "architecture_obsidian_vault_store",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.8",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_vault_detector",
+      "target": "architecture_local_vault_store",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.8",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_vault_detector",
+      "target": "architecture_mnemopi_vault_store",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.8",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_vault_detector",
+      "target": "architecture_noop_vault_store",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.8",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_believe_tool",
+      "target": "architecture_obsidian_vault_store",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/ARCHITECTURE.md",
+      "source_location": "3.6",
+      "weight": 0.8
+    },
+    {
+      "source": "architecture_belief_domain",
+      "target": "belief_revision_agm_k3",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/BELIEF_REVISION.md",
+      "source_location": "2",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_belief_domain",
+      "target": "belief_revision_agm_k4",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/BELIEF_REVISION.md",
+      "source_location": "2",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_belief_domain",
+      "target": "belief_revision_agm_k5",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/BELIEF_REVISION.md",
+      "source_location": "2",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_belief_domain",
+      "target": "belief_revision_agm_k6",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/BELIEF_REVISION.md",
+      "source_location": "2",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_revision_strategy",
+      "target": "belief_revision_supersession",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/BELIEF_REVISION.md",
+      "source_location": "4",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_belief_domain",
+      "target": "belief_revision_recovery_rejected",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/BELIEF_REVISION.md",
+      "source_location": "2",
+      "weight": 1.0
+    },
+    {
+      "source": "belief_revision_active_tier",
+      "target": "state_schema_belief_fact",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/BELIEF_REVISION.md",
+      "source_location": "3",
+      "weight": 0.9
+    },
+    {
+      "source": "belief_revision_archive_tier",
+      "target": "state_schema_belief_fact",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/BELIEF_REVISION.md",
+      "source_location": "3",
+      "weight": 0.9
+    },
+    {
+      "source": "boundary_omp",
+      "target": "readme_omp_platform",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/BOUNDARY_MATRIX.md",
+      "source_location": "3",
+      "weight": 1.0
+    },
+    {
+      "source": "boundary_graphify",
+      "target": "readme_graphify",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/BOUNDARY_MATRIX.md",
+      "source_location": "3",
+      "weight": 1.0
+    },
+    {
+      "source": "boundary_noesis",
+      "target": "readme_omp_noesis",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/BOUNDARY_MATRIX.md",
+      "source_location": "3",
+      "weight": 1.0
+    },
+    {
+      "source": "boundary_obsidian",
+      "target": "readme_obsidian",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/BOUNDARY_MATRIX.md",
+      "source_location": "3",
+      "weight": 1.0
+    },
+    {
+      "source": "graphify_audit_p0_1",
+      "target": "architecture_graphify_parser",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/GRAPHIFY_BEST_PRACTICES_AUDIT.md",
+      "source_location": "P0-1",
+      "weight": 1.0
+    },
+    {
+      "source": "graphify_audit_p0_2",
+      "target": "architecture_context_hook",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/GRAPHIFY_BEST_PRACTICES_AUDIT.md",
+      "source_location": "P0-2",
+      "weight": 1.0
+    },
+    {
+      "source": "graphify_audit_silent_failures",
+      "target": "architecture_graphify_client",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/GRAPHIFY_BEST_PRACTICES_AUDIT.md",
+      "source_location": "Gap #1",
+      "weight": 1.0
+    },
+    {
+      "source": "graphify_audit_no_circuit_breaker",
+      "target": "architecture_graphify_client",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/GRAPHIFY_BEST_PRACTICES_AUDIT.md",
+      "source_location": "Gap #2",
+      "weight": 1.0
+    },
+    {
+      "source": "graphify_audit_no_provenance",
+      "target": "architecture_graphify_client",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/GRAPHIFY_BEST_PRACTICES_AUDIT.md",
+      "source_location": "Gap #4",
+      "weight": 1.0
+    },
+    {
+      "source": "graphify_audit_no_retry",
+      "target": "architecture_graphify_client",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/GRAPHIFY_BEST_PRACTICES_AUDIT.md",
+      "source_location": "Gap #5",
+      "weight": 1.0
+    },
+    {
+      "source": "graphify_audit_no_observability",
+      "target": "architecture_graphify_client",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/GRAPHIFY_BEST_PRACTICES_AUDIT.md",
+      "source_location": "Gap #6",
+      "weight": 1.0
+    },
+    {
+      "source": "graphify_audit_no_update_strategy",
+      "target": "architecture_graphify_client",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/GRAPHIFY_BEST_PRACTICES_AUDIT.md",
+      "source_location": "Gap #7",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_graphify_client",
+      "target": "graphify_contract_query",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/GRAPHIFY_CONTRACT.md",
+      "source_location": "5",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_init_command",
+      "target": "graphify_contract_query",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/GRAPHIFY_CONTRACT.md",
+      "source_location": "3",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_confidence_strategy",
+      "target": "graphify_contract_confidence",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/GRAPHIFY_CONTRACT.md",
+      "source_location": "6",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_believe_tool",
+      "target": "graphify_contract_evidence",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/GRAPHIFY_CONTRACT.md",
+      "source_location": "7",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_attend_tool",
+      "target": "graphify_contract_query",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/GRAPHIFY_CONTRACT.md",
+      "source_location": "5",
+      "weight": 1.0
+    },
+    {
+      "source": "graphify_contract_evidence",
+      "target": "architecture_belief_domain",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/GRAPHIFY_CONTRACT.md",
+      "source_location": "7",
+      "weight": 1.0
+    },
+    {
+      "source": "graphify_contract_evidence",
+      "target": "architecture_attention_domain",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/GRAPHIFY_CONTRACT.md",
+      "source_location": "7",
+      "weight": 1.0
+    },
+    {
+      "source": "graphify_contract_mcp_integration",
+      "target": "graphify_contract_query",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/GRAPHIFY_CONTRACT.md",
+      "source_location": "10",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_turn_end_hook",
+      "target": "graphify_deep_dive_autonomous_lifecycle",
+      "relation": "implements",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/GRAPHIFY_DEEP_DIVE.md",
+      "source_location": "4.1",
+      "weight": 0.9
+    },
+    {
+      "source": "architecture_attend_tool",
+      "target": "graphify_deep_dive_confidence_model",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/GRAPHIFY_DEEP_DIVE.md",
+      "source_location": "5",
+      "weight": 0.8
+    },
+    {
+      "source": "implementation_guide_phases",
+      "target": "architecture_schema",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/IMPLEMENTATION_GUIDE.md",
+      "source_location": "Day 2",
+      "weight": 1.0
+    },
+    {
+      "source": "implementation_guide_phases",
+      "target": "architecture_filesystem_store",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/IMPLEMENTATION_GUIDE.md",
+      "source_location": "Day 4",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_obsidian_vault_store",
+      "target": "obsidian_contract_optionality",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/OBSIDIAN_CONTRACT.md",
+      "source_location": "1",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_composite_vault_store",
+      "target": "obsidian_contract_composite_arch",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/OBSIDIAN_CONTRACT.md",
+      "source_location": "7",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_obsidian_vault_store",
+      "target": "obsidian_contract_vault_structure",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/OBSIDIAN_CONTRACT.md",
+      "source_location": "3",
+      "weight": 1.0
+    },
+    {
+      "source": "qa_prompt_test_suite",
+      "target": "testing_strategy_three_layers",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/QA_PROMPT.md",
+      "source_location": "Goal",
+      "weight": 0.85
+    },
+    {
+      "source": "state_schema_noesis_state",
+      "target": "state_schema_attention",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/STATE_SCHEMA.md",
+      "source_location": "2",
+      "weight": 1.0
+    },
+    {
+      "source": "state_schema_noesis_state",
+      "target": "state_schema_belief_fact",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/STATE_SCHEMA.md",
+      "source_location": "2",
+      "weight": 1.0
+    },
+    {
+      "source": "state_schema_noesis_state",
+      "target": "state_schema_belief_decision",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/STATE_SCHEMA.md",
+      "source_location": "2",
+      "weight": 1.0
+    },
+    {
+      "source": "state_schema_noesis_state",
+      "target": "state_schema_hypothesis",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/STATE_SCHEMA.md",
+      "source_location": "2",
+      "weight": 1.0
+    },
+    {
+      "source": "state_schema_noesis_state",
+      "target": "state_schema_workflow",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/STATE_SCHEMA.md",
+      "source_location": "2",
+      "weight": 1.0
+    },
+    {
+      "source": "state_schema_noesis_state",
+      "target": "state_schema_planned_action",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/STATE_SCHEMA.md",
+      "source_location": "2",
+      "weight": 1.0
+    },
+    {
+      "source": "state_schema_noesis_state",
+      "target": "state_schema_learning_entry",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/STATE_SCHEMA.md",
+      "source_location": "2",
+      "weight": 1.0
+    },
+    {
+      "source": "state_schema_workflow",
+      "target": "state_schema_workflow_step",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/STATE_SCHEMA.md",
+      "source_location": "6",
+      "weight": 1.0
+    },
+    {
+      "source": "state_schema_attention",
+      "target": "state_schema_graph_finding",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/STATE_SCHEMA.md",
+      "source_location": "3",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_attention_domain",
+      "target": "state_schema_attention",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/STATE_SCHEMA.md",
+      "source_location": "3",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_belief_domain",
+      "target": "state_schema_belief_fact",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/STATE_SCHEMA.md",
+      "source_location": "4.1",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_inference_domain",
+      "target": "state_schema_hypothesis",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/STATE_SCHEMA.md",
+      "source_location": "5",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_commitment_domain",
+      "target": "state_schema_workflow",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/STATE_SCHEMA.md",
+      "source_location": "6",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_learning_domain",
+      "target": "state_schema_learning_entry",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/STATE_SCHEMA.md",
+      "source_location": "7",
+      "weight": 1.0
+    },
+    {
+      "source": "state_schema_empty_state",
+      "target": "state_schema_noesis_state",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/STATE_SCHEMA.md",
+      "source_location": "10",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_state_manager",
+      "target": "state_schema_empty_state",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/STATE_SCHEMA.md",
+      "source_location": "8.3",
+      "weight": 1.0
+    },
+    {
+      "source": "testing_strategy_three_layers",
+      "target": "architecture_belief_domain",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/TESTING_STRATEGY.md",
+      "source_location": "3",
+      "weight": 1.0
+    },
+    {
+      "source": "testing_strategy_three_layers",
+      "target": "architecture_attend_tool",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/TESTING_STRATEGY.md",
+      "source_location": "4",
+      "weight": 1.0
+    },
+    {
+      "source": "testing_strategy_three_layers",
+      "target": "architecture_revision_strategy",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/TESTING_STRATEGY.md",
+      "source_location": "3",
+      "weight": 1.0
+    },
+    {
+      "source": "provider_quirks_deepseek",
+      "target": "provider_quirks_qwen",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/provider-quirks-research.md",
+      "source_location": "Cross-Cutting",
+      "weight": 0.8
+    },
+    {
+      "source": "provider_quirks_deepseek",
+      "target": "provider_quirks_mimo",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/provider-quirks-research.md",
+      "source_location": "Cross-Cutting",
+      "weight": 0.8
+    },
+    {
+      "source": "provider_quirks_kimi",
+      "target": "provider_quirks_qwen",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/provider-quirks-research.md",
+      "source_location": "Cross-Cutting",
+      "weight": 0.8
+    },
+    {
+      "source": "provider_quirks_llama",
+      "target": "provider_quirks_qwen",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/provider-quirks-research.md",
+      "source_location": "Cross-Cutting",
+      "weight": 0.7
+    },
+    {
+      "source": "provider_quirks_claude",
+      "target": "provider_quirks_gpt",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/provider-quirks-research.md",
+      "source_location": "Cross-Cutting",
+      "weight": 0.7
+    },
+    {
+      "source": "architecture_attend_tool",
+      "target": "provider_quirks_deepseek",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/provider-quirks-research.md",
+      "source_location": "Immediate Recommendations",
+      "weight": 0.7
+    },
+    {
+      "source": "architecture_believe_tool",
+      "target": "provider_quirks_deepseek",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "/Users/thisisdhika/Projects/kaa.ltd/LAB/omp-noesis/docs/provider-quirks-research.md",
+      "source_location": "Immediate Recommendations",
+      "weight": 0.7
+    }
+  ],
+  "hyperedges": [],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

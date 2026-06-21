@@ -1,0 +1,11 @@
+compaction:
+  enabled: true
+  strategy: context-full
+  autoContinue: true
+  thresholdTokens: 160000
+
+noesis:
+  graphify:
+    autoUpdate: true
+    updateOnAttend: true
+    maxUpdateInterval: 15

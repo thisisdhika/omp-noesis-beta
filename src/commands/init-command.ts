@@ -85,12 +85,12 @@ const RULES_MD = `# Noesis Rules
 - The attend-tool handles automated preamble evidence via CLI.`;
 
 // ============================================================================
-// OBSIDIAN DASHBOARD TEMPLATE
+// OBSIDIAN INDEX TEMPLATE
 // ============================================================================
 
-const NOESIS_DASHBOARD_MD = `# Noesis Dashboard
+const NOESIS_INDEX_MD = `# Noesis Index
 
-Welcome to your Noesis cognitive state dashboard. This file is your window into what the AI assistant has learned, decided, and is tracking in this project.
+Welcome to your Noesis cognitive state index. This file is your window into what the AI assistant has learned, decided, and is tracking in this project.
 
 ## Quick Links
 
@@ -127,7 +127,7 @@ The assistant maintains durable memory through:
 1. Review beliefs periodically to ensure accuracy
 2. Clear outdated information through state compaction
 3. Use the knowledge graph for codebase-wide reasoning
-4. Dashboard auto-updates at session start
+4. Index auto-updates at session start
 `;
 
 // ============================================================================
@@ -314,7 +314,7 @@ export async function initCommand(pi: ExtensionAPI, args: InitArgs = {}): Promis
     summary.push("RULES.md: written");
   }
 
-  // 3b. Setup Obsidian Vault & Dashboard
+  // 3b. Setup Obsidian Vault & Index
   const obsidianDir = join(projectRoot, ".obsidian");
   if (!existsSync(obsidianDir)) {
     mkdirSync(obsidianDir, { recursive: true });
@@ -323,12 +323,12 @@ export async function initCommand(pi: ExtensionAPI, args: InitArgs = {}): Promis
     summary.push("Obsidian Vault: detected");
   }
 
-  const dashboardPath = join(projectRoot, "Noesis Dashboard.md");
-  if (!existsSync(dashboardPath) || force) {
-    writeFileSync(dashboardPath, NOESIS_DASHBOARD_MD, "utf-8");
-    summary.push("Dashboard: generated");
+  const indexPath = join(projectRoot, "Noesis Index.md");
+  if (!existsSync(indexPath) || force) {
+    writeFileSync(indexPath, NOESIS_INDEX_MD, "utf-8");
+    summary.push("Index: generated");
   } else {
-    summary.push("Dashboard: up-to-date");
+    summary.push("Index: up-to-date");
   }
 
   // Quick return if graph setup skipped
