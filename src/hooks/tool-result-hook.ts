@@ -2,7 +2,7 @@
 
 /**
  * omp-noesis: Tool Result Hook
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * Captures tool execution outcomes as learning entries in the cognitive
  * state. Records both failures and successes for later ranking.

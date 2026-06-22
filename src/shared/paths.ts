@@ -5,7 +5,7 @@ import { join } from "node:path";
 
 /**
  * Filesystem path utilities.
- * Version: 0.1.0
+ * Version: 1.0.0
  */
 
 

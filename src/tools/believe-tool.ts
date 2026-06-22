@@ -2,7 +2,7 @@
 
 /**
  * omp-noesis: Believe Tools (split)
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * Two flat tools replacing the old discriminated-union noesis_believe:
  *   noesis_believe_fact      — store a verified belief fact

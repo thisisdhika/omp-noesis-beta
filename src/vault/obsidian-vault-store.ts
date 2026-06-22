@@ -2,7 +2,7 @@
 
 /**
  * omp-noesis: Obsidian Vault Store
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * Implements the VaultStore interface for Obsidian vaults.
  * Projects artifacts as Markdown notes with YAML frontmatter

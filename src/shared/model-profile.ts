@@ -2,7 +2,7 @@
 
 /**
  * omp-noesis: Model Profile
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * Model-family detection and adaptation profiles. Provides per-family
  * settings for preamble density, tool description hints, and field name

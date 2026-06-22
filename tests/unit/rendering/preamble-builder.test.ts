@@ -366,6 +366,72 @@ describe("buildPreamble with graph evidence", () => {
     const result = buildPreamble(EMPTY_STATE, fullRender);
     expect(result).not.toContain("Graph evidence");
   });
+
+
+  it("should cap graph findings at graphQueryTokenBudget", () => {
+    const state: NoesisState = structuredClone(EMPTY_STATE);
+    state.attention.graphFindings.push(
+      {
+        query: "short first query",
+        nodes: ["a"],
+        relations: ["b"],
+        confidence: "INFERRED",
+        timestamp: "2026-01-03T00:00:00.000Z",
+      },
+      {
+        query: "very long query text ".repeat(100), // ~600 tokens, exceeds budget
+        nodes: [],
+        relations: [],
+        confidence: "EXTRACTED",
+        timestamp: "2026-01-02T00:00:00.000Z",
+      },
+    );
+    const result = buildPreamble(state, fullRender);
+    expect(result).toContain("Graph evidence (2):");
+    expect(result).toContain("short first query");
+    expect(result).not.toContain("very long query text");
+  });
+
+  it("should include all findings when they fit within budget", () => {
+    const state: NoesisState = structuredClone(EMPTY_STATE);
+    state.attention.graphFindings.push(
+      {
+        query: "short query",
+        nodes: ["a"],
+        relations: ["b"],
+        confidence: "EXTRACTED",
+        timestamp: "2026-01-02T00:00:00.000Z",
+      },
+      {
+        query: "another short query",
+        nodes: ["x"],
+        relations: ["y"],
+        confidence: "INFERRED",
+        timestamp: "2026-01-03T00:00:00.000Z",
+      },
+    );
+    const result = buildPreamble(state, fullRender);
+    expect(result).toContain("Graph evidence (2):");
+    expect(result).toContain("short query");
+    expect(result).toContain("another short query");
+  });
+
+  it("should cap a single verbose finding exceeding the budget to header-only", () => {
+    const state: NoesisState = structuredClone(EMPTY_STATE);
+    state.attention.graphFindings.push({
+      query: "very long query text ".repeat(200), // ~1200 tokens, far exceeds budget
+      nodes: ["a"],
+      relations: ["b", "c"],
+      confidence: "EXTRACTED",
+      inferredConfidence: 0.85,
+      community: "test-community",
+      timestamp: "2026-01-02T00:00:00.000Z",
+    });
+    const result = buildPreamble(state, fullRender);
+    expect(result).toContain("Graph evidence (1):");
+    expect(result).not.toContain("very long query text");
+    expect(result).not.toContain("EXTRACTED");
+  });
 });
 
 // =============================================================================

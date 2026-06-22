@@ -11,6 +11,7 @@ export const CAPS = {
   beliefs: 10,
   hypotheses: 3,
   learning: 3,
+  graphQueryTokenBudget: 500,
   graphQueries: 5,
   files: 10,
   workflowSteps: 20,

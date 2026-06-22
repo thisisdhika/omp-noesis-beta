@@ -136,7 +136,7 @@ From the current codebase analysis:
 - The runtime surface is strong: tools, hooks, domains, Graphify integration, Obsidian projection, and init/bootstrap are all present.
 - The project is **close** to complete, but not yet defensibly “100% implemented.”
 - Key gaps found:
-  - README version drift (`0.3.0` vs `0.1.0` in package/runtime/docs)
+- README version drift (`0.3.0` vs historical `0.1.0` in package/runtime/docs)
   - `retainToOmp` exists on `NoesisRuntime` but is not wired in `createRuntime()`
   - `context-hook.ts` caches capability for the session
   - documented `_INDEX.md` generation does not have source implementation or tests

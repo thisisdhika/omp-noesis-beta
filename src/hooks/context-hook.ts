@@ -2,7 +2,7 @@
 
 /**
  * omp-noesis: Context Hook
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * Injects the Noesis cognitive preamble into the conversation context
  * at the start of every turn. Provides the agent with state awareness

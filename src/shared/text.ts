@@ -2,7 +2,7 @@
 
 /**
  * Text transformation utilities.
- * Version: 0.1.0
+ * Version: 1.0.0
  */
 
 /** Truncate to `max` chars, appending `suffix` if cut. */

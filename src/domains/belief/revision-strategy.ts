@@ -2,7 +2,7 @@
 
 /**
  * AGM Belief Revision Strategy — K*2–K*6 Supersession.
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * Once a fact or decision is superseded, it CANNOT be reactivated.
  * This enforces the immutability of supersession edges required by

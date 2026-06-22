@@ -2,7 +2,7 @@
 
 /**
  * omp-noesis: Provider Request Hook
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * Intercepts outgoing provider requests (the raw HTTP body sent to the LLM
  * API) and adapts tool JSON Schemas for the target model family.

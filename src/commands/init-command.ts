@@ -2,7 +2,7 @@
 
 /**
  * omp-noesis: Init Command
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * Bootstraps a noesis cognitive state in the current project directory.
  * Creates state file, config, RULES.md, Obsidian vault, and optionally

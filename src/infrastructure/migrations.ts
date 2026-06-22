@@ -2,7 +2,7 @@
 
 /**
  * omp-noesis: Schema Migration Pipeline
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * Manages versioned migration of NoesisState from historical schema versions
  * to the current version.  When the schema evolves (new fields, renamed keys,

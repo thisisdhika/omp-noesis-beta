@@ -1,6 +1,6 @@
 # omp-noesis: Architecture Specification
 
-> **Version:** 0.1.0  
+> **Version:** 1.0.0  
 > **Date:** 2026-06-15  
 > **Status:** Finalized
 
@@ -20,7 +20,7 @@ omp-noesis is an Oh My Pi extension that adds a structured cognitive substrate t
 ├───────┼──────────────┼──────────────┼───────────────┼───────────┤
 │       │              │              │               │           │
 │  ┌────▼──────────────▼──────────────▼───────────────▼────────┐  │
-│  │                    omp-noesis v0.1.0                       │  │
+│  │                    omp-noesis v1.0.0                       │  │
 │  │  ┌─────────────────────────────────────────────────────┐  │  │
 │  │  │                  src/index.ts (entry)                │  │  │
 │  │  - registerTool(noesis_attend)                       │  │  │

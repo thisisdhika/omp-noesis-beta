@@ -2,7 +2,7 @@
 
 /**
  * omp-noesis: Turn End Hook
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * Performs full state cleanup at the end of every conversation turn.
  * Runs stale-eviction followed by capacity-cap enforcement across all

@@ -2,7 +2,7 @@
 
 /**
  * omp-noesis: Obsidian Note Atomic Writer
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * Writes a Markdown note to an Obsidian vault path using the
  * temp-then-rename pattern for atomic file creation.

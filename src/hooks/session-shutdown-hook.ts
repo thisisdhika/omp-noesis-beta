@@ -2,7 +2,7 @@
 
 /**
  * omp-noesis: Session Shutdown Hook
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * Triggers a final graph update on session shutdown, fire-and-forget.
  * Ensures the next session starts with a fresh graph.

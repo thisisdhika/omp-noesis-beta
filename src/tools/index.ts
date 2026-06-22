@@ -2,7 +2,7 @@
 
 /**
  * omp-noesis: Tool Registration
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * Registers all noesis LLM-callable tools with the Oh My Pi extension API.
  * Each tool is authored in its own file and registered by a dedicated

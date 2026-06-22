@@ -2,7 +2,7 @@
 
 /**
  * omp-noesis: Session Start Hook
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * Proactively checks graph health at session start and kicks off
  * a background graph build/update if the graph is stale or missing.

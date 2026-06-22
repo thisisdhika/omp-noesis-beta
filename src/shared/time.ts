@@ -2,7 +2,7 @@
 
 /**
  * Time utilities for staleness checks and timestamp generation.
- * Version: 0.1.0
+ * Version: 1.0.0
  */
 
 /** ISO 8601 timestamp for now. */

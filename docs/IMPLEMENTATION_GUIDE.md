@@ -1,6 +1,6 @@
 # omp-noesis: Implementation Guide
 
-> **Version:** 0.1.0  
+> **Version:** 1.0.0  
 > **Date:** 2026-06-15  
 > **Status:** Finalized
 
@@ -294,7 +294,7 @@ TROUBLESHOOTING.md
 ### Day 46: Release
 ```
 bun test --coverage
-git tag v0.1.0
+git tag v1.0.0
 ```
 
 **Acceptance:** All ~555 tests pass.

@@ -2,7 +2,7 @@
 
 /**
  * Vault store interface for omp-noesis.
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * Defines the contract for persisting and retrieving cognitive vault
  * artifacts.  Implementations may back onto local files, Obsidian vaults,

@@ -2,7 +2,7 @@
 
 /**
  * omp-noesis: Extension Entry Point
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * Registers all tools, hooks, and commands with Oh My Pi.
  * No runtime actions occur during module load.

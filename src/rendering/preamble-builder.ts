@@ -2,7 +2,7 @@
 
 /**
  * omp-noesis: Preamble Builder
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * Builds the cognitive preamble — a structured XML string injected into
  * the conversation context at the start of every turn.
@@ -173,7 +173,11 @@ function buildGraphEvidence(state: NoesisState): string {
   const { graphFindings } = state.attention;
   if (graphFindings.length === 0) return "";
 
-  const lines: string[] = [`Graph evidence (${graphFindings.length}):`];
+  const budget = CAPS.graphQueryTokenBudget;
+  const header = `Graph evidence (${graphFindings.length}):`;
+
+  // If even the header alone exceeds budget, return it anyway (graceful minimum)
+  const lines: string[] = [header];
 
   // Most recent 2 findings by timestamp
   const recent = [...graphFindings]
@@ -181,12 +185,21 @@ function buildGraphEvidence(state: NoesisState): string {
     .slice(0, 2);
 
   for (const f of recent) {
-    lines.push(`  - Query: ${f.query}`);
-    if (f.nodes.length > 0) lines.push(`    Nodes: ${f.nodes.slice(0, 3).join(", ")}`);
-    if (f.relations.length > 0) lines.push(`    Relations: ${f.relations.slice(0, 2).join(", ")}`);
-    lines.push(`    Confidence: ${f.confidence}${f.inferredConfidence ? ` (${f.inferredConfidence})` : ""}`);
-    if (f.community) lines.push(`    Community: ${f.community}`);
+    const findingLines: string[] = [
+      `  - Query: ${f.query}`,
+    ];
+    if (f.nodes.length > 0) findingLines.push(`    Nodes: ${f.nodes.slice(0, 3).join(", ")}`);
+    if (f.relations.length > 0) findingLines.push(`    Relations: ${f.relations.slice(0, 2).join(", ")}`);
+    findingLines.push(`    Confidence: ${f.confidence}${f.inferredConfidence ? ` (${f.inferredConfidence})` : ""}`);
+    if (f.community) findingLines.push(`    Community: ${f.community}`);
+
+    // Check budget before adding this finding
+    const candidate = [...lines, ...findingLines].join("\n");
+    if (budget > 0 && estimateTokens(candidate) > budget) break;
+
+    lines.push(...findingLines);
   }
+
   return lines.join("\n");
 }
 

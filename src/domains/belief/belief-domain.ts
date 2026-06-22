@@ -2,7 +2,7 @@
 
 /**
  * Belief Domain — AGM-informed belief management for omp-noesis.
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * Provides fact/decision CRUD, confidence-aware retrieval, learning-to-belief
  * resolution, and AGM K*2–K*6 supersession revision.

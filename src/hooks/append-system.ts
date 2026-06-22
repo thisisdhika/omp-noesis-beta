@@ -2,7 +2,7 @@
 
 /**
  * omp-noesis: Append System Hook
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * Appends static cognitive framing (capability) to the system prompt before
  * each agent invocation.  Static noesis rules live in .omp/RULES.md

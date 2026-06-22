@@ -2,7 +2,7 @@
 
 /**
  * omp-noesis: Hooks Registry
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * Aggregates and registers all Noesis cognitive hooks with Oh My Pi.
  * Individual hook modules encapsulate their own event handler logic;

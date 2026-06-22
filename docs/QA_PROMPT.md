@@ -154,7 +154,7 @@ No mock or stub — test against a real `omp` session in a throwaway project dir
 
 | # | Test | Expected Result |
 |---|------|----------------|
-| 14.1 | README.md mentions v0.3.0, not v0.1.0 | Version bump correct |
+| 14.1 | README.md mentions v1.0.0, while docs may still reference historical v0.1.0 in comparison notes | Current release line is 1.0.0; historical refs are explicit |
 | 14.2 | README.md mentions Graphify with CLI only, no MCP server | MCP not referenced |
 | 14.3 | SETUP.md covers all three provider options (Ollama, OpenAI, Anthropic) | Each has install cmd + env vars |
 | 14.4 | SETUP.md /noesis:init steps match actual init behavior | No stale instructions |

@@ -2,7 +2,7 @@
 
 /**
  * Learning domain — cognitive capture, diagnosis, and ranking.
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * Provides the core API for recording agent learning (successes and failures),
  * resolving entries with root-cause analysis, ranking by actionability, and

@@ -2,7 +2,7 @@
 
 /**
  * omp-noesis: Compaction Hook
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * Provides survivor context and preserve-data during session compaction.
  * Ensures Noesis cognitive state survives conversation window compression.

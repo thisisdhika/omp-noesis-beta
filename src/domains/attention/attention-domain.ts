@@ -2,7 +2,7 @@
 
 /**
  * omp-noesis: Attention Domain
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * Manages the agent's current focus, priority, graph queries,
  * file references, and graph findings.

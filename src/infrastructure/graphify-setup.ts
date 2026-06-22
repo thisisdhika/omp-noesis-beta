@@ -2,7 +2,7 @@
 
 /**
  * omp-noesis: Graphify CLI Setup
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * Graphify CLI detection, skill file installation, and build invocation.
  */

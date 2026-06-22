@@ -2,7 +2,7 @@
 
 /**
  * Ranking strategy for learning entries.
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * Ranks entries by a composite score: recency × taskRelevance × failureMultiplier × resolvedFixMultiplier.
  * Used by the learning domain to surface the most actionable entries first.

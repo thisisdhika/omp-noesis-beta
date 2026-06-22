@@ -2,7 +2,7 @@
 
 /**
  * Atomic filesystem operations for JSON state persistence.
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * writeAtomic uses write-to-temp + rename for crash safety.
  * readJSON handles missing files gracefully.

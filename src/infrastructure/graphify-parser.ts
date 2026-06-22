@@ -2,7 +2,7 @@
 
 /**
  * omp-noesis: Graphify Parser
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * Parses raw JSON output from the `graphify query` CLI into typed
  * GraphFinding objects, handling multiple output formats and legacy

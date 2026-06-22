@@ -2,7 +2,7 @@
 
 # Graphify in omp-noesis — Complete Reference
 
-> **Version:** 0.1.0
+> **Version:** 1.0.0
 > **Date:** 2026-06-16
 > **Status:** Current (updated after reading Graphify repo)
 

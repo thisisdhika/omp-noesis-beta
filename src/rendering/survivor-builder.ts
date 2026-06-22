@@ -2,7 +2,7 @@
 
 /**
  * omp-noesis: Survivor Builder
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * Builds the survivor context — a compact XML payload representing
  * the essential cognitive state for preservation across compaction.

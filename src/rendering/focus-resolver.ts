@@ -2,7 +2,7 @@
 
 /**
  * omp-noesis: Focus Resolver
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * Resolves the agent's current focus and active file references
  * using a fallback chain against the cognitive state.

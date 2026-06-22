@@ -1,6 +1,6 @@
 # omp-noesis: Testing Strategy
 
-> **Version:** 0.1.0  
+> **Version:** 1.0.0
 > **Date:** 2026-06-15  
 > **Status:** Finalized
 

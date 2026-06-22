@@ -2,7 +2,7 @@
 
 /**
  * omp-noesis: Provider Schema Adaptation
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * Transforms tool JSON Schemas in provider request payloads based on the
  * target model family.  Used by the `before_provider_request` hook to

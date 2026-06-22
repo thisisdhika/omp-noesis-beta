@@ -2,7 +2,7 @@
 
 /**
  * omp-noesis: Runtime Abstraction
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * Provides the NoesisRuntime interface and createRuntime factory.
  * Manages core runtime lifecycle: project root detection, state initialization.

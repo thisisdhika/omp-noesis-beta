@@ -1,6 +1,6 @@
 {
   "name": "omp-noesis",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Enterprise cognitive substrate for Oh My Pi — structured beliefs, learning loops, and context discipline",
   "type": "module",
   "main": "src/index.ts",

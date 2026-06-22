@@ -2,7 +2,7 @@
 
 /**
  * omp-noesis: Infer Tool
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * "noesis_infer" — manage hypotheses and reasoning steps.
  * Uses a flat object schema with runtime validation for cross-provider

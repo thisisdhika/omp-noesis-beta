@@ -2,7 +2,7 @@
 
 /**
  * omp-noesis: Attend Tool
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * "noesis_attend" — set the agent's current focus, file references, and
  * optional graph queries.  When graph queries are provided, each is run

@@ -2,7 +2,7 @@
 
 /**
  * omp-noesis: State Inspect Tool
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * "noesis_state_inspect" — query the current cognitive state.
  * Uses a flat object schema with runtime validation for cross-provider

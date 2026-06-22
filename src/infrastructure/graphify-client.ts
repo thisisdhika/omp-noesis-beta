@@ -2,7 +2,7 @@
 
 /**
  * omp-noesis: Graphify Client
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * Graphify CLI client providing capability detection, query execution,
  * and build delegation for graph-based cognitive state enrichment.

@@ -2,7 +2,7 @@
 
 /**
  * omp-noesis: Commit Tool
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * "noesis_commit" — manage the active workflow and planned actions.
  * Uses a flat object schema with runtime validation for cross-provider

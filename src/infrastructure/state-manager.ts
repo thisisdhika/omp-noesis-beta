@@ -2,7 +2,7 @@
 
 /**
  * omp-noesis: State Manager
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * Wraps filesystem-store and migrations to provide an in-memory
  * cognitive state that can be read, mutated, persisted, and reloaded.
