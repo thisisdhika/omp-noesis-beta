@@ -26,6 +26,9 @@ import { readdir, readFile, stat } from "node:fs/promises";
 
 /** The vault-relative root for all noesis artifacts. */
 const NOESIS_DIR = ".obsidian/noesis";
+const NOESIS_INDEX_FILE = "_INDEX.md";
+const NOESIS_KINDS: VaultArtifact["kind"][] = ["decision", "learning", "belief", "pattern", "session"];
+
 
 // ---------------------------------------------------------------------------
 // YAML Frontmatter Helpers
@@ -194,6 +197,7 @@ export class ObsidianVaultStore implements VaultStore {
   async push(artifact: VaultArtifact): Promise<void> {
     try {
       await this.#writeArtifact(artifact);
+      await this.#writeIndex();
     } catch (err) {
       // Write failed (disk full, permissions, etc.) — buffer for retry
       await this.#retryBuffer.enqueue(artifact);
@@ -213,6 +217,30 @@ export class ObsidianVaultStore implements VaultStore {
     const content = frontmatter + "\n" + artifact.content;
 
     await writeObsidianNote(dir, filename, content);
+  }
+
+  /** Write the generated vault index note. */
+  async #writeIndex(): Promise<void> {
+    const lines = [
+      "# Noesis Vault Index",
+      "",
+      "Generated automatically by omp-noesis.",
+      "",
+    ];
+
+    for (const kind of NOESIS_KINDS) {
+      const label = kind.slice(0, 1).toUpperCase() + kind.slice(1);
+      lines.push(`## ${label}`);
+      lines.push("");
+      lines.push("```dataview");
+      lines.push("TABLE id, pushedAt, projectPath");
+      lines.push(`FROM "${NOESIS_DIR}/${kind}"`);
+      lines.push("SORT pushedAt DESC");
+      lines.push("```");
+      lines.push("");
+    }
+
+    await writeObsidianNote(join(this.#projectRoot, NOESIS_DIR), NOESIS_INDEX_FILE, lines.join("\n"));
   }
 
   // -----------------------------------------------------------------------
@@ -236,12 +264,13 @@ export class ObsidianVaultStore implements VaultStore {
         `[ObsidianVaultStore] Flush: ${result.succeeded} succeeded, ${result.failed} still queued`,
       );
     }
+
+    await this.#writeIndex();
   }
 
   // -----------------------------------------------------------------------
   // pull
   // -----------------------------------------------------------------------
-
   /**
    * Read artifacts from the vault, optionally filtered by kind.
    *

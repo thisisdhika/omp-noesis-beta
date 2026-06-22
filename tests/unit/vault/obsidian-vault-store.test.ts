@@ -772,6 +772,32 @@ describe("ObsidianVaultStore", () => {
   // flush()
   // ========================================================================
 
+  describe("index generation", () => {
+    it("writes a Dataview index note when artifacts are pushed", async () => {
+      const { path, cleanup } = createTempDir();
+      try {
+        mkdirSync(join(path, ".obsidian"));
+        const store = new ObsidianVaultStore(path);
+        const artifact = makeArtifact({
+          id: "index-write-1",
+          kind: "decision",
+          content: "index test",
+        });
+
+        await store.push(artifact);
+
+        const indexPath = join(path, ".obsidian", "noesis", "_INDEX.md");
+        expect(existsSync(indexPath)).toBe(true);
+
+        const indexContent = readFileSync(indexPath, "utf-8");
+        expect(indexContent).toContain("# Noesis Vault Index");
+        expect(indexContent).toContain('FROM ".obsidian/noesis/decision"');
+      } finally {
+        cleanup();
+      }
+    });
+  });
+
   describe("flush()", () => {
     it("succeeds when retry buffer is empty", async () => {
       const { path, cleanup } = createTempDir();
@@ -780,6 +806,8 @@ describe("ObsidianVaultStore", () => {
         const store = new ObsidianVaultStore(path);
 
         await expect(store.flush()).resolves.toBeUndefined();
+        const indexPath = join(path, ".obsidian", "noesis", "_INDEX.md");
+        expect(existsSync(indexPath)).toBe(true);
       } finally {
         cleanup();
       }

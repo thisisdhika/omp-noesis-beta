@@ -18,7 +18,6 @@ import { detectFamilyFromModel } from "../shared/model-profile.js";
 import { buildPreamble } from "../rendering/preamble-builder.js";
 import { detectCapability } from "../infrastructure/graphify-client.js";
 
-let _capability: CapabilityLevel | null = null;
 
 
 /**
@@ -27,20 +26,18 @@ let _capability: CapabilityLevel | null = null;
  */
 export function registerContextHook(pi: ExtensionAPI, runtime: NoesisRuntime): void {
   pi.on("context", async (event: ContextEvent, ctx): Promise<ContextEventResult> => {
+    runtime.attachMemoryRuntime?.(ctx?.memory);
+
     const state = runtime.stateManager.read();
-
-    if (_capability === null) {
-      _capability = await detectCapability(runtime.projectRoot);
-    }
-
+    const capability = await detectCapability(runtime.projectRoot);
     const modelFamily = detectFamilyFromModel(ctx?.model);
 
     const renderContext: RenderContext = {
-      capabilityLevel: _capability,
+      capabilityLevel: capability,
       contextHookFired: true,
       modelFamily,
       graphFreshness: {
-        isStale: _capability === "STALE",
+        isStale: capability === "STALE",
         staleHours: 24,
       },
     };

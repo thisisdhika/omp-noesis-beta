@@ -6,14 +6,19 @@
  * Verifies that all 5 noesis hooks register on their expected events.
  */
 
-import { describe, it, expect, beforeEach } from "bun:test";
+import { describe, it, expect, beforeEach, mock } from "bun:test";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { cleanPersistedState } from "../helpers/fixtures.js";
 import { createMockPi, toExtensionAPI, type MockPi } from "../helpers/mock-pi.js";
 import { createRuntime, type NoesisRuntime } from "../../src/runtime.js";
-import { registerHooks } from "../../src/hooks/index.js";
 
+mock.module("../../src/infrastructure/graphify-client.js", () => ({
+  detectCapability: async () => "FULL",
+  tryLifecycleGraphUpdate: async () => true,
+}));
+
+import { registerHooks } from "../../src/hooks/index.js";
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------

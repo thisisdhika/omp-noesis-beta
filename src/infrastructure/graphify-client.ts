@@ -11,11 +11,11 @@
 import type { CapabilityLevel } from "../shared/schema-base.js";
 import type { GraphFinding } from "../domains/attention/schema.js";
 import { validateGraphPath } from "../shared/paths.js";
+import { readNoesisConfig } from "../shared/config.js";
 import { runGraphifyBuild } from "./graphify-setup.js";
 import { parseQueryOutput } from "./graphify-parser.js";
 import { stat } from "node:fs/promises";
 import { join } from "node:path";
-
 /** Flag to prevent repeated auto-heal attempts within a session. */
 let _autoHealAttempted = false;
 
@@ -311,4 +311,39 @@ export async function tryBackgroundGraphUpdate(
     return true;
   }
   return false;
+}
+/**
+ * Run a lifecycle-triggered graph refresh with the same checks used by
+ * session_start, turn_end, and session_shutdown.
+ */
+export interface LifecycleGraphUpdateOptions {
+  requireAutoUpdate?: boolean;
+  requireStale?: boolean;
+  allowFreshGraph?: boolean;
+  fullRebuildOnNoGraph?: boolean;
+  timeout?: number;
+}
+
+export async function tryLifecycleGraphUpdate(
+  projectRoot: string,
+  stateManager: { read: () => Readonly<{ _lastGraphUpdate?: string }>; mutate: (fn: (s: any) => void) => Promise<unknown> },
+  options?: LifecycleGraphUpdateOptions,
+): Promise<boolean> {
+  const capability = await detectCapability(projectRoot);
+  if (capability === "DEGRADED") return false;
+  if (!options?.allowFreshGraph && capability === "FULL") return false;
+  if (options?.requireStale && capability !== "STALE") return false;
+
+  const state = stateManager.read();
+  const config = await readNoesisConfig(projectRoot);
+
+  if (options?.requireAutoUpdate !== false && !config.autoUpdate) return false;
+
+  if (!canRunGraphUpdate((state as any)._lastGraphUpdate, config.maxUpdateInterval)) return false;
+  if (!(await isGraphSizeManageable(projectRoot))) return false;
+
+  return tryBackgroundGraphUpdate(projectRoot, stateManager, {
+    fullRebuild: capability === "NO_GRAPH" && (options?.fullRebuildOnNoGraph ?? true),
+    timeout: options?.timeout,
+  });
 }

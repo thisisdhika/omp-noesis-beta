@@ -6,17 +6,22 @@
  * and fullCleanup, plus vaultStore.flush when available.
  */
 
-import { describe, it, expect } from "bun:test";
+import { describe, it, expect, mock } from "bun:test";
 import { createMockPi, toExtensionAPI } from "../../helpers/mock-pi.js";
 import { createRuntime, type NoesisRuntime } from "../../../src/runtime.js";
-import { registerTurnEndHook } from "../../../src/hooks/turn-end-hook.js";
 import { cleanPersistedState } from "../../helpers/fixtures.js";
-import { EMPTY_STATE } from "../../../src/shared/schema.js";
-import type { NoesisState } from "../../../src/shared/schema.js";
+import { EMPTY_STATE, type NoesisState } from "../../../src/shared/schema.js";
 import type { StateManager } from "../../../src/infrastructure/state-manager.js";
 import type { VaultStore } from "../../../src/vault/vault-store.js";
 import { UnitOfWork } from "../../../src/infrastructure/unit-of-work.js";
 
+const tryLifecycleGraphUpdate = mock(async () => true);
+
+mock.module("../../../src/infrastructure/graphify-client.js", () => ({
+  tryLifecycleGraphUpdate,
+}));
+
+import { registerTurnEndHook } from "../../../src/hooks/turn-end-hook.js";
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------

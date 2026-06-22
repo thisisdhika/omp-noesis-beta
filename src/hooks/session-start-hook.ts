@@ -11,13 +11,7 @@
 
 import type { ExtensionAPI } from "@oh-my-pi/pi-coding-agent";
 import type { NoesisRuntime } from "../runtime.js";
-import {
-  detectCapability,
-  canRunGraphUpdate,
-  isGraphSizeManageable,
-  tryBackgroundGraphUpdate,
-} from "../infrastructure/graphify-client.js";
-import { readNoesisConfig } from "../shared/config.js";
+import { tryLifecycleGraphUpdate } from "../infrastructure/graphify-client.js";
 
 
 /**
@@ -27,33 +21,11 @@ import { readNoesisConfig } from "../shared/config.js";
 export function registerSessionStartHook(pi: ExtensionAPI, runtime: NoesisRuntime): void {
   pi.on("session_start", async () => {
     try {
-      const capability = await detectCapability(runtime.projectRoot);
-
-      // No action needed if graph is already fresh
-      if (capability === "FULL") return;
-
-      // Don't try to build/update without graphify CLI
-      if (capability === "DEGRADED") return;
-
-      // Check rate limiting from state.json
-      const state = runtime.stateManager.read();
-      const config = await readNoesisConfig(runtime.projectRoot);
-      const canUpdate = canRunGraphUpdate(
-        (state as any)._lastGraphUpdate,
-        config.maxUpdateInterval,
-      );
-
-      if (!canUpdate) return;
-
-      // Check graph size before attempting update
-      const manageable = await isGraphSizeManageable(runtime.projectRoot);
-      if (!manageable) return;
-
-      // Run background update/build (fire-and-forget)
-      const promise = capability === "NO_GRAPH"
-        ? tryBackgroundGraphUpdate(runtime.projectRoot, runtime.stateManager, { fullRebuild: true, timeout: 120000 })
-        : tryBackgroundGraphUpdate(runtime.projectRoot, runtime.stateManager);
-      promise.catch(() => { /* background update failed silently */ });
+      await tryLifecycleGraphUpdate(runtime.projectRoot, runtime.stateManager, {
+        allowFreshGraph: false,
+        fullRebuildOnNoGraph: true,
+        timeout: 120000,
+      });
     } catch {
       // Best-effort — don't block session start
     }

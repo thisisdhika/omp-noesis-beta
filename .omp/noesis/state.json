@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "lastPersisted": "2026-06-21T20:25:44.287Z",
+  "lastPersisted": "2026-06-22T10:33:55.290Z",
   "attention": {
     "focus": "",
     "priority": "normal",
@@ -8,7 +8,7 @@
     "files": [],
     "graphFindings": [],
     "pendingEvidence": [],
-    "updatedAt": "2026-06-21T20:25:44.286Z"
+    "updatedAt": "2026-06-22T10:33:55.289Z"
   },
   "belief": {
     "facts": [],
@@ -37,11 +37,529 @@
         "description": "Recent failure",
         "status": "captured",
         "capturedAt": "2026-06-21T20:25:44.285Z"
+      },
+      {
+        "id": "le-cb87af84-908c-4e55-9ea8-9d61eeddcf21",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T04:58:17.148Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-e2ac3b5a-0a72-4a45-9456-447ae8e4927b",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T04:58:39.225Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-89bbc380-ad03-42a1-a34f-b8c5070a4951",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T04:58:39.230Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-0dc616ef-edb9-48cc-8705-714f4a6cf6d0",
+        "description": "Tool search failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T04:58:46.659Z",
+        "toolName": "search"
+      },
+      {
+        "id": "le-89508671-aa48-4e17-9078-8ec93ceb6b4c",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T04:59:03.176Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-f3b50d35-55eb-48b1-b1d2-805d02f3868c",
+        "description": "Tool find failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T04:59:13.084Z",
+        "toolName": "find"
+      },
+      {
+        "id": "le-8e66591f-7717-45c8-99b9-559f55ad2d11",
+        "description": "Tool bash failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T05:00:09.859Z",
+        "toolName": "bash"
+      },
+      {
+        "id": "le-e817f7bb-8c94-4611-a8e6-78c4f0bc4bf1",
+        "description": "Tool job failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T05:00:16.463Z",
+        "toolName": "job"
+      },
+      {
+        "id": "le-6b4f2669-1136-4d81-a570-556ae61e5b09",
+        "description": "Tool job failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T05:00:27.491Z",
+        "toolName": "job"
+      },
+      {
+        "id": "le-ef54faba-057e-430c-98ad-5fd6053620be",
+        "description": "Tool job failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T05:00:50.892Z",
+        "toolName": "job"
+      },
+      {
+        "id": "le-937bb47c-cc0e-40ea-befc-e0ef8c269643",
+        "description": "Tool bash failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T05:01:17.176Z",
+        "toolName": "bash"
+      },
+      {
+        "id": "le-951f6504-a809-4cd8-ae06-535a5bb32cf2",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T05:01:30.762Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-6cc88690-5cc5-41ab-89c6-090adaa7bf21",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T05:01:30.767Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-f2a41a32-f728-48ee-8771-03b60688813c",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T05:01:30.771Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-f4217e78-bc12-40c5-8811-8cc002b37fdc",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T05:02:01.678Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-d2446a01-0942-41c3-a318-57bf8c9461e3",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T05:02:22.246Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-44502278-3fb8-4b6f-8d31-5e35facd4e1c",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T05:02:22.255Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-96615e35-3eca-4085-a201-545b6531ccb3",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T05:02:22.262Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-5eb0627a-94e0-4874-b628-04d541ab57fc",
+        "description": "Tool bash failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T05:02:29.278Z",
+        "toolName": "bash"
+      },
+      {
+        "id": "le-4c83455b-1587-4b3e-bc4c-ffb0f03ee73b",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T05:02:41.210Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-73fb2098-28ad-4daf-b5d1-4c06d0276dac",
+        "description": "Tool rewind failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T05:03:09.374Z",
+        "toolName": "rewind"
+      },
+      {
+        "id": "le-e0a96ecd-0f4d-4f40-95e0-18ab7f8e26d6",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T09:29:59.838Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-318cb820-8ed1-4133-9c07-87798fe203fe",
+        "description": "Tool search failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T09:29:59.892Z",
+        "toolName": "search"
+      },
+      {
+        "id": "le-93165f8c-346c-44e8-921c-6b98b1048cc3",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T09:30:08.486Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-2b182332-96c5-4965-adb5-1493978c6bbe",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T09:30:08.506Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-7622000b-1593-460e-9c18-75cdf5e5bd94",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T09:30:34.534Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-492c7f62-e53c-4e5d-9a45-8962ba5762f6",
+        "description": "Tool search failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T09:33:58.606Z",
+        "toolName": "search"
+      },
+      {
+        "id": "le-cd361438-86e7-497e-bab4-d30d7028bcd7",
+        "description": "Tool bash failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T09:34:28.628Z",
+        "toolName": "bash"
+      },
+      {
+        "id": "le-e16d259a-349e-4152-b3c2-93fb040103f0",
+        "description": "Tool bash failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T09:34:35.434Z",
+        "toolName": "bash"
+      },
+      {
+        "id": "le-68c51ffe-5764-43e4-9f93-f6c84732312c",
+        "description": "Tool search failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T09:34:50.646Z",
+        "toolName": "search"
+      },
+      {
+        "id": "le-09d07431-31f9-4e4d-9578-b1b4ca5d8338",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T09:35:04.100Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-3728fa39-b4da-46a2-a326-9e3d1ec8ead6",
+        "description": "Tool search failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T09:35:11.140Z",
+        "toolName": "search"
+      },
+      {
+        "id": "le-a16a8ec4-96df-40d6-84c4-3eba7640e4f1",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T09:35:19.281Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-38f1432f-36b7-47c1-a367-72582e70285e",
+        "description": "Tool bash failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T09:35:26.746Z",
+        "toolName": "bash"
+      },
+      {
+        "id": "le-7bb28e6a-4727-468b-a45d-c302171baabb",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T09:35:31.964Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-bd28f4d2-3d86-4405-9c94-1df3a33d4db3",
+        "description": "Tool search failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T09:35:37.887Z",
+        "toolName": "search"
+      },
+      {
+        "id": "le-cd2b90f4-642b-4d51-9ca8-28fe7a855f6b",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T09:35:41.766Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-311195fa-7556-4a38-8cdc-bbfe14744770",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T09:35:54.839Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-1bd73b26-fbc7-4773-beeb-6489c9be80eb",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T09:36:57.976Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-baca06ee-2c25-4ea6-a2b5-ad730a814b64",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T09:36:57.990Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-010e6e1c-270b-4a8c-aa66-28ca5a65217f",
+        "description": "Tool web_search failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T09:56:48.470Z",
+        "toolName": "web_search"
+      },
+      {
+        "id": "le-1c77576e-0cab-4a20-871b-e8046b7b2bc1",
+        "description": "Tool web_search failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T09:56:56.313Z",
+        "toolName": "web_search"
+      },
+      {
+        "id": "le-29d09124-aa92-4f69-82e6-49358d0e6779",
+        "description": "Tool search failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T09:57:14.275Z",
+        "toolName": "search"
+      },
+      {
+        "id": "le-e1a493f1-4f96-4dd4-b8f9-9a67e8c1db92",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T09:57:14.525Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-02952f2e-793a-4304-8215-27c44cef4fb0",
+        "description": "Tool search failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T09:58:00.496Z",
+        "toolName": "search"
+      },
+      {
+        "id": "le-6404a659-d0bd-4dea-95f5-c218b4979648",
+        "description": "Tool edit failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T09:59:30.240Z",
+        "toolName": "edit"
+      },
+      {
+        "id": "le-d51d6308-8fe3-4ccb-ba16-633f84f96728",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T09:59:57.368Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-f86b141c-5e81-4d94-a5fb-c98ea308cbcc",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T09:59:57.439Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-78d0e6e0-e17f-4c0c-b1fe-7f0d7a12f72e",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T10:00:07.655Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-7237cc20-fe8e-4960-82cd-68927439c906",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T10:00:40.656Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-e044f2bb-2417-4c92-92f4-cf757e9e23ec",
+        "description": "Tool edit failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T10:01:25.671Z",
+        "toolName": "edit"
+      },
+      {
+        "id": "le-f598286a-813f-4794-9b12-9b815bf3543e",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T10:01:32.655Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-56d3855c-ee33-42bd-b628-dea9137d8930",
+        "description": "Tool edit failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T10:01:46.402Z",
+        "toolName": "edit"
+      },
+      {
+        "id": "le-fe330f2d-8645-4845-9903-1f7d39b2182f",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T10:01:53.602Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-a5e44e27-35b6-4a62-9028-2939663ffe5b",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T10:02:16.029Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-27fc6542-f4a8-4d88-9bf5-cc50c2471bb6",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T10:02:16.036Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-5be66b01-c0be-4dbe-ac40-24652a911b06",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T10:02:16.046Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-fd5853fb-bea6-48d9-b78e-252d0166fe6e",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T10:02:55.850Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-b2930919-6c5e-46ab-a725-9546da2fad89",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T10:04:49.116Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-dea77deb-f765-474f-b512-643f09f3db8a",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T10:04:58.566Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-4e9fedd9-042e-4a7c-83c0-974d5a90cadc",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T10:05:12.192Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-52a1324c-fa22-43ae-bb10-d715980d952d",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T10:05:12.205Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-91e5242c-681c-43b4-bdca-bf96b5894f00",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T10:05:12.215Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-593be4be-2bd0-4ebe-8d18-49a1f208362e",
+        "description": "Tool search failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T10:05:21.025Z",
+        "toolName": "search"
+      },
+      {
+        "id": "le-7c33fa59-b804-4902-99ab-a07344ae57d9",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T10:05:33.793Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-bf98f132-9949-4bc8-96f3-1bd933b5d923",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T10:05:33.797Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-190fec02-8145-4123-96c2-3d21c1757b60",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T10:06:56.948Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-938df15a-8d26-420e-aeb6-107a07367657",
+        "description": "Tool bash failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T10:11:44.222Z",
+        "toolName": "bash"
+      },
+      {
+        "id": "le-5bad2b79-f80c-43ae-a929-fa8116aed908",
+        "description": "Tool bash failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T10:11:47.431Z",
+        "toolName": "bash"
+      },
+      {
+        "id": "le-2bb6a239-4592-4b1b-b56a-a06e182a16b8",
+        "description": "Tool bash failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T10:12:33.032Z",
+        "toolName": "bash"
+      },
+      {
+        "id": "le-d6066ef6-d95e-49d3-8b31-635c8c9f369d",
+        "description": "Tool search failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T10:14:17.517Z",
+        "toolName": "search"
+      },
+      {
+        "id": "le-9b7943d7-361c-477c-b76e-eda222ac2d2a",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T10:14:21.920Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-7361813f-6937-4c35-8ec4-43104e48a62d",
+        "description": "Tool read failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T10:31:23.800Z",
+        "toolName": "read"
+      },
+      {
+        "id": "le-3a63e37b-6aa5-430f-879a-2029d0b2bcbb",
+        "description": "Tool job failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T10:33:34.081Z",
+        "toolName": "job"
       }
     ],
     "summary": {
       "successCount": 0,
-      "failureCount": 2,
+      "failureCount": 76,
       "resolvedCount": 0
     }
   }

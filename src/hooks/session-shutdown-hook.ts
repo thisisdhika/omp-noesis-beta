@@ -10,13 +10,7 @@
 
 import type { ExtensionAPI } from "@oh-my-pi/pi-coding-agent";
 import type { NoesisRuntime } from "../runtime.js";
-import {
-  detectCapability,
-  canRunGraphUpdate,
-  isGraphSizeManageable,
-  tryBackgroundGraphUpdate,
-} from "../infrastructure/graphify-client.js";
-import { readNoesisConfig } from "../shared/config.js";
+import { tryLifecycleGraphUpdate } from "../infrastructure/graphify-client.js";
 
 
 /**
@@ -26,23 +20,10 @@ import { readNoesisConfig } from "../shared/config.js";
 export function registerSessionShutdownHook(pi: ExtensionAPI, runtime: NoesisRuntime): void {
   pi.on("session_shutdown", async () => {
     try {
-      const capability = await detectCapability(runtime.projectRoot);
-
-      // Only update if graph exists but is stale
-      if (capability !== "STALE") return;
-
-      const state = runtime.stateManager.read();
-      const config = await readNoesisConfig(runtime.projectRoot);
-      const canUpdate = canRunGraphUpdate(
-        (state as any)._lastGraphUpdate,
-        config.maxUpdateInterval,
-      );
-
-      if (!canUpdate) return;
-      if (!(await isGraphSizeManageable(runtime.projectRoot))) return;
-
-      tryBackgroundGraphUpdate(runtime.projectRoot, runtime.stateManager)
-        .catch(() => { /* shutdown update failed silently */ });
+      await tryLifecycleGraphUpdate(runtime.projectRoot, runtime.stateManager, {
+        requireAutoUpdate: false,
+        requireStale: true,
+      });
     } catch {
       // Best-effort
     }
