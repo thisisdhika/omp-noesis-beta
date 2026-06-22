@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "lastPersisted": "2026-06-22T11:56:14.275Z",
+  "lastPersisted": "2026-06-22T11:57:16.719Z",
   "attention": {
     "focus": "",
     "priority": "normal",
@@ -8,7 +8,7 @@
     "files": [],
     "graphFindings": [],
     "pendingEvidence": [],
-    "updatedAt": "2026-06-22T11:56:14.274Z"
+    "updatedAt": "2026-06-22T11:57:16.719Z"
   },
   "belief": {
     "facts": [],
@@ -32,20 +32,6 @@
   "learning": {
     "successes": [],
     "failures": [
-      {
-        "id": "le-0dc616ef-edb9-48cc-8705-714f4a6cf6d0",
-        "description": "Tool search failed",
-        "status": "captured",
-        "capturedAt": "2026-06-22T04:58:46.659Z",
-        "toolName": "search"
-      },
-      {
-        "id": "le-89508671-aa48-4e17-9078-8ec93ceb6b4c",
-        "description": "Tool read failed",
-        "status": "captured",
-        "capturedAt": "2026-06-22T04:59:03.176Z",
-        "toolName": "read"
-      },
       {
         "id": "le-f3b50d35-55eb-48b1-b1d2-805d02f3868c",
         "description": "Tool find failed",
@@ -731,11 +717,25 @@
         "status": "captured",
         "capturedAt": "2026-06-22T11:55:52.518Z",
         "toolName": "bash"
+      },
+      {
+        "id": "le-50a7e998-1c11-4bde-aef8-dd5c7f401604",
+        "description": "Tool bash failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T11:57:11.371Z",
+        "toolName": "bash"
+      },
+      {
+        "id": "le-ba57ed9e-f138-40d7-a3f4-7350ab23f24b",
+        "description": "Tool bash failed",
+        "status": "captured",
+        "capturedAt": "2026-06-22T11:57:16.694Z",
+        "toolName": "bash"
       }
     ],
     "summary": {
       "successCount": 0,
-      "failureCount": 105,
+      "failureCount": 107,
       "resolvedCount": 0
     }
   }
