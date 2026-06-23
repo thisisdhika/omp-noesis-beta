@@ -16,13 +16,15 @@
 
 import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import { join } from "node:path";
-import { existsSync, mkdirSync, writeFileSync, utimesSync } from "node:fs";
+import { existsSync, mkdirSync, openSync, ftruncateSync, closeSync, writeFileSync, utimesSync } from "node:fs";
 import { createTempDir } from "../../helpers/temp-dir.js";
 import {
   detectCapability,
   query,
   build,
   updateGraph,
+  tryBackgroundGraphUpdate,
+  tryLifecycleGraphUpdate,
 } from "../../../src/infrastructure/graphify-client.js";
 
 // ============================================================================
@@ -176,5 +178,157 @@ describe("updateGraph", () => {
     expect(result.success).toBe(false);
     expect(typeof result.output).toBe("string");
     expect(result.output.length).toBeGreaterThan(0);
+  });
+});
+
+// ============================================================================
+// Tests — tryBackgroundGraphUpdate
+// ============================================================================
+
+describe("tryBackgroundGraphUpdate", () => {
+  it("returns false when graph is too large", async () => {
+    // Create a graph.json > MAX_GRAPH_SIZE_BYTES (50MB)
+    const graphDir = join(tempDir.path, "graphify-out");
+    mkdirSync(graphDir, { recursive: true });
+    const graphPath = join(graphDir, "graph.json");
+    const fd = openSync(graphPath, "w");
+    ftruncateSync(fd, 50 * 1024 * 1024 + 1);
+    closeSync(fd);
+
+    const stateManager = {
+      read: () => ({}),
+      mutate: async () => {},
+    };
+    expect(await tryBackgroundGraphUpdate(tempDir.path, stateManager)).toBe(false);
+  });
+
+  it("returns true on successful update and records timestamp", async () => {
+    const srcDir = join(tempDir.path, "src");
+    mkdirSync(srcDir, { recursive: true });
+    writeFileSync(join(srcDir, "index.ts"), "export const x = 1;");
+    writeFileSync(
+      join(tempDir.path, "package.json"),
+      JSON.stringify({ name: "test-project" }),
+    );
+
+    let recorded: string | undefined;
+    const stateManager = {
+      read: () => ({ _lastGraphUpdate: recorded }),
+      mutate: async (fn: (s: any) => void) => {
+        const s: any = {};
+        fn(s);
+        recorded = s._lastGraphUpdate;
+      },
+    };
+    expect(await tryBackgroundGraphUpdate(tempDir.path, stateManager)).toBe(true);
+    expect(recorded).toBeDefined();
+    expect(typeof recorded).toBe("string");
+    expect(new Date(recorded!).getTime()).toBeGreaterThan(0);
+  });
+
+  it("returns false when update fails", async () => {
+    const stateManager = {
+      read: () => ({}),
+      mutate: async () => {},
+    };
+    expect(
+      await tryBackgroundGraphUpdate("/tmp/nonexistent-project-root-omp-test", stateManager),
+    ).toBe(false);
+  });
+
+  it("returns false on timeout", async () => {
+    const srcDir = join(tempDir.path, "src");
+    mkdirSync(srcDir, { recursive: true });
+    writeFileSync(join(srcDir, "index.ts"), "export const x = 1;");
+    writeFileSync(
+      join(tempDir.path, "package.json"),
+      JSON.stringify({ name: "test-project" }),
+    );
+
+    const stateManager = {
+      read: () => ({}),
+      mutate: async () => {},
+    };
+    // 1ms timeout ensures Bun.spawn kills the process before it completes
+    expect(await tryBackgroundGraphUpdate(tempDir.path, stateManager, { timeout: 1 })).toBe(false);
+  });
+});
+
+// ============================================================================
+// Tests — tryLifecycleGraphUpdate
+// ============================================================================
+
+describe("tryLifecycleGraphUpdate", () => {
+  it("returns false when CLI is missing", async () => {
+    const origWhich = Bun.which;
+    try {
+      Reflect.set(Bun, "which", (_cmd: string) => null);
+      const stateManager = {
+        read: () => ({}),
+        mutate: async () => {},
+      };
+      expect(await tryLifecycleGraphUpdate(tempDir.path, stateManager)).toBe(false);
+    } finally {
+      Reflect.set(Bun, "which", origWhich);
+    }
+  });
+
+  it("returns false when graph is too large", async () => {
+    createGraphFile(tempDir.path);
+    // Expand graph.json past 50MB
+    const graphDir = join(tempDir.path, "graphify-out");
+    const graphPath = join(graphDir, "graph.json");
+    const fd = openSync(graphPath, "w");
+    ftruncateSync(fd, 50 * 1024 * 1024 + 1);
+    closeSync(fd);
+
+    const stateManager = {
+      read: () => ({}),
+      mutate: async () => {},
+    };
+    // allowFreshGraph=true so we get past the FULL→early-exit gate
+    expect(await tryLifecycleGraphUpdate(tempDir.path, stateManager, { allowFreshGraph: true })).toBe(false);
+  });
+
+  it("returns false when requireAutoUpdate is true and autoUpdate is disabled", async () => {
+    const ompDir = join(tempDir.path, ".omp");
+    mkdirSync(ompDir, { recursive: true });
+    writeFileSync(
+      join(ompDir, "config.yml"),
+      "noesis:\n  graphify:\n    autoUpdate: false\n",
+    );
+    createGraphFile(tempDir.path);
+
+    const stateManager = {
+      read: () => ({}),
+      mutate: async () => {},
+    };
+    expect(await tryLifecycleGraphUpdate(tempDir.path, stateManager, { allowFreshGraph: true })).toBe(false);
+  });
+
+  it("returns false when requireStale is set but graph is fresh", async () => {
+    createGraphFile(tempDir.path);
+    const stateManager = {
+      read: () => ({}),
+      mutate: async () => {},
+    };
+    expect(await tryLifecycleGraphUpdate(tempDir.path, stateManager, { requireStale: true })).toBe(false);
+  });
+
+  it("returns true on successful update with allowFreshGraph", async () => {
+    const srcDir = join(tempDir.path, "src");
+    mkdirSync(srcDir, { recursive: true });
+    writeFileSync(join(srcDir, "index.ts"), "export const x = 1;");
+    writeFileSync(
+      join(tempDir.path, "package.json"),
+      JSON.stringify({ name: "test-project" }),
+    );
+    createGraphFile(tempDir.path);
+
+    const stateManager = {
+      read: () => ({}),
+      mutate: async () => {},
+    };
+    expect(await tryLifecycleGraphUpdate(tempDir.path, stateManager, { allowFreshGraph: true })).toBe(true);
   });
 });

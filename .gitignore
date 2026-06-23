@@ -1,17 +1,43 @@
+# Dependencies
 node_modules/
+
+# Build output
 dist/
-.omp/
+
+# Logs
 *.log
+
+# OS files
 .DS_Store
 Thumbs.db
+
+# TypeScript
 *.tsbuildinfo
 
-# Noesis
+# =============================================================================
+# Noesis — Tracked artifacts (explicit whitelist)
+# =============================================================================
+# Pattern: .omp/* ignores children, then ! patterns re-allow specific paths.
+# Each directory level must be un-ignored before its children can be tracked.
+
+.omp/*
 !.omp/
-!graphify-out/
-!.obsidian/
+!.omp/RULES.md
+!.omp/config.yml
+!.omp/noesis/
+!.omp/noesis/state.json
+!.omp/skills/
+!.omp/skills/graphify/
+!.omp/skills/graphify/SKILL.md
+
+# Noesis — generated graph artifacts (never version)
+graphify-out/
+
+# Noesis — projected vault artifacts (derived from state.json)
+.obsidian/noesis/
+
+# Noesis — root-level documentation (tracked)
 !Noesis Index.md
 
-# Noesis graph artifacts (local tracking only)
-graphify-out/cost.json
-graphify-out/manifest.json
+# Lockfile (Bun-native; npm lockfile not needed)
+package-lock.json

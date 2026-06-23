@@ -5,6 +5,8 @@ import { join } from "node:path";
 import { StateManager } from "../../../src/infrastructure/state-manager.js";
 import { createTempDir } from "../../helpers/temp-dir.js";
 import { now } from "../../../src/shared/time.js";
+import { type IUnitOfWork } from "../../../src/infrastructure/unit-of-work.js";
+import { sampleFact, sampleDecision, sampleLearning } from "../../helpers/fixtures.js";
 
 interface TempDir {
   path: string;
@@ -235,5 +237,182 @@ describe("UnitOfWork", () => {
     // Verify disk state remains at uow1 focus
     const onDisk = await Bun.file(statePath(tempDir.path)).json();
     expect(onDisk.attention.focus).toBe("uow1 focus");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// AttentionRepository edge coverage
+// ---------------------------------------------------------------------------
+
+describe("AttentionRepository Edge Cases", () => {
+  let sm: StateManager;
+  let uow: IUnitOfWork;
+
+  beforeEach(async () => {
+    sm = new StateManager(tempDir.path);
+    await sm.initialize();
+    uow = sm.createUnitOfWork();
+  });
+
+  it("get() returns a shallow copy — mutating the returned object does not affect the segment", () => {
+    const snap = uow.attention.get();
+    snap.focus = "mutated";
+    snap.priority = "high" as any;
+    expect(uow.attention.get().focus).not.toBe("mutated");
+    expect(uow.attention.get().priority).toBe("normal");
+  });
+
+  it("update() with partial fields only touches the provided fields", () => {
+    const before = uow.attention.get();
+    uow.attention.update({ priority: "high" as any });
+    const after = uow.attention.get();
+    expect(after.priority).toBe("high");
+    expect(after.focus).toBe(before.focus);
+    expect(after.files).toEqual(before.files);
+  });
+
+  it("update() copies array fields to prevent external mutation", () => {
+    const files = ["a.ts"];
+    uow.attention.update({ files });
+    files.push("b.ts");
+    expect(uow.attention.get().files).toEqual(["a.ts"]);
+  });
+
+  it("update() without updatedAt auto-sets the timestamp to now()", () => {
+    const before = uow.attention.get().updatedAt;
+    uow.attention.update({ focus: "new" });
+    expect(uow.attention.get().updatedAt).not.toBe(before);
+  });
+
+  it("update() with explicit updatedAt preserves the given value", () => {
+    const explicit = "2025-01-01T00:00:00.000Z";
+    uow.attention.update({ focus: "new", updatedAt: explicit });
+    expect(uow.attention.get().updatedAt).toBe(explicit);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// BeliefRepository edge coverage
+// ---------------------------------------------------------------------------
+
+describe("BeliefRepository Edge Cases", () => {
+  let sm: StateManager;
+  let uow: IUnitOfWork;
+
+  beforeEach(async () => {
+    sm = new StateManager(tempDir.path);
+    await sm.initialize();
+    uow = sm.createUnitOfWork();
+  });
+
+  it("setFacts replaces all existing facts", () => {
+    uow.belief.addFact(sampleFact({ id: "bf-test-set-1" }));
+    expect(uow.belief.getAllFacts()).toHaveLength(1);
+    uow.belief.setFacts([sampleFact({ id: "bf-test-set-2" })]);
+    expect(uow.belief.getAllFacts()).toHaveLength(1);
+    expect(uow.belief.getAllFacts()[0]!.id).toBe("bf-test-set-2");
+  });
+
+  it("setFacts copies the provided array to prevent external mutation", () => {
+    const src = [sampleFact({ id: "bf-test-copy" })];
+    uow.belief.setFacts(src);
+    src.push(sampleFact({ id: "bf-test-extra" }));
+    expect(uow.belief.getAllFacts()).toHaveLength(1);
+  });
+
+  it("setDecisions replaces all existing decisions", () => {
+    uow.belief.addDecision(sampleDecision({ id: "bd-test-set-1" }));
+    uow.belief.setDecisions([]);
+    expect(uow.belief.getAllDecisions()).toHaveLength(0);
+  });
+
+  it("updateFact on a non-existent id is a no-op", () => {
+    uow.belief.updateFact("bf-missing", { content: "updated" });
+    expect(uow.belief.findFactById("bf-missing")).toBeUndefined();
+  });
+
+  it("updateDecision on a non-existent id is a no-op", () => {
+    uow.belief.updateDecision("bd-missing", { content: "updated" });
+    expect(uow.belief.findDecisionById("bd-missing")).toBeUndefined();
+  });
+
+  it("findFactById returns undefined for a missing id", () => {
+    expect(uow.belief.findFactById("bf-nonexistent")).toBeUndefined();
+  });
+
+  it("findDecisionById returns undefined for a missing id", () => {
+    expect(uow.belief.findDecisionById("bd-nonexistent")).toBeUndefined();
+  });
+
+  it("getAllFacts returns a copy isolated from the segment", () => {
+    uow.belief.addFact(sampleFact({ id: "bf-test-copy" }));
+    const facts = uow.belief.getAllFacts();
+    facts.push(sampleFact({ id: "bf-test-extra" }));
+    expect(uow.belief.getAllFacts()).toHaveLength(1);
+  });
+
+  it("getAllDecisions returns a copy isolated from the segment", () => {
+    uow.belief.addDecision(sampleDecision({ id: "bd-test-copy" }));
+    const decisions = uow.belief.getAllDecisions();
+    decisions.push(sampleDecision({ id: "bd-test-extra" }));
+    expect(uow.belief.getAllDecisions()).toHaveLength(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// LearningRepository edge coverage
+// ---------------------------------------------------------------------------
+
+describe("LearningRepository Edge Cases", () => {
+  let sm: StateManager;
+  let uow: IUnitOfWork;
+
+  beforeEach(async () => {
+    sm = new StateManager(tempDir.path);
+    await sm.initialize();
+    uow = sm.createUnitOfWork();
+  });
+
+  it("setSuccesses replaces all existing successes", () => {
+    uow.learning.addSuccess(sampleLearning({ id: "le-s-set-1" }));
+    uow.learning.setSuccesses([]);
+    expect(uow.learning.getSuccesses()).toHaveLength(0);
+  });
+
+  it("setFailures replaces all existing failures", () => {
+    uow.learning.addFailure(sampleLearning({ id: "le-f-set-1" }));
+    uow.learning.setFailures([sampleLearning({ id: "le-f-set-2" })]);
+    expect(uow.learning.getFailures()).toHaveLength(1);
+    expect(uow.learning.getFailures()[0]!.id).toBe("le-f-set-2");
+  });
+
+  it("setFailures copies the provided array to prevent external mutation", () => {
+    const src = [sampleLearning({ id: "le-f-copy-1" })];
+    uow.learning.setFailures(src);
+    src.push(sampleLearning({ id: "le-f-copy-2" }));
+    expect(uow.learning.getFailures()).toHaveLength(1);
+  });
+
+  it("updateSuccess on a non-existent id is a no-op", () => {
+    uow.learning.updateSuccess("le-missing", { description: "updated" });
+    expect(uow.learning.getSuccesses()).toHaveLength(0);
+  });
+
+  it("updateSuccess on an existing id updates the entry", () => {
+    uow.learning.addSuccess(sampleLearning({ id: "le-s-upd" }));
+    uow.learning.updateSuccess("le-s-upd", { description: "updated desc" });
+    expect(uow.learning.getSuccesses()[0]!.description).toBe("updated desc");
+  });
+
+  it("updateFailure on a non-existent id is a no-op", () => {
+    uow.learning.addFailure(sampleLearning({ id: "le-f-upd-1" }));
+    uow.learning.updateFailure("le-f-missing", { description: "updated" });
+    expect(uow.learning.getFailures()[0]!.description).toBe("Test learning entry");
+  });
+
+  it("getSummary returns a copy isolated from the segment", () => {
+    const summary = uow.learning.getSummary();
+    summary.successCount = 99;
+    expect(uow.learning.getSummary().successCount).toBe(0);
   });
 });

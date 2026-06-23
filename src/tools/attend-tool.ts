@@ -113,6 +113,11 @@ export async function executeAttend(
 }
 
 export function registerAttendTool(pi: ExtensionAPI, runtime: NoesisRuntime): void {
+  // ponytail: TS2589 is a pre-existing TypeScript instantiation-depth limit.
+  // The OMP ExtensionAPI type has deeply nested generics (~8+ levels) that
+  // exceed tsc's default 50-instance limit when combined with strict mode.
+  // Fix: extract `pi.registerTool` args into a typed const separate from the call.
+  // @ts-expect-error TS2589
   pi.registerTool({
     name: "noesis_attend",
     label: "Noesis: Attend",
