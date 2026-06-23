@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, afterEach } from "bun:test";
-import { existsSync, mkdirSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, rmSync } from "node:fs";
 import { writeAtomic, readJSON, fileExists } from "../../../src/infrastructure/filesystem-store.js";
 import { createTempDir } from "../../helpers/temp-dir.js";
 import { join } from "node:path";
@@ -134,9 +134,9 @@ describe("writeAtomic directory creation", () => {
 
       await expect(writeAtomic(targetPath, { data: "test" })).rejects.toThrow();
 
-      // Temp file should have been cleaned up
-      const tempPath = `${targetPath}.tmp.${process.pid}`;
-      expect(existsSync(tempPath)).toBe(false);
+      // Temp file should have been cleaned up — check no .tmp. files remain
+      const files = readdirSync(dir.path);
+      expect(files.some(f => f.startsWith("dir-collision.json.tmp."))).toBe(false);
     } finally {
       if (existsSync(targetPath)) {
         rmSync(targetPath, { recursive: true, force: true });

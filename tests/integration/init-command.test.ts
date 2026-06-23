@@ -363,17 +363,17 @@ describe("noesis:init", () => {
       const status = await initCommand(castToExtensionAPI(pi), { skipGraphify: true });
     });
 
-    it("returns initialized-full with build errors when graphify build fails", async () => {
+    it("returns initialized-full with background graph build when graphify CLI is installed", async () => {
       _enableGraphifyCLI = true;
       _graphifyBuildSuccess = false;
       const status = await initCommand(castToExtensionAPI(pi), {});
       expect(status).toBe("initialized-full");
 
-      // Verify the final summary includes "Graph: build errors"
+      // Verify the final summary reports background build scheduling
       const msgs = sentMessages(pi);
       const finalMsg = msgs[msgs.length - 1];
       expect(finalMsg).toBeDefined();
-      expect(finalMsg!.message.content).toContain("Graph: build errors");
+      expect(finalMsg!.message.content).toContain("Graph: building in background");
     });
   });
 

@@ -35,7 +35,6 @@ graphify-out/
 
 # Noesis — projected vault artifacts (derived from state.json)
 .obsidian/noesis/
-#
 # Test temporary directories (copies of src/ for new test runner)
 tests/helpers/.test-*/
 

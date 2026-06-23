@@ -369,20 +369,11 @@ export async function initCommand(pi: ExtensionAPI, args: InitArgs = {}): Promis
   }, { deliverAs: "steer" });
 
 
-  // 7. Build the project knowledge graph (unless opted out)
+
+  // 7. Build the project knowledge graph (fire-and-forget — background to avoid 30s handler timeout)
   if (buildGraph) {
-    pi.sendMessage({
-      customType: "noesis:init-status",
-      content: `Building project knowledge graph${summary.length ? " (" + summary.join(", ") + ")" : ""}...`,
-      display: true,
-      attribution: "agent",
-    });
-    const buildResult = await runGraphifyBuild(projectRoot, getBackendArgs());
-    if (buildResult.success) {
-      summary.push("Graph: built");
-    } else {
-      summary.push("Graph: build errors");
-    }
+    runGraphifyBuild(projectRoot, getBackendArgs()).catch(() => {});
+    summary.push("Graph: building in background");
   }
 
 
@@ -407,7 +398,8 @@ export async function initCommand(pi: ExtensionAPI, args: InitArgs = {}): Promis
   // These are derived/cache files that should never be version-controlled:
   //   graphify-out/      — AST cache, graph JSON, manifest, cost analysis
   //   .obsidian/noesis/  — vault projections derived from state.json
-  //   .omp/noesis/       — runtime state (state.json, vault-retry.json)
+  // NOTE: .omp/noesis/ is intentionally omitted — the root .gitignore whitelist
+  // block (!.omp/noesis/state.json) explicitly tracks state.json.
   const gitignorePath = join(projectRoot, ".gitignore");
   const GITIGNORE_ENTRIES = [
     "# Noesis — generated graph artifacts (local tracking only)",
@@ -415,9 +407,6 @@ export async function initCommand(pi: ExtensionAPI, args: InitArgs = {}): Promis
     "",
     "# Noesis — projected vault artifacts (derived from state.json)",
     ".obsidian/noesis/",
-    "",
-    "# Noesis — runtime state (regenerated on each run)",
-    ".omp/noesis/",
   ];
   if (existsSync(gitignorePath)) {
     const existing = readFileSync(gitignorePath, "utf-8");

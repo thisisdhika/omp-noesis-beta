@@ -92,16 +92,3 @@ export function fileExists(path: string): boolean {
   return existsSync(path);
 }
 
-// ============================================================================
-// INTERNAL HELPERS
-// ============================================================================
-
-/** Narrow an unknown error to check for ENOENT (file not found). */
-function isErrnoENOENT(err: unknown): err is NodeJS.ErrnoException {
-  return (
-    typeof err === "object" &&
-    err !== null &&
-    "code" in err &&
-    (err as { code?: unknown }).code === "ENOENT"
-  );
-}
