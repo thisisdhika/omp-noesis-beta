@@ -403,22 +403,32 @@ export async function initCommand(pi: ExtensionAPI, args: InitArgs = {}): Promis
     }
   }
 
-  // 8b. Write recommended .gitignore entries for graphify-out
+  // 8b. Write recommended .gitignore entries for noesis-generated artifacts.
+  // These are derived/cache files that should never be version-controlled:
+  //   graphify-out/      — AST cache, graph JSON, manifest, cost analysis
+  //   .obsidian/noesis/  — vault projections derived from state.json
+  //   .omp/noesis/       — runtime state (state.json, vault-retry.json)
   const gitignorePath = join(projectRoot, ".gitignore");
-  const gitignoreLines = [
-    "# Noesis graph artifacts (local tracking only)",
-    "graphify-out/cost.json",
-    "graphify-out/manifest.json",
+  const GITIGNORE_ENTRIES = [
+    "# Noesis — generated graph artifacts (local tracking only)",
+    "graphify-out/",
+    "",
+    "# Noesis — projected vault artifacts (derived from state.json)",
+    ".obsidian/noesis/",
+    "",
+    "# Noesis — runtime state (regenerated on each run)",
+    ".omp/noesis/",
   ];
   if (existsSync(gitignorePath)) {
     const existing = readFileSync(gitignorePath, "utf-8");
-    const missing = gitignoreLines.filter(line => !existing.includes(line));
+    const existingLines = existing.split(/\r?\n/).map(l => l.trim());
+    const missing = GITIGNORE_ENTRIES.filter(line => line && !existingLines.some(el => el === line));
     if (missing.length > 0) {
       appendFileSync(gitignorePath, "\n" + missing.join("\n") + "\n");
       summary.push(".gitignore: updated");
     }
   } else {
-    writeFileSync(gitignorePath, gitignoreLines.join("\n") + "\n");
+    writeFileSync(gitignorePath, GITIGNORE_ENTRIES.join("\n") + "\n");
     summary.push(".gitignore: created");
   }
   // 9. Done — single status message

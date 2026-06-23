@@ -10,6 +10,7 @@
 
 import {
   existsSync,
+  readFileSync,
   openSync,
   closeSync,
   fsyncSync,
@@ -18,6 +19,8 @@ import {
 } from "node:fs";
 import { dirname } from "node:path";
 
+/** Monotonic counter to make temp filenames unique per call (race-safe for concurrent writeAtomic). */
+let _atomicCounter = 0;
 // ============================================================================
 // WRITE (ATOMIC)
 // ============================================================================
@@ -33,7 +36,7 @@ import { dirname } from "node:path";
  * On any error the temp file is cleaned up and the error is rethrown.
  */
 export async function writeAtomic(path: string, data: unknown): Promise<void> {
-  const tempPath = `${path}.tmp.${process.pid}`;
+  const tempPath = `${path}.tmp.${process.pid}.${Date.now()}.${++_atomicCounter}`;
 
   try {
     // Write to temp file
@@ -68,17 +71,14 @@ export async function writeAtomic(path: string, data: unknown): Promise<void> {
 
 /**
  * Read and parse a JSON file from `path`.
- *
- * Returns `null` (instead of throwing) when the file does not exist.
- * All other errors (parse errors, permission errors, etc.) propagate.
+ * Returns `null` when the file does not exist.
+ * Throws `SyntaxError` on malformed JSON.
+ * Propagates I/O errors (permissions, disk failure).
  */
-export async function readJSON(path: string): Promise<unknown> {
-  try {
-    return await Bun.file(path).json();
-  } catch (err: unknown) {
-    if (isErrnoENOENT(err)) return null;
-    throw err;
-  }
+export function readJSON(path: string): unknown {
+  if (!existsSync(path)) return null;
+  const raw = readFileSync(path, "utf-8");
+  return JSON.parse(raw);
 }
 
 // ============================================================================

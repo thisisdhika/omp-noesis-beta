@@ -90,7 +90,7 @@ describe("readJSON", () => {
 
     await Bun.write(filePath, "not valid json{{{");
 
-    expect(readJSON(filePath)).rejects.toThrow();
+    expect(() => readJSON(filePath)).toThrow();
   });
 });
 
