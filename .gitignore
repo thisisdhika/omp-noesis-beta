@@ -24,8 +24,6 @@ Thumbs.db
 !.omp/
 !.omp/RULES.md
 !.omp/config.yml
-!.omp/noesis/
-!.omp/noesis/state.json
 !.omp/skills/
 !.omp/skills/graphify/
 !.omp/skills/graphify/SKILL.md

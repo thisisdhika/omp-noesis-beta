@@ -398,8 +398,7 @@ export async function initCommand(pi: ExtensionAPI, args: InitArgs = {}): Promis
   // These are derived/cache files that should never be version-controlled:
   //   graphify-out/      — AST cache, graph JSON, manifest, cost analysis
   //   .obsidian/noesis/  — vault projections derived from state.json
-  // NOTE: .omp/noesis/ is intentionally omitted — the root .gitignore whitelist
-  // block (!.omp/noesis/state.json) explicitly tracks state.json.
+  //   .omp/noesis/       — cognitive state directory (regenerated on init)
   const gitignorePath = join(projectRoot, ".gitignore");
   const GITIGNORE_ENTRIES = [
     "# Noesis — generated graph artifacts (local tracking only)",
@@ -407,6 +406,9 @@ export async function initCommand(pi: ExtensionAPI, args: InitArgs = {}): Promis
     "",
     "# Noesis — projected vault artifacts (derived from state.json)",
     ".obsidian/noesis/",
+    "",
+    "# Noesis — cognitive state directory (regenerated on init)",
+    ".omp/noesis/",
   ];
   if (existsSync(gitignorePath)) {
     const existing = readFileSync(gitignorePath, "utf-8");
