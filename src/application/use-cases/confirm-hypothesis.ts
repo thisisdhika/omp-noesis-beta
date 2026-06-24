@@ -1,5 +1,6 @@
 import type { IUnitOfWork } from "../../infrastructure/unit-of-work.js";
 import { generateId } from "../../shared/schema-base.js";
+import type { Hypothesis } from "../../domains/inference/schema.js";
 
 export interface ConfirmHypothesisInput {
   id: string;
@@ -15,7 +16,7 @@ export class ConfirmHypothesisUseCase {
       throw new Error(`Hypothesis not found: ${input.id}`);
     }
 
-    const updates: any = {
+    const updates: Partial<Hypothesis> = {
       status: "confirmed" as const,
     };
 

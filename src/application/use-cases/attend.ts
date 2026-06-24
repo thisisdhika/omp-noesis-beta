@@ -1,5 +1,5 @@
 import type { IUnitOfWork } from "../../infrastructure/unit-of-work.js";
-import type { GraphFinding } from "../../domains/attention/schema.js";
+import type { GraphFinding, AttentionLayer } from "../../domains/attention/schema.js";
 
 export interface AttendInput {
   focus: string;
@@ -18,7 +18,7 @@ export class AttendUseCase {
     const attention = attentionRepo.get();
     const timestamp = new Date().toISOString();
 
-    const updates: any = {
+    const updates: Partial<AttentionLayer> = {
       focus: input.focus.slice(0, 200), // Enforce CAPS
       updatedAt: timestamp,
     };

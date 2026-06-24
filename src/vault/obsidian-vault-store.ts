@@ -80,15 +80,39 @@ function formatFrontmatter(artifact: VaultArtifact): string {
   lines.push(`pushedAt: ${yamlPrimitive(artifact.pushedAt)}`);
   lines.push(`projectPath: ${yamlPrimitive(artifact.projectPath)}`);
 
-  if (artifact.metadata && Object.keys(artifact.metadata).length > 0) {
+  // NEW: tags for Obsidian graph/search
+  const tags = [`noesis`, `noesis/${artifact.kind}`];
+  lines.push(`tags: [${tags.join(", ")}]`);
+
+  // NEW: status field
+  lines.push(`status: active`);
+
+  // NEW: source and confidence from metadata (promoted to top-level)
+  const { source, confidence, tags: _metaTags, ...rest } = artifact.metadata ?? {};
+  if (source) {
+    lines.push(`source: ${yamlPrimitive(source)}`);
+  }
+  if (confidence !== undefined) {
+    lines.push(`confidence: ${yamlPrimitive(confidence)}`);
+  }
+
+  // Write remaining metadata (excluding promoted keys only)
+  const remainingKeys = Object.keys(rest);
+  if (remainingKeys.length > 0) {
     lines.push("metadata:");
-    lines.push(yamlObject(artifact.metadata!, 2));
+    lines.push(yamlObject(rest as Record<string, string | number | boolean | null>, 2));
   }
 
   lines.push("---");
   return lines.join("\n");
 }
 
+/**
+ * Parsed note from vault markdown. Intentionally omits top-level
+ * Obsidian-native fields (tags, status, source, confidence) — those
+ * are for Obsidian's graph/search and not needed for round-trip.
+ * Only fields required by VaultArtifact are captured.
+ */
 interface ParsedNote {
   kind: VaultArtifact["kind"];
   id: string;
@@ -137,12 +161,19 @@ function parseFrontmatter(text: string): ParsedNote | null {
       ? parsed.pushedAt.toISOString()
       : parsed.pushedAt;
 
+  // Capture promoted top-level fields back into metadata for roundtrip
+  const metadata: Record<string, string | number | boolean | null> =
+    (parsed.metadata as Record<string, string | number | boolean | null>) ?? {};
+  if (typeof parsed.source === "string") metadata.source = parsed.source;
+  if (typeof parsed.confidence === "number") metadata.confidence = parsed.confidence;
+  const hasMetadata = Object.keys(metadata).length > 0;
+
   return {
     kind: parsed.kind as VaultArtifact["kind"],
     id: parsed.id,
     pushedAt,
     projectPath: parsed.projectPath,
-    metadata: (parsed.metadata ?? undefined) as Record<string, string | number | boolean | null> | undefined,
+    metadata: hasMetadata ? metadata : undefined,
     content,
   };
 }
@@ -215,7 +246,6 @@ export class ObsidianVaultStore implements VaultStore {
     const filename = `${artifact.id}.md`;
     const frontmatter = formatFrontmatter(artifact);
     const content = frontmatter + "\n" + artifact.content;
-
     await writeObsidianNote(dir, filename, content);
   }
 
@@ -224,7 +254,7 @@ export class ObsidianVaultStore implements VaultStore {
     const lines = [
       "# Noesis Vault Index",
       "",
-      "Generated automatically by omp-noesis.",
+      "Generated automatically by omp-noesis (Bases format).",
       "",
     ];
 
@@ -232,10 +262,12 @@ export class ObsidianVaultStore implements VaultStore {
       const label = kind.slice(0, 1).toUpperCase() + kind.slice(1);
       lines.push(`## ${label}`);
       lines.push("");
-      lines.push("```dataview");
-      lines.push("TABLE id, pushedAt, projectPath");
-      lines.push(`FROM "${NOESIS_DIR}/${kind}"`);
-      lines.push("SORT pushedAt DESC");
+      lines.push("```bases");
+      lines.push("---");
+      lines.push(`table: id, pushedAt, projectPath`);
+      lines.push(`filter: kind = "${kind}"`);
+      lines.push("sort: pushedAt desc");
+      lines.push("---");
       lines.push("```");
       lines.push("");
     }

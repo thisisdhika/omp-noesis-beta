@@ -306,7 +306,7 @@ export interface BackgroundUpdateOptions {
  */
 export async function tryBackgroundGraphUpdate(
   projectRoot: string,
-  stateManager: { read: () => Readonly<{ _lastGraphUpdate?: string }>; mutate: (fn: (s: any) => void) => Promise<unknown> },
+  stateManager: { read: () => Readonly<{ _lastGraphUpdate?: string }>; mutate: (fn: (s: NoesisState) => void) => Promise<unknown> },
   options?: BackgroundUpdateOptions,
 ): Promise<boolean> {
   // Check graph size before attempting update
@@ -341,7 +341,7 @@ export interface LifecycleGraphUpdateOptions {
 
 export async function tryLifecycleGraphUpdate(
   projectRoot: string,
-  stateManager: { read: () => Readonly<{ _lastGraphUpdate?: string }>; mutate: (fn: (s: any) => void) => Promise<unknown> },
+  stateManager: { read: () => Readonly<{ _lastGraphUpdate?: string }>; mutate: (fn: (s: NoesisState) => void) => Promise<unknown> },
   options?: LifecycleGraphUpdateOptions,
 ): Promise<boolean> {
   const capability = await detectCapability(projectRoot);

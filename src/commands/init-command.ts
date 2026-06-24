@@ -147,29 +147,31 @@ export interface InitArgs {
 // CONFIG MERGE
 // ============================================================================
 
+/** Recursive YAML node type — replaces `any` in config merge/parse/serialize. */
+type YamlNode = string | number | boolean | null | { [key: string]: YamlNode };
+type YamlRecord = Record<string, YamlNode>;
 /**
  * Deep-merge recommended settings into an existing config.yml string.
  * Handles flat sections (compaction) and nested subsections (noesis.graphify).
  * Keeps all existing keys, overrides recommended ones, removes deprecated keys.
  */
 function mergeConfigYaml(existing: string, recommended: string): string {
-  // Recursive deep-merge helper
-  function deepMerge(target: any, source: any): void {
+  function deepMerge(target: YamlRecord, source: YamlRecord): void {
     for (const [key, value] of Object.entries(source)) {
       if (value !== null && typeof value === "object" && !Array.isArray(value)) {
         if (!(key in target) || target[key] === null || typeof target[key] !== "object") {
           target[key] = {};
         }
-        deepMerge(target[key], value);
+        deepMerge(target[key] as YamlRecord, value as YamlRecord);
       } else {
         target[key] = value;
       }
     }
   }
 
-  // Parse YAML text into a nested Record<string, any>
-  function parseYaml(yaml: string): Record<string, any> {
-    const data: Record<string, any> = {};
+  // Parse YAML text into a nested YamlRecord
+  function parseYaml(yaml: string): YamlRecord {
+    const data: YamlRecord = {};
     let section = "";
     let subSection = "";
 
@@ -217,8 +219,8 @@ function mergeConfigYaml(existing: string, recommended: string): string {
     return data;
   }
 
-  // Serialize a nested Record back to YAML
-  function serializeYaml(data: Record<string, any>, indent: number = 0): string[] {
+  // Serialize a nested YamlRecord back to YAML
+  function serializeYaml(data: YamlRecord, indent: number = 0): string[] {
     const lines: string[] = [];
     const pad = " ".repeat(indent);
 

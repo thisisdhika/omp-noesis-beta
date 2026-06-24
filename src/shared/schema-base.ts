@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { createHash } from "node:crypto";
+
 
 export const CURRENT_VERSION = 1;
 export const MAX_PREAMBLE_TOKENS = 2000;
@@ -39,4 +41,8 @@ export type CapabilityLevel = z.infer<typeof CapabilityLevelSchema>;
 
 export function generateId(prefix: string): string {
   return `${prefix}-${crypto.randomUUID()}`;
+}
+
+export function contentHash(content: string): string {
+  return createHash("sha256").update(content.slice(0, 128)).digest("hex").slice(0, 16);
 }

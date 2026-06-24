@@ -97,36 +97,36 @@ describe("retainToOmp bridge", () => {
 
   // ── executeBelieveFact integration ─────────────────────────────────────
 
-  it("calls retainToOmp when believe_fact confidence >= 0.6", async () => {
+  it("calls retainToOmp when believe_fact confidence >= 0.5", async () => {
     const { runtime } = await setup();
     const retainToOmp = mock(() => Promise.resolve());
     runtime.retainToOmp = retainToOmp;
 
     await executeBelieveFact(runtime, {
       content: "Confident fact",
-      confidence: 0.6,
+      confidence: 0.5,
       source: "execution",
     });
 
     expect(retainToOmp).toHaveBeenCalledTimes(1);
     expect(retainToOmp).toHaveBeenCalledWith([
       expect.objectContaining({
-        content: expect.stringContaining("[Noesis Belief] Confident fact"),
+        content: expect.stringContaining("[noesis/belief] Confident fact"),
         context: expect.stringMatching(/source: execution/),
       }),
     ]);
   });
 
-  it("does not call retainToOmp when believe_fact confidence <= 0.59", async () => {
+  it("throws when believe_fact confidence below use case minimum 0.5", async () => {
     const { runtime } = await setup();
     const retainToOmp = mock(() => Promise.resolve());
     runtime.retainToOmp = retainToOmp;
 
-    await executeBelieveFact(runtime, {
+    await expect(executeBelieveFact(runtime, {
       content: "Shaky fact",
-      confidence: 0.59,
+      confidence: 0.45,
       source: "inference",
-    });
+    })).rejects.toThrow("below minimum threshold");
 
     expect(retainToOmp).not.toHaveBeenCalled();
   });
@@ -165,7 +165,7 @@ describe("retainToOmp bridge", () => {
     expect(vaultPush).toHaveBeenCalledTimes(1);
   });
 
-  it("calls vaultStore.push even when retainToOmp threshold not met (confidence 0.55)", async () => {
+  it("calls vaultStore.push and retainToOmp when confidence meets both thresholds (0.5)", async () => {
     const { runtime } = await setup();
     const retainToOmp = mock(() => Promise.resolve());
     const vaultPush = mock(() => Promise.resolve());
@@ -173,14 +173,13 @@ describe("retainToOmp bridge", () => {
     runtime.vaultStore.push = vaultPush;
 
     await executeBelieveFact(runtime, {
-      content: "Low confidence vault fact",
-      confidence: 0.55,
+      content: "Minimum threshold fact",
+      confidence: 0.5,
       source: "inference",
     });
 
-    // retainToOmp should not be called below the 0.6 threshold
-    expect(retainToOmp).not.toHaveBeenCalled();
-    // vaultStore.push should still fire regardless
+    // Both bridge and vault fire at confidence 0.5
+    expect(retainToOmp).toHaveBeenCalledTimes(1);
     expect(vaultPush).toHaveBeenCalledTimes(1);
   });
 

@@ -773,7 +773,7 @@ describe("ObsidianVaultStore", () => {
   // ========================================================================
 
   describe("index generation", () => {
-    it("writes a Dataview index note when artifacts are pushed", async () => {
+    it("writes a Bases index note when artifacts are pushed", async () => {
       const { path, cleanup } = createTempDir();
       try {
         mkdirSync(join(path, ".obsidian"));
@@ -791,7 +791,7 @@ describe("ObsidianVaultStore", () => {
 
         const indexContent = readFileSync(indexPath, "utf-8");
         expect(indexContent).toContain("# Noesis Vault Index");
-        expect(indexContent).toContain('FROM ".obsidian/noesis/decision"');
+        expect(indexContent).toContain('filter: kind = "decision"');
       } finally {
         cleanup();
       }

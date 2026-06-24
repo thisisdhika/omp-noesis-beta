@@ -49,7 +49,7 @@ export async function executeAttend(
         const state = runtime.stateManager.read();
         const config = await readNoesisConfig(runtime.projectRoot);
         const canUpdate = canRunGraphUpdate(
-          (state as any)._lastGraphUpdate,
+          state._lastGraphUpdate,
           config.maxUpdateInterval,
         );
 

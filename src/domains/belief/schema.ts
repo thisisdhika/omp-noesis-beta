@@ -4,7 +4,7 @@ import { CAPS } from "../../shared/schema-base.js";
 export const BeliefStatusSchema = z.enum(["active", "superseded", "archived"]);
 export type BeliefStatus = z.infer<typeof BeliefStatusSchema>;
 
-export const BeliefSourceSchema = z.enum(["graph", "execution", "user", "inference"]);
+export const BeliefSourceSchema = z.enum(["graph", "execution", "user", "inference", "omp-memory", "obsidian-import"]);
 export type BeliefSource = z.infer<typeof BeliefSourceSchema>;
 
 export const BeliefFactSchema = z.object({

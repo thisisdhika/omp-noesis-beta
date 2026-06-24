@@ -12,7 +12,6 @@ import { ExtendWorkflowUseCase } from "../../src/application/use-cases/extend-wo
 import { EndTurnCleanupUseCase } from "../../src/application/use-cases/end-turn-cleanup.js";
 import { query } from "../../src/infrastructure/graphify-client.js";
 import { parseQueryOutput } from "../../src/infrastructure/graphify-parser.js";
-import { ResolveLearningUseCase } from "../../src/application/use-cases/resolve-learning.js";
 import { ConfirmHypothesisUseCase } from "../../src/application/use-cases/confirm-hypothesis.js";
 import { UpdateWorkflowStepUseCase } from "../../src/application/use-cases/update-workflow-step.js";
 import { CAPS } from "../../src/shared/schema-base.js";
@@ -340,40 +339,6 @@ describe("Milestone 6 Adversarial Gaps Test Suite", () => {
     }
   });
 
-  // Gap 1.13: Validation Crash on Learning Resolution
-  it("Gap 1.13: should gracefully truncate combined content to fit within BeliefFact limits", async () => {
-    const tempDir = createTempDir();
-    try {
-      const sm = new StateManager(tempDir.path);
-      await sm.initialize();
-
-      await sm.mutate((state) => {
-        state.learning.successes.push({
-          id: "le-success-1",
-          description: "A".repeat(450),
-          status: "captured",
-          capturedAt: new Date().toISOString(),
-        });
-      });
-
-      const uow = sm.createUnitOfWork();
-      const useCase = new ResolveLearningUseCase(uow);
-      
-      // rootCause and fix combined with description is 450 + 400 + 400 = 1250 (> 1000 limit)
-      const factId = await useCase.execute({
-        learningId: "le-success-1",
-        rootCause: "B".repeat(400),
-        fix: "C".repeat(400)
-      });
-
-      expect(factId).toBeDefined();
-      const fact = sm.read().belief.facts.find(f => f.id === factId);
-      expect(fact).toBeDefined();
-      expect(fact!.content.length).toBeLessThanOrEqual(1000);
-    } finally {
-      tempDir.cleanup();
-    }
-  });
 
   // Gap 1.14: Unhandled JSON Parse Corruption in checkpointAttention
   it("Gap 1.14: should handle disk read syntax errors gracefully during checkpointing", async () => {

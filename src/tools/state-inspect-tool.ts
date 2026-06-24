@@ -86,7 +86,7 @@ export async function executeRecall(
     keyword?: string;
     layers?: ("belief" | "learning" | "inference" | "commitment" | "attention")[];
   },
-): Promise<AgentToolResult<any, any>> {
+): Promise<AgentToolResult<Record<string, unknown>>> {
   const state = runtime.stateManager.read();
 
   if (params.query === "active_beliefs") {

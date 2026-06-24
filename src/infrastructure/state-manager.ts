@@ -45,7 +45,7 @@ export class StateManager {
    * Gracefully handles missing file (null returned by readJSON)
    * and malformed JSON (readJSON throws → caught below).
    */
-  async initialize(preserveData?: Record<string, any>): Promise<void> {
+  async initialize(preserveData?: Record<string, unknown>): Promise<void> {
     let loaded: unknown;
     try {
       loaded = await readJSON(this.#statePath);

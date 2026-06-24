@@ -53,7 +53,7 @@ type CommitParams = {
   priority: "low" | "normal" | "high" | "critical";
 };
 
-export async function executeCommit(runtime: NoesisRuntime, params: CommitParams): Promise<AgentToolResult<any, any>> {
+export async function executeCommit(runtime: NoesisRuntime, params: CommitParams): Promise<AgentToolResult<Record<string, unknown>>> {
   // Runtime type guards — narrow the status union to the mode-specific subset
   function workflowStatus(s: typeof params.status): "draft" | "active" | "done" | "abandoned" | undefined {
     if (s === "draft" || s === "active" || s === "done" || s === "abandoned" || s === undefined) return s;
@@ -161,7 +161,7 @@ export async function executeCommit(runtime: NoesisRuntime, params: CommitParams
         status: narrowedStatus,
         note: params.note,
       });
-    } catch (err: any) {
+    } catch {
       return {
         content: [{ type: "text", text: `Step not found: ${stepId}` }],
         details: { stepId, error: "not_found" },

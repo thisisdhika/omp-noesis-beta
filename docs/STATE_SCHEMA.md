@@ -54,7 +54,7 @@ interface BeliefFact {
   id: string;              // "bf-{uuid}"
   content: string;         // The proposition
   confidence: number;      // 0.0 - 1.0
-  source: "graph"|"execution"|"user"|"inference";
+  source: "graph"|"execution"|"user"|"inference"|"omp-memory"|"obsidian-import";
   createdAt: string;
   updatedAt: string;
   status: "active"|"superseded"|"archived";
@@ -73,7 +73,7 @@ interface BeliefDecision {
   content: string;
   rationale: string;
   alternatives?: string[];  // ≤3
-  source: "graph"|"execution"|"user"|"inference";
+  source: "graph"|"execution"|"user"|"inference"|"omp-memory"|"obsidian-import";
   createdAt: string;
   updatedAt: string;
   status: "active"|"superseded"|"archived";
@@ -156,6 +156,32 @@ Ranking formula: `rank = recency × taskRelevance × failureMultiplier × resolv
 | Actions | 50 |
 | Learning entries (stored) | 100 |
 | Learning (preamble) | 3 (top-ranked) |
+
+## OMP Memory Hydration
+
+At session start, `HydrateFromMemoryUseCase` queries OMP memory for cross-session durability:
+
+| Step | Description |
+|---|---|
+| Query | Searches OMP memory for `[noesis/belief]` and `[noesis/decision]` prefixed entries |
+| Parse | Extracts `content`, `confidence`, `tags`, `source` from structured context strings |
+| Dedup | Content-hash comparison (`sha256(0-128) → 16-char hex`) against existing state.json entries |
+| Cap | Imported confidence capped at `Math.min(confidence, 0.75)` — OMP entries are supplements |
+| Source | Imported entries receive `source: "omp-memory"` |
+| Commit | Batch commit via `UnitOfWork`; zero hydrated entries → no write |
+
+### Deduplication
+
+`contentHash()` hashes the first 128 chars of content. An entry is skipped when its hash already exists in the current belief layer (facts or decisions).
+
+### Graceful Degradation
+
+| Condition | Behavior |
+|---|---|
+| OMP memory backend unavailable | Returns `{ imported: 0, skipped: 0, status: { backend: "off" } }` — no-op |
+| No matching entries found | Returns `{ imported: 0, skipped: 0 }` — no-op |
+| Parse failure on entry | Increments `skipped`, continues to next entry |
+| Dedup hit (hash already exists) | Increments `skipped`, continues |
 
 ## Persistence Contract
 

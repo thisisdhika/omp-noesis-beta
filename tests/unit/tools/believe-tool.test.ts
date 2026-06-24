@@ -10,7 +10,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { createMockPi, toExtensionAPI } from "../../helpers/mock-pi.js";
 import { createRuntime, type NoesisRuntime } from "../../../src/runtime.js";
-import { registerBelieveFactTool, registerBelieveDecisionTool, executeBelieveLearning, buildBelieveLearningParams } from "../../../src/tools/believe-tool.js";
+import { registerBelieveFactTool, registerBelieveDecisionTool } from "../../../src/tools/believe-tool.js";
 import { EMPTY_STATE } from "../../../src/shared/schema.js";
 import { deepClone } from "../../../src/shared/clone.js";
 import type { MockPi } from "../../helpers/mock-pi.js";
@@ -115,7 +115,7 @@ describe("noesis_believe_fact", () => {
     expect(() => schema.parse({ content: "test" })).toThrow();
   });
 
-  it("retains to OMP when retainToOmp is set and confidence >= 0.6", async () => {
+  it("retains to OMP when retainToOmp is set and confidence >= 0.5", async () => {
     const { pi, runtime } = await setup();
     const retainToOmp = mock(() => Promise.resolve());
     runtime.retainToOmp = retainToOmp;
@@ -130,23 +130,23 @@ describe("noesis_believe_fact", () => {
     expect(retainToOmp).toHaveBeenCalledTimes(1);
     expect(retainToOmp).toHaveBeenCalledWith([
       expect.objectContaining({
-        content: expect.stringContaining("[Noesis Belief] Test durable fact"),
+        content: expect.stringContaining("[noesis/belief] Test durable fact"),
         context: expect.stringMatching(/source: execution/),
       }),
     ]);
   });
 
-  it("does not retain to OMP when confidence < 0.6", async () => {
+  it("does not retain to OMP when confidence below use case minimum", async () => {
     const { pi, runtime } = await setup();
     const retainToOmp = mock(() => Promise.resolve());
     runtime.retainToOmp = retainToOmp;
     const execute = toolExecutor(pi, "noesis_believe_fact");
 
-    await execute({
+    await expect(execute({
       content: "Low confidence fact",
-      confidence: 0.55,
+      confidence: 0.4,
       source: "inference",
-    });
+    })).rejects.toThrow("below minimum threshold");
 
     expect(retainToOmp).not.toHaveBeenCalled();
   });
@@ -294,33 +294,33 @@ describe("noesis_believe_fact", () => {
     }
   });
 
-  // Confidence threshold boundary (0.59 vs 0.6) — uncovered retainToOmp edge
-  it("retains to OMP when confidence is exactly 0.6", async () => {
+  // Confidence threshold boundary — uncovered retainToOmp edge
+  it("retains to OMP when confidence is exactly 0.5 (threshold boundary)", async () => {
     const { pi, runtime } = await setup();
     const retainToOmp = mock(() => Promise.resolve());
     runtime.retainToOmp = retainToOmp;
     const execute = toolExecutor(pi, "noesis_believe_fact");
 
     await execute({
-      content: "Boundary 0.6 fact",
-      confidence: 0.6,
+      content: "Boundary 0.5 fact",
+      confidence: 0.5,
       source: "execution",
     });
 
     expect(retainToOmp).toHaveBeenCalledTimes(1);
   });
 
-  it("does not retain to OMP when confidence is 0.59", async () => {
+  it("does not retain to OMP when confidence below use case minimum", async () => {
     const { pi, runtime } = await setup();
     const retainToOmp = mock(() => Promise.resolve());
     runtime.retainToOmp = retainToOmp;
     const execute = toolExecutor(pi, "noesis_believe_fact");
 
-    await execute({
-      content: "Boundary 0.59 fact",
-      confidence: 0.59,
+    await expect(execute({
+      content: "Below minimum fact",
+      confidence: 0.4,
       source: "inference",
-    });
+    })).rejects.toThrow("below minimum threshold");
 
     expect(retainToOmp).not.toHaveBeenCalled();
   });
@@ -423,107 +423,3 @@ describe("noesis_believe_decision", () => {
   });
 });
 
-
-// ---------------------------------------------------------------------------
-// noesis_believe_learning — resolve learning entries into belief facts
-// ---------------------------------------------------------------------------
-
-describe("noesis_believe_learning", () => {
-  it("resolves a success learning entry into a fact", async () => {
-    const { pi, runtime } = await setup();
-
-    await runtime.stateManager.mutate((s) => {
-      s.learning.successes.push({
-        id: "le-test-success",
-        description: "Fixed input validation bug",
-        status: "captured",
-        capturedAt: new Date().toISOString(),
-      });
-    });
-
-    const result = await executeBelieveLearning(runtime, {
-      learningId: "le-test-success",
-      rootCause: "Missing validation",
-      fix: "Added zod schema",
-    }) as any as ToolExecuteResult;
-
-    expect(result.isError).toBe(false);
-    expect(result.content[0]!.text).toContain("Resolved learning");
-    expect(result.content[0]!.text).toContain("le-test-success");
-    expect(result.content[0]!.text).toContain("Fixed input validation bug");
-    expect(result.details.learningId).toBe("le-test-success");
-    expect(result.details.kind).toBe("fact (from learning)");
-
-    const state = runtime.stateManager.read();
-    expect(state.belief.facts).toHaveLength(1);
-    expect(state.belief.facts[0]!.content).toContain("Fixed input validation bug");
-    expect(state.learning.successes[0]!.status).toBe("resolved");
-    expect(state.learning.summary.resolvedCount).toBe(1);
-  });
-
-  it("resolves a failure learning entry into a fact", async () => {
-    const { pi, runtime } = await setup();
-
-    await runtime.stateManager.mutate((s) => {
-      s.learning.failures.push({
-        id: "le-test-failure",
-        description: "Failed to reproduce race condition",
-        status: "captured",
-        capturedAt: new Date().toISOString(),
-      });
-    });
-
-    const result = await executeBelieveLearning(runtime, {
-      learningId: "le-test-failure",
-      rootCause: "Timing issue",
-      fix: "Added mutex lock",
-    }) as any as ToolExecuteResult;
-
-    expect(result.isError).toBe(false);
-    expect(result.content[0]!.text).toContain("Resolved learning");
-    expect(result.details.learningId).toBe("le-test-failure");
-
-    const state = runtime.stateManager.read();
-    expect(state.belief.facts).toHaveLength(1);
-    expect(state.learning.failures[0]!.status).toBe("resolved");
-  });
-
-  it("throws when learning entry not found", async () => {
-    const { runtime } = await setup();
-
-    await expect(executeBelieveLearning(runtime, {
-      learningId: "le-nonexistent",
-      rootCause: "N/A",
-      fix: "N/A",
-    })).rejects.toThrow("Learning entry not found");
-  });
-
-  it("buildBelieveLearningParams defines the correct schema", async () => {
-    const { pi } = await setup();
-    const schema = buildBelieveLearningParams(toExtensionAPI(pi));
-
-    const valid = schema.parse({
-      learningId: "le-123",
-      rootCause: "cause",
-      fix: "fix",
-    });
-    expect(valid.learningId).toBe("le-123");
-    expect(valid.rootCause).toBe("cause");
-    expect(valid.fix).toBe("fix");
-
-    // Optional fields
-    const withOptional = schema.parse({
-      learningId: "le-123",
-      rootCause: "cause",
-      fix: "fix",
-      evidence: "proof",
-      tags: ["test"],
-    });
-    expect(withOptional.evidence).toBe("proof");
-    expect(withOptional.tags).toEqual(["test"]);
-
-    // Missing required fields fail
-    expect(() => schema.parse({})).toThrow();
-    expect(() => schema.parse({ learningId: "le-123" })).toThrow();
-  });
-});

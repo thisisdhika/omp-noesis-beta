@@ -15,10 +15,10 @@
 import type { ExtensionAPI } from "@oh-my-pi/pi-coding-agent";
 import type { AgentToolResult } from "@oh-my-pi/pi-coding-agent";
 import type { NoesisRuntime } from "../runtime.js";
+import { mapConfidenceToImportance } from "../runtime.js";
 import type { GraphFinding, BeliefFact, BeliefDecision } from "../shared/schema.js";
 import { AddBeliefFactUseCase } from "../application/use-cases/add-belief-fact.js";
 import { AddBeliefDecisionUseCase } from "../application/use-cases/add-belief-decision.js";
-import { ResolveLearningUseCase } from "../application/use-cases/resolve-learning.js";
 import { computeGraphAgeHours } from "../infrastructure/graphify-client.js";
 import { mapGraphConfidence, applyStalePenalty } from "../domains/belief/confidence-strategy.js";
 
@@ -67,7 +67,7 @@ export function buildBelieveFactParams(pi: ExtensionAPI) {
 export async function executeBelieveFact(
   runtime: NoesisRuntime,
   params: BelieveFactParams,
-): Promise<AgentToolResult<any, any>> {
+): Promise<AgentToolResult<Record<string, unknown>>> {
   let confidence = params.confidence;
   if (params.source === "graph" && params.graphFinding) {
     const rawFinding = params.graphFinding as GraphFinding;
@@ -94,11 +94,13 @@ export async function executeBelieveFact(
   if (!fact) {
     throw new Error(`Failed to retrieve created fact: ${factId}`);
   }
-  // v0.2: Bridge durable retention to OMP memory backend
-  if (runtime.retainToOmp && params.confidence >= 0.6) {
+  // v1.0: Bridge durable retention to OMP memory backend
+  if (runtime.retainToOmp && confidence >= 0.5) {
     runtime.retainToOmp([{
-      content: `[Noesis Belief] ${params.content}`,
-      context: `source: ${params.source}, confidence: ${confidence}${params.tags ? `, tags: ${params.tags.join(", ")}` : ""}`,
+      content: `[noesis/belief] ${params.content}`,
+      context: `id: ${fact.id}, confidence: ${confidence.toFixed(2)}, source: ${params.source}${params.tags ? `, tags: ${params.tags.join(", ")}` : ""}`,
+      source: "noesis",
+      importance: mapConfidenceToImportance(confidence),
     }]).catch(() => {
       // Best-effort bridge; non-critical if OMP memory is unavailable
     });
@@ -175,7 +177,7 @@ export function buildBelieveDecisionParams(pi: ExtensionAPI) {
 export async function executeBelieveDecision(
   runtime: NoesisRuntime,
   params: BelieveDecisionParams,
-): Promise<AgentToolResult<any, any>> {
+): Promise<AgentToolResult<Record<string, unknown>>> {
   const uow = runtime.stateManager.createUnitOfWork();
   const useCase = new AddBeliefDecisionUseCase(uow);
   const { decisionId, contestedWarnings } = await useCase.execute({
@@ -208,6 +210,17 @@ export async function executeBelieveDecision(
   }).catch(() => {
     // Best-effort vault projection; failure must not break the belief write
   });
+  // v1.0: Bridge decision to OMP memory backend
+  if (runtime.retainToOmp) {
+    runtime.retainToOmp([{
+      content: `[noesis/decision] ${decision.content}`,
+      context: `id: ${decision.id}, source: ${decision.source}, tags: ${(decision.tags ?? []).join(",")}`,
+      source: "noesis",
+      importance: 0.5,
+    }]).catch(() => {
+      // Best-effort bridge; non-critical if OMP memory is unavailable.
+    });
+  }
 
   const warningText = contestedWarnings.length > 0 ? `\n\nWarnings:\n${contestedWarnings.join("\n")}` : "";
 
@@ -235,56 +248,3 @@ export function registerBelieveDecisionTool(pi: ExtensionAPI, runtime: NoesisRun
   });
 }
 
-// Domain exports (params builder, execute handler) kept for internal use.
-// Tool registration (noesis_believe_learning) has been removed.
-// ============================================================================
-
-export interface BelieveLearningParams {
-  learningId: string;
-  rootCause: string;
-  fix: string;
-  evidence?: string;
-  tags?: string[];
-}
-
-export function buildBelieveLearningParams(pi: ExtensionAPI) {
-  return pi.zod.object({
-    learningId: pi.zod.string().min(1, "learningId is required"),
-    rootCause: pi.zod.string().min(1, "rootCause is required"),
-    fix: pi.zod.string().min(1, "fix is required"),
-    evidence: pi.zod.string().optional(),
-    tags: pi.zod.array(pi.zod.string()).optional(),
-  });
-}
-
-export async function executeBelieveLearning(
-  runtime: NoesisRuntime,
-  params: BelieveLearningParams,
-): Promise<AgentToolResult<any, any>> {
-  const uow = runtime.stateManager.createUnitOfWork();
-  const useCase = new ResolveLearningUseCase(uow);
-  const factId = await useCase.execute({
-    learningId: params.learningId,
-    rootCause: params.rootCause,
-    fix: params.fix,
-  });
-
-  const fact = runtime.stateManager.read().belief.facts.find(f => f.id === factId);
-  if (!fact) {
-    throw new Error(`Failed to retrieve created fact: ${factId}`);
-  }
-
-  return {
-    content: [{
-      type: "text",
-      text: `Resolved learning ${params.learningId} into fact: ${fact.id}\n${fact.content}`,
-    }],
-    details: {
-      id: fact.id,
-      content: fact.content,
-      learningId: params.learningId,
-      kind: "fact (from learning)",
-    },
-    isError: false,
-  };
-}

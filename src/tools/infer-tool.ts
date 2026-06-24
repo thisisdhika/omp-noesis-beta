@@ -56,7 +56,7 @@ export async function executeInfer(
     relatesTo?: string;
     tags?: string[];
   },
-): Promise<AgentToolResult<any, any>> {
+): Promise<AgentToolResult<Record<string, unknown>>> {
   if (params.action === "add_hypothesis") {
     const content = params.content;
     if (!content) {
@@ -121,9 +121,10 @@ export async function executeInfer(
           id,
           autoPromote,
         });
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : `Hypothesis not found: ${id}`;
         return {
-          content: [{ type: "text", text: err.message || `Hypothesis not found: ${id}` }],
+          content: [{ type: "text", text: message }],
           details: { id, error: "not_found" },
           isError: true,
         };
@@ -166,9 +167,10 @@ export async function executeInfer(
           evidence,
           reasoning,
         });
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : `Hypothesis not found: ${id}`;
         return {
-          content: [{ type: "text", text: err.message || `Hypothesis not found: ${id}` }],
+          content: [{ type: "text", text: message }],
           details: { id, error: "not_found" },
           isError: true,
         };

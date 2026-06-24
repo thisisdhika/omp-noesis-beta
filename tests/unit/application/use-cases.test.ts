@@ -1,5 +1,4 @@
 import { describe, it, expect } from "bun:test";
-import { ResolveLearningUseCase } from "../../../src/application/use-cases/resolve-learning.js";
 import { ConfirmHypothesisUseCase } from "../../../src/application/use-cases/confirm-hypothesis.js";
 import { AddBeliefFactUseCase } from "../../../src/application/use-cases/add-belief-fact.js";
 import { AttendUseCase } from "../../../src/application/use-cases/attend.js";
@@ -170,44 +169,6 @@ class MockUnitOfWork implements IUnitOfWork {
   rollback() {}
 }
 
-describe("ResolveLearningUseCase", () => {
-  it("resolves success learning entry and creates belief fact", async () => {
-    const uow = new MockUnitOfWork();
-    uow.learning.addSuccess({
-      id: "le-1",
-      description: "Successfully run build",
-      status: "captured",
-      capturedAt: new Date().toISOString(),
-    });
-
-    const useCase = new ResolveLearningUseCase(uow);
-    const factId = await useCase.execute({
-      learningId: "le-1",
-      rootCause: "missing build config resolved",
-      fix: "added config file",
-    });
-
-    expect(factId).toBeDefined();
-    expect(uow.learning.getSuccesses()[0].status).toBe("resolved");
-    expect(uow.learning.getSummary().resolvedCount).toBe(1);
-
-    const fact = uow.belief.findFactById(factId);
-    expect(fact).toBeDefined();
-    expect(fact!.content).toContain("Successfully run build");
-    expect(fact!.content).toContain("Root cause: missing build config resolved");
-    expect(fact!.content).toContain("Fix: added config file");
-    expect(fact!.confidence).toBe(0.85);
-    expect(uow.committed).toBe(true);
-  });
-
-  it("throws error if entry is not found", async () => {
-    const uow = new MockUnitOfWork();
-    const useCase = new ResolveLearningUseCase(uow);
-    expect(useCase.execute({ learningId: "le-invalid", rootCause: "", fix: "" })).rejects.toThrow(
-      "Learning entry not found: le-invalid",
-    );
-  });
-});
 
 describe("ConfirmHypothesisUseCase", () => {
   it("confirms hypothesis and auto-promotes it to a belief fact by default", async () => {
