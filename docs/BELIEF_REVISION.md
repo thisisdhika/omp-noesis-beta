@@ -1,127 +1,74 @@
-# omp-noesis: Belief Revision Model
+# Belief Revision Model
 
-> **Version:** 1.0.0
-> **Date:** 2026-06-15  
-> **Status:** Finalized
+> **Version:** 1.0.0 | **Updated:** 2026-06-24
 
-## 1. Philosophy
+## Philosophy
 
-Noesis treats belief revision as a first-class cognitive operation, not an afterthought. Beliefs are never deleted — they are superseded, archived, and audited.
+Beliefs are never deleted — they are superseded, archived, and audited. This is AGM-based revision at the belief-base level (Hansson 1999).
 
-## 2. AGM Postulates Adopted
-
-Noesis implements K*2 through K*6 at the belief-base level (Hansson 1999).
+## Adopted Postulates
 
 | Postulate | Meaning | Implementation |
 |---|---|---|
-| Every `noesis_believe_fact` produces an active BeliefFact
-| **K*3** (Inclusion) | Result is subset of expansion | Active set = old set - contradicted + new |
-| **K*4** (Preservation) | Consistent new info → no loss | Non-contradicting belief leaves existing untouched |
-| **K*5** (Consistency) | Result is consistent | Contradicted beliefs superseded before new one accepted |
-| **K*6** (Equivalence) | Equivalent inputs → same result | Content deduplication before insert |
-| **Relevance** (Hansson) | Only relevant beliefs revised | Only overlapping tags touched |
-| **Core-Retainment** (Hansson) | Uncontradicted beliefs kept | Non-involved beliefs remain active |
+| **K\*2** (Success) | New belief always included | Every `noesis_believe_fact` produces an active `BeliefFact` |
+| **K\*3** (Inclusion) | Result ⊆ old + new | Active set = old − contradicted + new |
+| **K\*4** (Preservation) | Consistent info → no loss | Non-contradicting beliefs untouched |
+| **K\*5** (Consistency) | Result is consistent | Contradicted beliefs superseded before new accepted |
+| **K\*6** (Equivalence) | Same content → same result | Content deduplication before insert |
+| **Relevance** | Only relevant beliefs revised | Only overlapping tags touched |
+| **Core-Retainment** | Uncontradicted kept | Non-involved beliefs remain active |
 
-### Postulates Explicitly Rejected
+### Rejected Postulates
 
 | Postulate | Reason |
 |---|---|
-| **Recovery** | Contradicts immutable versioning. Rejected per Kumiho. |
-| **K*7, K*8** | Require full logical closure, exceed propositional scope. |
-| **K*1** (Closure) | Belief-base approach relaxes closure. No auto-derivation. |
+| **Recovery** | Contradicts immutable versioning |
+| **K\*7, K\*8** | Require logical closure beyond propositional scope |
+| **K\*1** (Closure) | Belief-base approach relaxes closure |
 
-## 3. Two-Tier Design
+## Two-Tier Design
 
-### Active Tier
-- Status: `active`
-- Source of truth for agent's current beliefs
-- Filtered by `status = "active"` in all retrieval
-- Eligible for survivor set
+- **Active tier** (`status: "active"`) — source of truth, eligible for preamble/survivor
+- **Archive tier** (`status: "superseded" | "archived"`) — auditable history, not in preamble
 
-### Archive Tier
-- Status: `superseded` or `archived`
-- `superseded`: replaced by newer belief (has `supersededBy` pointer)
-- `archived`: manually retired, not contradicted
-- Not exposed in preamble or survivor set
-- Accessible for audit, rollback, provenance
+## Supersession Algorithm
 
-## 4. Supersession Algorithm
-```
-Given: newFact N contradicts active belief O
+1. Validate contradictory belief exists and is active
+2. Set old `status = "superseded"`, `supersededBy = newId`
+3. Add new belief as active
+4. Persist both
+5. Flag dependent decisions/hypotheses for review
 
-1. VALIDATE (belief-domain.ts: addFact / addDecision)
-   - O.status must be "active"
-   - O.id must exist in belief.facts or belief.decisions
-
-2. SUPERSEDE O (revision-strategy.ts: supersede())
-   - O.status = "superseded"
-   - O.supersededBy = N.id
-   - O.updatedAt = now()
-
-3. ADD N (belief-domain.ts: addFact / addDecision)
-   - N.status = "active"
-   - N.id = new unique id
-   - N.createdAt = now()
-   - N.updatedAt = now()
-
-4. PERSIST
-   - Push N to belief.facts[] or belief.decisions[]
-   - O remains in its array (archive tier)
-
-5. PROPAGATE (belief-domain.ts: getContestedWarnings)
-   - Flag decisions/hypotheses that cite O as evidence
-   - Surface in preamble: "Belief X superseded; decisions Y, Z may need review"
-```
-
-## 5. Revision Chains
+## Revision Chains
 
 ```
 B1 (superseded) → B2 (superseded) → B3 (active)
 ```
 
-- Chain head is always active (no `supersededBy`)
-- Walking backward gives full revision history
-- Archived beliefs do not participate in chains
+Chain head is always active. Archived beliefs do not participate.
 
-## 6. Confidence Rules
+## Confidence Rules
 
 | Source | Default | Overrideable? |
 |---|---|---|
 | Graphify EXTRACTED | 1.0 | No |
-| Graphify INFERRED | 0.55-0.95 | No |
+| Graphify INFERRED | 0.55–0.95 | No |
 | Execution | 1.0 | Yes (lower if ambiguous) |
 | User | 1.0 | Yes (lower if uncertain) |
 | Inference | 0.5 | Yes (must assign explicit) |
 
-## 7. Separation of Recall and Commitment
+## Separation of Recall and Commitment
 
-- **Recall**: Graphify results, file contents, tool outputs, user statements
-- **Commitment**: `active` BeliefFact or BeliefDecision
+- **Recall**: Graphify, files, tool output, user statements
+- **Commitment**: Active `BeliefFact` or `BeliefDecision` — only created via explicit `noesis_believe_*` tools
 
-The gap is intentional: not everything retrieved deserves to be believed. Explicit use of the believe tools (`noesis_believe_*`) is required.
+The gap is intentional: not everything retrieved deserves to be believed.
 
-## 8. Decision Revision
-
-Decisions follow the same two-tier pattern:
-- Superseded: old decision gets `status = "superseded"`, `supersededBy = newDecision.id`
-- Archived: old decision gets `status = "archived"` (no `supersededBy`)
-- Decisions do not auto-cascade to facts — agent is responsible for follow-up
-
-## 9. Audit Trail
+## Audit Trail
 
 Every revision preserves:
 - Original content, confidence, source, timestamp
 - `supersededBy` pointer linking old → new
 - Both `updatedAt` timestamps
 
-Enables: inspection, rollback, debugging, PR review
-
-## 10. Design Rules
-
-1. Never delete, only supersede or archive.
-2. Active tier is the only source of truth.
-3. Every supersession leaves an auditable chain.
-4. Confidence is evidence-grounded for graph sources.
-5. Separation of recall and commitment prevents noise.
-6. Agent identifies contradictions; noesis enforces rules.
-7. No runtime dependencies for belief operations.
+Enables: inspection, rollback, debugging, PR review.

@@ -19,7 +19,8 @@ import type { GraphFinding, BeliefFact, BeliefDecision } from "../shared/schema.
 import { AddBeliefFactUseCase } from "../application/use-cases/add-belief-fact.js";
 import { AddBeliefDecisionUseCase } from "../application/use-cases/add-belief-decision.js";
 import { ResolveLearningUseCase } from "../application/use-cases/resolve-learning.js";
-import { mapGraphConfidence } from "../domains/belief/confidence-strategy.js";
+import { computeGraphAgeHours } from "../infrastructure/graphify-client.js";
+import { mapGraphConfidence, applyStalePenalty } from "../domains/belief/confidence-strategy.js";
 
 // ============================================================================
 // noesis_believe_fact — store a verified belief fact
@@ -69,7 +70,13 @@ export async function executeBelieveFact(
 ): Promise<AgentToolResult<any, any>> {
   let confidence = params.confidence;
   if (params.source === "graph" && params.graphFinding) {
-    confidence = mapGraphConfidence(params.graphFinding as GraphFinding);
+    const rawFinding = params.graphFinding as GraphFinding;
+    confidence = mapGraphConfidence(rawFinding);
+    // ponytail: stale penalty at commit time — -0.10 for INFERRED when graph >24h stale
+    if (rawFinding.confidence === "INFERRED") {
+      const staleHours = await computeGraphAgeHours(runtime.projectRoot);
+      confidence = applyStalePenalty(confidence, staleHours);
+    }
   }
 
   const uow = runtime.stateManager.createUnitOfWork();

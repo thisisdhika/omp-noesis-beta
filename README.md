@@ -63,17 +63,14 @@ ls .omp/config.yml
 |---|---|
 | [SETUP.md](SETUP.md) | Installation and configuration guide |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Diagnostic runbook |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Full architecture specification |
+| [docs/README.md](docs/README.md) | Docs index with reading order |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Architecture specification |
 | [docs/STATE_SCHEMA.md](docs/STATE_SCHEMA.md) | Cognitive state schema |
 | [docs/BELIEF_REVISION.md](docs/BELIEF_REVISION.md) | AGM belief revision model |
 | [docs/BOUNDARY_MATRIX.md](docs/BOUNDARY_MATRIX.md) | System ownership matrix |
 | [docs/GRAPHIFY_CONTRACT.md](docs/GRAPHIFY_CONTRACT.md) | Graphify integration contract |
-| [docs/GRAPHIFY_BEST_PRACTICES_AUDIT.md](docs/GRAPHIFY_BEST_PRACTICES_AUDIT.md) | Graphify integration audit and best practices |
-| [docs/IMPLEMENTATION_GUIDE.md](docs/IMPLEMENTATION_GUIDE.md) | Implementation guide |
 | [docs/OBSIDIAN_CONTRACT.md](docs/OBSIDIAN_CONTRACT.md) | Projection contract |
-| [docs/GRAPHIFY_DEEP_DIVE.md](docs/GRAPHIFY_DEEP_DIVE.md) | Graphify integration deep dive |
 | [docs/TESTING_STRATEGY.md](docs/TESTING_STRATEGY.md) | Testing methodology |
-
 ## License
 
 MIT © Dhika Putra Ardana

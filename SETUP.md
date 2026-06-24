@@ -180,4 +180,5 @@ Mnemopi backend is detected automatically when `.omp/mnemopi.db` exists.
 
 ## Troubleshooting
 
-See [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
+See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for diagnostics.
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for design details.

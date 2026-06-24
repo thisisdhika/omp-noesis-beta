@@ -55,6 +55,21 @@ export async function isGraphSizeManageable(projectRoot: string): Promise<boolea
     return true; // No graph file yet = manageable (will build fresh)
   }
 }
+/**
+ * Compute the age of the graph file in hours since last modification.
+ * Returns null when no graph file exists or stats can't be read.
+ */
+export async function computeGraphAgeHours(projectRoot: string): Promise<number | null> {
+  const graphPath = validateGraphPath(projectRoot);
+  if (graphPath === null) return null;
+  try {
+    const stats = await stat(graphPath);
+    return (Date.now() - stats.mtimeMs) / (1000 * 60 * 60);
+  } catch {
+    return null;
+  }
+}
+
 
 /**
  * Check if we can run a graph update based on rate limiting.
@@ -339,7 +354,7 @@ export async function tryLifecycleGraphUpdate(
 
   if (options?.requireAutoUpdate !== false && !config.autoUpdate) return false;
 
-  if (!canRunGraphUpdate((state as any)._lastGraphUpdate, config.maxUpdateInterval)) return false;
+  if (!canRunGraphUpdate(state._lastGraphUpdate, config.maxUpdateInterval)) return false;
   if (!(await isGraphSizeManageable(projectRoot))) return false;
 
   return tryBackgroundGraphUpdate(projectRoot, stateManager, {

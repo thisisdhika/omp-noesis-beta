@@ -356,14 +356,12 @@ export async function initCommand(pi: ExtensionAPI, args: InitArgs = {}): Promis
     return "initialized-degraded-no-cli";
   }
 
-  // 5. Install Graphify skill
-  await installGraphifySkill(projectRoot);
-  summary.push("Graphify skill: installed");
-
-  // 6. Send LLM-visible Graphify skill intro (steer, not TUI noise)
+  // 5. Install Graphify skill in the background so init never blocks on GitHub
+  void installGraphifySkill(projectRoot).catch(() => {});
+  summary.push("Graphify skill: installing in background");
   pi.sendMessage({
     customType: "noesis:graphify-skill",
-    content: "The Graphify skill has been installed to .omp/skills/graphify/. You can use skill://graphify to query the project knowledge graph for codebase-aware reasoning about file relationships, architecture, and dependencies.",
+    content: "The Graphify skill is being installed in the background. You can use skill://graphify to query the project knowledge graph for codebase-aware reasoning about file relationships, architecture, and dependencies.",
     display: true,
     attribution: "agent",
   }, { deliverAs: "steer" });

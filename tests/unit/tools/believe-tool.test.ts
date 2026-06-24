@@ -5,8 +5,9 @@
  */
 
 import { describe, it, expect, mock } from "bun:test";
-import { unlinkSync, existsSync } from "node:fs";
+import { unlinkSync, existsSync, mkdirSync, mkdtempSync, writeFileSync, utimesSync, rmSync } from "node:fs";
 import { join } from "node:path";
+import { tmpdir } from "node:os";
 import { createMockPi, toExtensionAPI } from "../../helpers/mock-pi.js";
 import { createRuntime, type NoesisRuntime } from "../../../src/runtime.js";
 import { registerBelieveFactTool, registerBelieveDecisionTool, executeBelieveLearning, buildBelieveLearningParams } from "../../../src/tools/believe-tool.js";
@@ -62,6 +63,17 @@ function toolExecutor(
   return async (params: Record<string, unknown>) => {
     return exec!("t-id", params, null, () => {}, {});
   };
+}
+
+/** Create a temp project root with a graph file over 24h old, for stale-penalty tests. */
+function setupTempStaleProject(): string {
+  const dir = mkdtempSync(join(tmpdir(), "noesis-stale-"));
+  const graphDir = join(dir, "graphify-out");
+  mkdirSync(graphDir, { recursive: true });
+  writeFileSync(join(graphDir, "graph.json"), "{}");
+  const twoDaysAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
+  utimesSync(join(graphDir, "graph.json"), twoDaysAgo, twoDaysAgo);
+  return dir;
 }
 // ---------------------------------------------------------------------------
 // Tests
@@ -218,6 +230,68 @@ describe("noesis_believe_fact", () => {
     expect(result.isError).toBe(false);
     const fact = runtime.stateManager.read().belief.facts[0]!;
     expect(fact.confidence).toBe(0.7);
+  });
+
+  // Stale penalty for INFERRED graph findings — uncovered lines 76-79
+  it("applies stale penalty of -0.10 for stale INFERRED graph finding", async () => {
+    const tmpDir = setupTempStaleProject();
+    try {
+      const pi = createMockPi();
+      const runtime = await createRuntime(toExtensionAPI(pi), tmpDir);
+      registerBelieveFactTool(toExtensionAPI(pi), runtime);
+      const execute = toolExecutor(pi, "noesis_believe_fact");
+
+      const result = await execute({
+        content: "Stale INFERRED graph finding",
+        confidence: 0.5,
+        source: "graph",
+        graphFinding: {
+          query: "stale-test",
+          nodes: ["n1"],
+          relations: ["r1"],
+          confidence: "INFERRED",
+          timestamp: new Date().toISOString(),
+        },
+      });
+
+      expect(result.isError).toBe(false);
+      const fact = runtime.stateManager.read().belief.facts[0]!;
+      // INFERRED → 0.7, stale penalty → max(0.55, 0.7 - 0.10) = 0.6
+      expect(fact.confidence).toBe(0.6);
+    } finally {
+      rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  it("preserves 0.55 floor when stale penalty would push below it", async () => {
+    const tmpDir = setupTempStaleProject();
+    try {
+      const pi = createMockPi();
+      const runtime = await createRuntime(toExtensionAPI(pi), tmpDir);
+      registerBelieveFactTool(toExtensionAPI(pi), runtime);
+      const execute = toolExecutor(pi, "noesis_believe_fact");
+
+      const result = await execute({
+        content: "Stale INFERRED floor preservation",
+        confidence: 0.5,
+        source: "graph",
+        graphFinding: {
+          query: "floor-test",
+          nodes: ["n1"],
+          relations: ["r1"],
+          confidence: "INFERRED",
+          inferredConfidence: 0.55,
+          timestamp: new Date().toISOString(),
+        },
+      });
+
+      expect(result.isError).toBe(false);
+      const fact = runtime.stateManager.read().belief.facts[0]!;
+      // INFERRED with inferredConfidence=0.55 → 0.55, stale penalty → max(0.55, 0.55-0.10) = 0.55
+      expect(fact.confidence).toBe(0.55);
+    } finally {
+      rmSync(tmpDir, { recursive: true, force: true });
+    }
   });
 
   // Confidence threshold boundary (0.59 vs 0.6) — uncovered retainToOmp edge

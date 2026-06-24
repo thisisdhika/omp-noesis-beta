@@ -16,7 +16,7 @@ import type { NoesisRuntime } from "../runtime.js";
 import type { CapabilityLevel, RenderContext } from "../shared/schema.js";
 import { detectFamilyFromModel } from "../shared/model-profile.js";
 import { buildPreamble } from "../rendering/preamble-builder.js";
-import { detectCapability } from "../infrastructure/graphify-client.js";
+import { detectCapability, computeGraphAgeHours } from "../infrastructure/graphify-client.js";
 
 
 
@@ -30,18 +30,18 @@ export function registerContextHook(pi: ExtensionAPI, runtime: NoesisRuntime): v
 
     const state = runtime.stateManager.read();
     const capability = await detectCapability(runtime.projectRoot);
+    const ageHours = await computeGraphAgeHours(runtime.projectRoot);
     const modelFamily = detectFamilyFromModel(ctx?.model);
-
+    
     const renderContext: RenderContext = {
       capabilityLevel: capability,
       contextHookFired: true,
       modelFamily,
       graphFreshness: {
         isStale: capability === "STALE",
-        staleHours: 24,
+        staleHours: ageHours !== null ? Math.round(ageHours) : undefined,
       },
     };
-
     const preamble = buildPreamble(state, renderContext);
 
     const preambleMessage = {

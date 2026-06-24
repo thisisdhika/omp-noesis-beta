@@ -289,6 +289,15 @@ describe("graphify-parser edge cases", () => {
       expect(parseQueryOutput("not json{{{")).toHaveLength(0);
     });
 
+    it("should emit warning via onWarn callback on malformed JSON and still return empty array", () => {
+      const warnings: string[] = [];
+      const onWarn = (msg: string) => { warnings.push(msg); };
+      const findings = parseQueryOutput("not json{{{", onWarn);
+      expect(findings).toHaveLength(0);
+      expect(warnings).toHaveLength(1);
+      expect(warnings[0]).toContain("Failed to parse");
+    });
+
     it("should return empty array for empty string", () => {
       expect(parseQueryOutput("")).toHaveLength(0);
     });

@@ -32,13 +32,13 @@ export interface NoesisRuntime {
   attachMemoryRuntime?: (memory?: MemoryRuntimeContext) => void;
 }
 
-export async function createRuntime(pi: ExtensionAPI): Promise<NoesisRuntime> {
-  const projectRoot = process.cwd();
-  const stateManager = new StateManager(projectRoot);
+export async function createRuntime(pi: ExtensionAPI, projectRoot?: string): Promise<NoesisRuntime> {
+  const root = projectRoot ?? process.cwd();
+  const stateManager = new StateManager(root);
   // v0.2: state.json is the primary persistence authority. preserveData
   // from OMP compaction lifecycle is handled via ExtensionAPI hooks.
   await stateManager.initialize();
-  const vaultStore = await createVaultStore(projectRoot);
+  const vaultStore = await createVaultStore(root);
 
   let memoryRuntime: MemoryRuntimeContext | undefined;
   const attachMemoryRuntime = (memory?: MemoryRuntimeContext) => {
@@ -56,5 +56,5 @@ export async function createRuntime(pi: ExtensionAPI): Promise<NoesisRuntime> {
     }
   };
 
-  return { projectRoot, stateManager, vaultStore, retainToOmp, attachMemoryRuntime };
+  return { projectRoot: root, stateManager, vaultStore, retainToOmp, attachMemoryRuntime };
 }

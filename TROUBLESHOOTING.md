@@ -87,7 +87,8 @@ cat .omp/noesis/vault-retry.json
 
 ## Getting Help
 
-1. Check [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for design details
-2. Check [docs/TESTING_STRATEGY.md](docs/TESTING_STRATEGY.md) for test examples
-3. Open an issue at https://github.com/omp-noesis/extension
-4. Include: relevant log excerpts, reproduction steps, output of `ls -la .omp/noesis/`
+1. Check [docs/README.md](docs/README.md) for the docs index
+2. Check [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for design details
+3. Check [docs/TESTING_STRATEGY.md](docs/TESTING_STRATEGY.md) for test examples
+4. Open an issue at https://github.com/omp-noesis/extension
+5. Include: relevant log excerpts, reproduction steps, output of `ls -la .omp/noesis/`

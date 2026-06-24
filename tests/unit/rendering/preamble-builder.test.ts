@@ -494,6 +494,36 @@ describe("buildPreamble with low-confidence beliefs", () => {
 });
 
 // =============================================================================
+// buildPreamble — stale penalty display
+// =============================================================================
+
+describe("buildPreamble with stale-penalized beliefs", () => {
+  it("does not subtract stale penalty a second time from already-penalized stored confidence", () => {
+    const state: NoesisState = structuredClone(EMPTY_STATE);
+    state.belief.facts.push({
+      id: "bf-penalized",
+      content: "Stale graph penalty already applied at commit time",
+      confidence: 0.85,
+      source: "graph",
+      status: "active",
+      createdAt: "2026-01-01T00:00:00.000Z",
+      updatedAt: "2026-01-01T00:00:00.000Z",
+    });
+    // Render with a stale graph context
+    const staleRender: RenderContext = {
+      capabilityLevel: "STALE",
+      graphFreshness: { isStale: true, staleHours: 48 },
+      contextHookFired: false,
+    };
+    const result = buildPreamble(state, staleRender);
+    // The stored confidence is displayed as-is, no second subtraction
+    expect(result).toContain("[0.85]");
+    // Should NOT show a value that would imply a second 0.10 deduction
+    expect(result).not.toContain("[0.75]");
+  });
+});
+
+// =============================================================================
 // buildPreamble — budget enforcement while loop body
 // =============================================================================
 

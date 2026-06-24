@@ -51,3 +51,30 @@ export function mapGraphConfidence(finding: GraphFinding): number {
 
   return base;
 }
+
+/**
+ * Apply a stale-penalty deduction for evidence committed from a stale graph.
+ *
+ * When `staleHours > 24` (graph modification is more than 24 hours old),
+ * reduces the confidence value by 0.10, floored at 0.55.
+ * Confidences at or below 0.55 are returned unchanged.
+ * Null/undefined `staleHours` (unknown or missing graph) applies no penalty.
+ *
+ * This is called at commit time (believe-tool), not at render time, so the
+ * stored belief already reflects the penalty and display code shows the raw
+ * stored value without a second subtraction.
+ *
+ * @param confidence - Numeric confidence to penalize [0.55 … 1.0]
+ * @param staleHours - Age of the graph in hours, or null/undefined if unknown
+ * @returns Penalized confidence, never below 0.55
+ */
+export function applyStalePenalty(
+  confidence: number,
+  staleHours: number | null | undefined,
+): number {
+  // ponytail: no penalty for missing/unknown age or fresh graph
+  if (staleHours === null || staleHours === undefined) return confidence;
+  if (staleHours <= 24) return confidence;
+  // ponytail: -0.10 for stale graph, floor at 0.55
+  return Math.max(0.55, confidence - 0.10);
+}

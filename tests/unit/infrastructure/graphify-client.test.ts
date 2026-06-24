@@ -20,6 +20,7 @@ import { existsSync, mkdirSync, openSync, ftruncateSync, closeSync, writeFileSyn
 import { createTempDir } from "../../helpers/temp-dir.js";
 import {
   detectCapability,
+  computeGraphAgeHours,
   query,
   build,
   updateGraph,
@@ -121,6 +122,34 @@ describe("detectCapability", () => {
     expect(await detectCapability(tempDir.path)).toBe("STALE");
   });
 });
+
+// ============================================================================
+// Tests — computeGraphAgeHours
+// ============================================================================
+
+describe("computeGraphAgeHours", () => {
+  it("returns null when no graph file exists", async () => {
+    expect(await computeGraphAgeHours(tempDir.path)).toBeNull();
+  });
+
+  it("returns a number when graph file exists", async () => {
+    createGraphFile(tempDir.path);
+    const result = await computeGraphAgeHours(tempDir.path);
+    expect(result).toBeNumber();
+    // Freshly created file should be < 1 hour old
+    expect(result).toBeLessThan(1);
+  });
+
+  it("returns age hours consistent with staleHours parameter", async () => {
+    createGraphFile(tempDir.path, 10);
+    const result = await computeGraphAgeHours(tempDir.path);
+    expect(result).toBeNumber();
+    // 10 hours stale ± some margin for test execution
+    expect(result).toBeGreaterThan(9);
+    expect(result).toBeLessThan(11);
+  });
+});
+
 
 // ============================================================================
 // Tests — query

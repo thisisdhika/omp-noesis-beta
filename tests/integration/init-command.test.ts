@@ -30,6 +30,8 @@ import type { MockPi } from "../helpers/mock-pi.js";
 
 var _enableGraphifyCLI = false;
 var _graphifyBuildSuccess = true;
+var _installGraphifySkillImpl: () => Promise<string> = () =>
+  Promise.resolve(".omp/skills/graphify/skill.yaml");
 
 mock.module("../../src/infrastructure/graphify-setup.js", () => ({
   checkGraphifyCLI: mock(
@@ -40,9 +42,7 @@ mock.module("../../src/infrastructure/graphify-setup.js", () => ({
           : { installed: false }
       )
   ),
-  installGraphifySkill: mock((): Promise<string> =>
-    Promise.resolve(".omp/skills/graphify/skill.yaml")
-  ),
+  installGraphifySkill: mock(() => _installGraphifySkillImpl()),
   runGraphifyBuild: mock(
     (): Promise<{ success: boolean; output: string }> =>
       Promise.resolve(
@@ -140,6 +140,7 @@ describe("noesis:init", () => {
     process.chdir(tmp.path);
     pi = createMockPi();
     _enableGraphifyCLI = false;
+    _installGraphifySkillImpl = () => Promise.resolve(".omp/skills/graphify/skill.yaml");
   });
 
   afterEach(() => {
@@ -369,11 +370,20 @@ describe("noesis:init", () => {
       const status = await initCommand(castToExtensionAPI(pi), {});
       expect(status).toBe("initialized-full");
 
-      // Verify the final summary reports background build scheduling
+      // Verify the summary reports background build scheduling somewhere in the message stream.
       const msgs = sentMessages(pi);
-      const finalMsg = msgs[msgs.length - 1];
-      expect(finalMsg).toBeDefined();
-      expect(finalMsg!.message.content).toContain("Graph: building in background");
+      expect(msgs.some(m => m.message.content.includes("Graph: building in background"))).toBeTrue();
+    });
+    it("does not await Graphify skill installation", async () => {
+      _enableGraphifyCLI = true;
+      _installGraphifySkillImpl = () => new Promise<string>(() => {});
+
+      const started = Date.now();
+      const status = await initCommand(castToExtensionAPI(pi), {});
+      const elapsed = Date.now() - started;
+
+      expect(status).toBe("initialized-full");
+      expect(elapsed).toBeLessThan(500);
     });
   });
 

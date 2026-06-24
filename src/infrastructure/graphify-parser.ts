@@ -114,12 +114,13 @@ function extractRelations(raw: Record<string, unknown>): string[] {
  * @param raw - Raw stdout string from the CLI.
  * @returns Array of validated GraphFinding objects (empty on parse failure).
  */
-export function parseQueryOutput(raw: string): GraphFinding[] {
+export function parseQueryOutput(raw: string, onWarn?: (msg: string) => void): GraphFinding[] {
   let parsed: unknown;
 
   try {
     parsed = JSON.parse(raw);
   } catch {
+    (onWarn ?? console.warn)("[graphify-parser] Failed to parse Graphify query output as JSON");
     return [];
   }
   if (!isRecord(parsed)) return [];

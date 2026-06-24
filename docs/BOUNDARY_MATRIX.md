@@ -1,143 +1,86 @@
-# omp-noesis: Boundary Matrix
+# Boundary Matrix
 
-> **Version:** 1.0.0
-> **Date:** 2026-06-15  
-> **Status:** Finalized
+> **Version:** 1.0.0 | **Updated:** 2026-06-24
 
-## 1. Governing Rule
+## Governing Rule
 
-> **Noesis must fill the cognitive gaps around OMP, not reimplement OMP itself.**
+> Noesis fills the cognitive gaps around OMP, not reimplements OMP itself.
 
-## 2. System Roles
+## System Roles
 
-| System | Role | Dependency | Runtime-Critical |
-|---|---|---|---|
-| **OMP** | Execution substrate | Required (platform) | Yes |
-| **Graphify** | Perception substrate | Required (core dep) | Yes |
-| **Noesis** | Cognitive substrate | This product | Yes |
-| **Obsidian** | Reflection substrate | Optional | No |
+| System | Role | Runtime-Critical |
+|---|---|---|
+| **OMP** | Execution substrate | Yes |
+| **Graphify** | Perception substrate | Yes (core dependency) |
+| **Noesis** | Cognitive substrate | Yes |
+| **Obsidian** | Reflection substrate | No |
 
-## 3. Context Ownership
+## Context Ownership
 
-### OMP owns runtime context plumbing
-- Turns and message history
-- Tool execution and results
-- Hook insertion points
-- Compaction lifecycle
-- Subagent context isolation
+- **OMP** owns: turns, message history, tool execution, hooks, compaction, subagent isolation
+- **Graphify** owns: codebase knowledge graph, graph queries, Leiden communities, confidence edges
+- **Noesis** owns: structured state, smart-zone (≤2000-token) protection, Graphify→beliefs translation, compaction survival, learning ranking
+- **Obsidian** owns: optional human-facing projection — not runtime-critical
 
-### Graphify owns retrieval-grade structural context
-- Codebase knowledge graph
-- Graph queries via CLI
-- Incremental updates
-- Leiden community detection
-- Confidence-bearing edges
-
-### Noesis owns cognitive context quality
-- What structured state deserves live exposure
-- Smart-zone protection (≤2000 tokens)
-- Graphify evidence → beliefs translation
-- Compaction survival (survivor set + preserveData)
-- Learning ranking for preamble inclusion
-
-### Obsidian owns optional human-facing context
-- Inspection, curation, external reflection
-- Not runtime-critical
-- Removing it → no runtime degradation
-
-## 4. Source-of-Truth Matrix
+## Source-of-Truth Matrix
 
 | Concern | Owner |
 |---|---|
-| Tool execution | **OMP** |
-| Agent/subagent orchestration | **OMP** |
-| Skill loading and routing | **OMP** |
-| Compaction pipeline | **OMP** |
-| Long-term general memory | **OMP / Mnemopi / Hindsight** |
-| Structured durable vault search | **Noesis** (structured cognitive artifacts; vault backends provide storage, Noesis owns the schema and search contract) |
-| Code graph construction | **Graphify** |
-| Graph query semantics | **Graphify** |
-| Structural evidence | **Graphify** |
-| Smart-zone protection | **Noesis** |
-| Cognitive state | **Noesis** |
-| Beliefs and decisions | **Noesis** |
-| Belief revision | **Noesis** |
-| Learning from execution | **Noesis** |
-| Workflow cognition metadata | **Noesis** (ephemeral; OMP owns execution) |
-| Human-readable projection | **Obsidian** |
+| Tool execution, agent orchestration | OMP |
+| Compaction pipeline, skill loading | OMP |
+| Long-term general memory | OMP / Mnemopi |
+| Code graph construction & query | Graphify |
+| Cognitive state, beliefs, decisions | Noesis |
+| AGM belief revision | Noesis |
+| Learning from execution | Noesis |
+| Smart-zone protection | Noesis |
+| Human-readable projection | Obsidian |
 
-## 5. Hard Ownership Rules
+## Hard Ownership Rules
 
-### Rule 1: OMP remains the runtime authority
-If something must happen for an agent turn, tool call, compaction event, or orchestration step — OMP owns it.
+1. **OMP is the runtime authority** — if it must happen for a turn/compaction/orchestration, OMP owns it
+2. **Graphify is the graph authority** — if it queries/clusters/explains code structure, Graphify owns it
+3. **Noesis is the cognition authority** — if it changes what the agent believes/remembers/learns, Noesis owns it
+4. **Obsidian is never runtime-critical** — removing it must not affect behavior
 
-### Rule 2: Graphify remains the graph authority
-If something requires building, updating, querying, clustering, or structurally explaining the code graph — Graphify owns it.
+## Must Never Duplicate
 
-### Rule 3: Noesis remains the cognition authority
-If something changes what the agent believes, remembers in working form, learns from execution, protects the smart zone, or projects as cognitive workflow — Noesis owns it.
+- No separate orchestration engine, compaction, or agent runtime (OMP's job)
+- No graph extractor, store, query language, or community detector (Graphify's job)
+- No note editor, vault UI, or backlink engine (Obsidian's job)
 
-### Rule 4: Obsidian never becomes runtime-critical
-If removing Obsidian would break the runtime behavior of Noesis — the boundary has been violated.
+## Translation Contracts
 
-## 6. What Must Never Be Duplicated
+- **Graphify → Noesis**: graph findings → beliefs, confidence scores, evidence provenance
+- **OMP → Noesis**: hooks → cognitive continuity, learning capture, preamble
+- **Noesis → Obsidian**: projections — decisions, learning, state snapshots
 
-### Noesis must not duplicate OMP
-No separate orchestration engine, agent runtime, compaction engine, skill system, or general agent memory.
+## Confidence Mapping
 
-### Noesis must not duplicate Graphify
-No graph extractor, graph store, graph query language, community detector, or parallel code-structure indexing pipeline.
-
-### Noesis must not duplicate Obsidian
-No custom note editor, vault UI, human backlink engine, or knowledge-base product.
-
-## 7. Translation Contracts
-
-### Graphify → Noesis
-Translate graph findings, relation confidence, source provenance, community signals, and relevance cues into beliefs, confidence scores, evidence provenance, attention hints, workflow relevance, and smarter context selection.
-
-### OMP → Noesis
-Consume context hook, compaction hook, tool result events, and before-agent-start injection to maintain cognitive continuity, learning capture, cognitive preamble, durable workflow projection, and bounded high-signal context.
-
-### Noesis → Obsidian
-Project optionally: decisions, workflow documents, learning records, state snapshots. Never make runtime depend on these projections.
-
-## 8. Confidence Translation Contract
-
-| Graphify confidence | Noesis belief confidence | Behavior |
+| Graphify | Noesis | Stale (-0.10) |
 |---|---|---|
-| EXTRACTED | **1.0** | Always live, always in preamble |
-| INFERRED 0.95 | **0.95** | Live, preamble-eligible |
-| INFERRED 0.85 | **0.85** | Live, preamble-eligible |
-| INFERRED 0.75 | **0.75** | Live, preamble-eligible (threshold) |
-| INFERRED 0.65 | **0.65** | Stored, surfaced only when task-relevant |
-| INFERRED 0.55 | **0.55** | Stored, surfaced only when task-relevant |
-| INFERRED (no value) | **0.70** | Default when inferredConfidence absent |
-| AMBIGUOUS | **0.55** | Stored as low-confidence belief (not auto-promoted from graph, but mapped to 0.55) |
+| EXTRACTED | 1.00 | 1.00 |
+| INFERRED 0.95 | 0.95 | 0.85 |
+| INFERRED 0.85 | 0.85 | 0.75 |
+| INFERRED 0.75 | 0.75 | 0.65 |
+| INFERRED 0.65 | 0.65 | 0.55 |
+| INFERRED 0.55 | 0.55 | 0.55 |
+| AMBIGUOUS | 0.55 | Not promoted |
 
-### Stale Penalty
-
-When a graph is stale (>24h since last update), INFERRED belief confidences are reduced by **-0.10** (floored at 0.55). EXTRACTED beliefs are never penalized.
-
-Currently agent-interpreted (system surfaces STALE capability). System-level penalty is a design goal.
-
-## 9. Decision Matrix
+## Decision Matrix
 
 | Proposed Feature | Owner |
 |---|---|
-| Does it execute tools, manage turns, or coordinate agents? | **OMP** |
-| Does it extract or query structural code knowledge? | **Graphify** |
-| Does it shape beliefs, learning, continuity, workflow cognition, or smart-zone protection? | **Noesis** |
-| Does it improve human reading, linking, or curation of exported knowledge? | **Obsidian** |
+| Execute tools, manage turns, coordinate agents? | OMP |
+| Extract or query structural code knowledge? | Graphify |
+| Shape beliefs, learning, cognitive continuity? | Noesis |
+| Human reading/linking of exported knowledge? | Obsidian |
 
-## 10. Alignment Check
+## Alignment Check
 
-A design stays aligned only if all statements remain true:
-
-- OMP is the execution substrate.
-- Graphify is the required perception substrate.
-- Noesis is the cognitive substrate.
-- Obsidian is optional.
-- Removing Obsidian does not break runtime behavior.
-- Removing Graphify degrades noesis at its core.
-- Noesis adds continuity and smart-zone discipline, not platform sprawl.
+- OMP is the execution substrate
+- Graphify is the required perception substrate
+- Noesis is the cognitive substrate
+- Obsidian is optional
+- Removing Obsidian does not break runtime
+- Removing Graphify degrades Noesis at its core

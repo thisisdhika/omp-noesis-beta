@@ -120,7 +120,7 @@ function buildActiveDecisions(state: NoesisState): string {
   return lines.join("\n");
 }
 
-function buildActiveBeliefs(state: NoesisState, render: RenderContext): string {
+function buildActiveBeliefs(state: NoesisState, _render: RenderContext): string {
   const highConfidence = state.belief.facts.filter(
     (f) => f.status === "active" && f.confidence >= 0.75,
   );
@@ -129,10 +129,7 @@ function buildActiveBeliefs(state: NoesisState, render: RenderContext): string {
   const shown = highConfidence.slice(0, CAPS.beliefs);
   const lines: string[] = ["Beliefs (≥0.75):"];
   for (const f of shown) {
-    const displayConfidence = render.capabilityLevel === "STALE" && f.source === "graph"
-      ? Math.max(0.55, f.confidence - 0.10)
-      : f.confidence;
-    lines.push(`  - [${displayConfidence.toFixed(2)}] ${f.content}`);
+    lines.push(`  - [${f.confidence.toFixed(2)}] ${f.content}`);
   }
   return lines.join("\n");
 }
