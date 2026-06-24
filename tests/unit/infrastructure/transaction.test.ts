@@ -7,6 +7,7 @@ import { createTempDir } from "../../helpers/temp-dir.js";
 import { now } from "../../../src/shared/time.js";
 import { type IUnitOfWork } from "../../../src/infrastructure/unit-of-work.js";
 import { sampleFact, sampleDecision, sampleLearning } from "../../helpers/fixtures.js";
+import { writeAtomic } from "../../../src/infrastructure/filesystem-store.js";
 
 interface TempDir {
   path: string;
@@ -245,6 +246,37 @@ describe("UnitOfWork", () => {
     // Verify disk state remains at uow1 focus
     const onDisk = await Bun.file(statePath(tempDir.path)).json();
     expect(onDisk.attention.focus).toBe("uow1 focus");
+  });
+
+  it("should detect cross-process conflicts and reject commit when state.json was modified externally", async () => {
+    const sm = new StateManager(tempDir.path);
+    await sm.initialize();
+
+    // Open a Unit of Work
+    const uow = sm.createUnitOfWork();
+    uow.attention.update({ focus: "uow focus" });
+
+    // Simulate another process writing to the state file
+    const onDisk = await Bun.file(statePath(tempDir.path)).json();
+    onDisk.attention.focus = "other-process-focus";
+    onDisk.lastPersisted = new Date(Date.now() + 1000).toISOString();
+    await writeAtomic(statePath(tempDir.path), onDisk);
+
+    // Commit should fail with cross-process conflict
+    let thrown = false;
+    try {
+      await uow.commit();
+    } catch (err: any) {
+      if (err.message.includes("Transaction conflict")) {
+        thrown = true;
+      }
+    }
+
+    expect(thrown).toBe(true);
+
+    // Verify disk state was not overwritten by our stale commit
+    const finalDisk = await Bun.file(statePath(tempDir.path)).json();
+    expect(finalDisk.attention.focus).toBe("other-process-focus");
   });
 });
 

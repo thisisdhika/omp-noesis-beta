@@ -234,6 +234,38 @@ describe("OMP memory hydration", () => {
       tmp.cleanup();
     }
   });
+  it("preserves original confidence as originalConfidence when capping at 0.75", async () => {
+    const tmp = createTempDir();
+    try {
+      const stateManager = new StateManager(tmp.path);
+      await stateManager.initialize();
+
+      const uow = stateManager.createUnitOfWork();
+      const useCase = new HydrateFromMemoryUseCase(uow);
+
+      // Entry with confidence above cap
+      const runtime = createHydrationRuntime(stateManager, [
+        {
+          content: "[noesis/belief] Original 0.95 belief",
+          context: "confidence: 0.95",
+        },
+      ], []);
+
+      const result = await useCase.execute(runtime);
+      expect(result.imported).toBe(1);
+
+      const state = stateManager.read();
+      const imported = state.belief.facts.find((f) => f.content === "Original 0.95 belief");
+      expect(imported).toBeDefined();
+      // Capped at 0.75
+      expect(imported!.confidence).toBe(0.75);
+      // Original preserved
+      expect(imported!.originalConfidence).toBe(0.95);
+    } finally {
+      tmp.cleanup();
+    }
+  });
+
 });
 
 // ---------------------------------------------------------------------------
@@ -329,6 +361,99 @@ describe("OMP memory bridge", () => {
       tmp.cleanup();
     }
   });
+  it("includes originalConfidence in OMP bridge context for freshly-created facts", async () => {
+    const tmp = createTempDir();
+    try {
+      const stateManager = new StateManager(tmp.path);
+      await stateManager.initialize();
+
+      // Pre-populate a fact with originalConfidence to simulate a hydrated belief
+      await stateManager.mutate((s: NoesisState) => {
+        addFact(s, {
+          content: "Hydrated belief with original confidence",
+          confidence: 0.75,
+          source: "omp-memory",
+          originalConfidence: 0.95,
+        });
+      });
+
+      // Verify schema accepted originalConfidence
+      const preState = stateManager.read();
+      const preFact = preState.belief.facts.find((f) => f.originalConfidence !== undefined);
+      expect(preFact).toBeDefined();
+      expect(preFact!.confidence).toBe(0.75);
+      expect(preFact!.originalConfidence).toBe(0.95);
+
+      // Bridge a fresh fact (no originalConfidence) and verify context format
+      const retainToOmp = mock(async (_items: MemoryRetainItem[]) => {});
+      const vaultStore = { push: mock(() => Promise.resolve()) };
+      const runtime = {
+        projectRoot: tmp.path,
+        stateManager,
+        vaultStore,
+        retainToOmp,
+      } as unknown as NoesisRuntime;
+
+      await executeBelieveFact(runtime, {
+        content: "Fresh belief for bridge",
+        confidence: 0.8,
+        source: "execution",
+      });
+
+      expect(retainToOmp).toHaveBeenCalledTimes(1);
+      const callArgs = retainToOmp.mock.calls[0]![0] as MemoryRetainItem[];
+      const context = callArgs[0]!.context ?? "";
+      // Fresh fact — context includes confidence but no originalConfidence
+      expect(context).toMatch(/confidence:\s*0\.80/);
+      expect(context).not.toContain("originalConfidence");
+      // Content uses [noesis/belief] prefix
+      expect(callArgs[0]!.content).toContain("[noesis/belief]");
+    } finally {
+      tmp.cleanup();
+    }
+  });
+
+  it("re-bridges a belief with originalConfidence into OMP memory context", async () => {
+    const tmp = createTempDir();
+    try {
+      const stateManager = new StateManager(tmp.path);
+      await stateManager.initialize();
+
+      // Pre-populate a fact with originalConfidence to simulate a hydrated belief
+      await stateManager.mutate((s: NoesisState) => {
+        addFact(s, {
+          content: "Hydrated belief with original confidence",
+          confidence: 0.75,
+          source: "omp-memory",
+          originalConfidence: 0.95,
+        });
+      });
+
+      const state = stateManager.read();
+      const hydratedFact = state.belief.facts.find((f) => f.originalConfidence !== undefined);
+      expect(hydratedFact).toBeDefined();
+
+      // Bridge the hydrated fact to OMP, simulating re-bridge
+      const retainToOmp = mock(async (_items: MemoryRetainItem[]) => {});
+      await retainToOmp([{
+        content: `[noesis/belief] ${hydratedFact!.content}`,
+        context: `id: ${hydratedFact!.id}, confidence: ${hydratedFact!.confidence.toFixed(2)}, source: ${hydratedFact!.source}, originalConfidence: ${hydratedFact!.originalConfidence!.toFixed(2)}`,
+        source: "noesis",
+        importance: mapConfidenceToImportance(hydratedFact!.confidence),
+      }]);
+
+      expect(retainToOmp).toHaveBeenCalledTimes(1);
+      const callArgs = retainToOmp.mock.calls[0]![0] as MemoryRetainItem[];
+      const context = callArgs[0]!.context ?? "";
+      // Context must include original confidence value
+      expect(context).toMatch(/originalConfidence:\s*0\.95/);
+      expect(context).toMatch(/confidence:\s*0\.75/);
+      expect(callArgs[0]!.content).toContain("[noesis/belief]");
+    } finally {
+      tmp.cleanup();
+    }
+  });
+
 });
 
 // ---------------------------------------------------------------------------

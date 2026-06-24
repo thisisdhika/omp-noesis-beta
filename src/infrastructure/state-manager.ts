@@ -44,6 +44,25 @@ export class StateManager {
   }
 
   /**
+   * Inside an active lock: compare the on-disk state's lastPersisted
+   * against our in-memory snapshot.  If they differ, another process
+   * has written to disk since we last loaded — reject the write to
+   * prevent lost updates.
+   */
+  async #checkDiskConflict(): Promise<void> {
+    const onDisk = await readJSON(this.#statePath);
+    if (onDisk !== null && typeof onDisk === "object") {
+      const disk = onDisk as Record<string, unknown>;
+      const diskLastPersisted = disk.lastPersisted;
+      if (typeof diskLastPersisted !== "string" || diskLastPersisted !== this.#state.lastPersisted) {
+        throw new Error(
+          "Transaction conflict: state.json was modified by another process since last load."
+        );
+      }
+    }
+  }
+
+  /**
    * Load state from disk, or create and persist a fresh EMPTY_STATE.
    * Gracefully handles missing file (null returned by readJSON)
    * and malformed JSON (readJSON throws → caught below).
@@ -110,8 +129,8 @@ export class StateManager {
     fn(clone);
     clone.lastPersisted = new Date().toISOString();
     NoesisStateSchema.parse(clone);
-
     await this.#withLock(async () => {
+      await this.#checkDiskConflict();
       await writeAtomic(this.#statePath, clone);
       this.#state = clone;
     });
@@ -142,6 +161,7 @@ export class StateManager {
             "Transaction conflict: cognitive state was modified by another task since Unit of Work was opened."
           );
         }
+        await this.#checkDiskConflict();
         await writeAtomic(this.#statePath, committedState);
         this.#state = deepClone(committedState);
       });
@@ -165,6 +185,9 @@ export class StateManager {
           migrated.attention = this.#state.attention;
           NoesisStateSchema.parse(migrated);
           await writeAtomic(this.#statePath, migrated);
+          // Sync our in-memory lastPersisted to match what was written to disk,
+          // so subsequent mutate/UoW calls don't see a false conflict.
+          this.#state.lastPersisted = migrated.lastPersisted;
         }
       } catch (err: unknown) {
         log.warn("[StateManager] Failed to checkpoint attention due to read/parse error", err);

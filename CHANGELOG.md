@@ -29,6 +29,8 @@ All notable changes to omp-noesis are documented here.
 
 - Documented `parseContext` metadata loss as intentional (ponytail: OMP search API), upgrade path noted
 - Updated all doc headers to v1.0.1
+- Added **Recommendation Coverage Matrix** in `docs/ARCHITECTURE.md` mapping all 10 external analysis recommendations to current code paths, implementation status (Implemented / Partial / Not implemented), and documented threat models for gaps
+- Added **Security Note: Local File Permissions** in `docs/STATE_SCHEMA.md` documenting the `0700`/`0600` permission model, residual risks, and the explicit decision to forgo at-rest encryption for v1
 
 ### Infrastructure
 

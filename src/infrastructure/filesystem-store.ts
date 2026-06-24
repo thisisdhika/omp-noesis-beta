@@ -9,6 +9,7 @@
  */
 
 import {
+  chmodSync,
   existsSync,
   readFileSync,
   openSync,
@@ -54,6 +55,11 @@ export async function writeAtomic(path: string, data: unknown): Promise<void> {
     } finally {
       closeSync(dirFd);
     }
+
+    // ponytail: best-effort restrict file permissions to owner-only
+    // chmodSync may fail on Windows or permission-locked filesystems —
+    // skip silently since this is a hardening measure, not a guarantee.
+    try { chmodSync(path, 0o600); } catch { /* best-effort */ }
   } catch (err) {
     // Best-effort cleanup of temp file before rethrowing
     try {

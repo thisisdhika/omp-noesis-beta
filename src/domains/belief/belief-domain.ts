@@ -37,6 +37,7 @@ export function addFact(
     evidence?: string;
     epistemicStatus?: EpistemicStatus;
     contradicts?: string[];
+    originalConfidence?: number;
   },
 ): BeliefFact {
   // K*6 Content Equivalence: detect existing active fact with the same
@@ -77,6 +78,7 @@ export function addFact(
     id: factId,
     content: params.content,
     confidence: params.confidence,
+    originalConfidence: params.originalConfidence,
     source: params.source,
     createdAt: timestamp,
     updatedAt: timestamp,

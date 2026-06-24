@@ -53,7 +53,8 @@ interface GraphFinding {
 interface BeliefFact {
   id: string;              // "bf-{uuid}"
   content: string;         // The proposition
-  confidence: number;      // 0.0 - 1.0
+  confidence: number;      // 0.0 - 1.0; capped at 0.75 when hydrated from OMP
+  originalConfidence?: number;  // Preserved from OMP memory for roundtrip fidelity
   source: "graph"|"execution"|"user"|"inference"|"omp-memory"|"obsidian-import";
   createdAt: string;
   updatedAt: string;
@@ -164,9 +165,9 @@ At session start, `HydrateFromMemoryUseCase` queries OMP memory for cross-sessio
 | Step | Description |
 |---|---|
 | Query | Searches OMP memory for `[noesis/belief]` and `[noesis/decision]` prefixed entries |
-| Parse | Extracts `content`, `confidence`, `tags`, `source` from structured context strings |
+| Parse | Extracts `content`, `confidence`, `originalConfidence`, `tags`, `source` from structured context strings |
 | Dedup | Content-hash comparison (`sha256(0-128) → 16-char hex`) against existing state.json entries |
-| Cap | Imported confidence capped at `Math.min(confidence, 0.75)` — OMP entries are supplements |
+| Cap | Active confidence capped at `Math.min(confidence, 0.75)`; original `confidence` preserved as `originalConfidence` for roundtrip fidelity — OMP entries are supplements |
 | Source | Imported entries receive `source: "omp-memory"` |
 | Commit | Batch commit via `UnitOfWork`; zero hydrated entries → no write |
 
@@ -190,3 +191,37 @@ At session start, `HydrateFromMemoryUseCase` queries OMP memory for cross-sessio
 **Atomic write protocol:** serialize → write `.tmp.{pid}` → fsync → rename
 
 **Read protocol:** file missing → `EMPTY_STATE` | parse error → rebuild | I/O error → rethrow
+
+**Optimistic Concurrency Control:** When creating a `UnitOfWork`, the current `lastPersisted` timestamp is captured. On `commit()`, the captured timestamp is compared to the on-disk `lastPersisted` — if another writer committed in the meantime, the transaction is rejected with a `"Transaction conflict"` error. This check is performed both before and after the internal write lock to prevent stale overwrites.
+
+  ```
+  createUnitOfWork()
+    → clone state, capture originalLastPersisted
+  commit()
+    → assert originalLastPersisted === current in-memory lastPersisted  (1st guard)
+    → acquire write lock
+    → assert originalLastPersisted === current in-memory lastPersisted  (2nd guard, under lock)
+    → writeAtomic() → update in-memory state
+  ```
+
+**Conflict Recovery:** The caller receives a `"Transaction conflict"` error. The stale `UnitOfWork` is discarded — the caller must open a fresh `UnitOfWork` from current state and retry. No partial writes or data corruption occurs; the in-memory state is never overwritten by a rejected transaction.
+
+## Security Note: Local File Permissions
+
+The cognitive state is stored as plain JSON at `.omp/noesis/state.json` on the local filesystem. Noesis relies on **restrictive local file permissions** rather than at-rest encryption for confidentiality:
+
+- The `.omp/noesis/` directory is created with `0700` permissions (owner-only access)
+- The `state.json` file is written with `0600` permissions (owner-only read/write)
+- Atomic write protocol (temp → fsync → rename) prevents partial reads by concurrent processes
+- Optimistic Concurrency Control prevents cross-process write conflicts
+
+**Threat model:**
+
+| Threat | Mitigation | Residual Risk |
+|---|---|---|
+| Same-user process reads state.json without Noesis API | `0600` file permissions block other users but not same-user processes | State is accessible to any process running under the same UID (including malicious co-tenants or compromised tools) |
+| Unauthorized filesystem access (root or physical) | No protection | State content is plaintext — no encryption key management is provided |
+| Accidental exposure via backup/CI artifact | Not addressed | Repo excludes `.omp/` via `.gitignore` but users must ensure backups and CI ignore the path |
+| Tampering by same-user process | OCC detects cross-process write conflicts on commit | Read-path does not authenticate the source — a same-user process can blindly overwrite state.json |
+
+> **Design choice:** At-rest encryption is intentionally out of scope for v1. The state file lives in the project directory alongside source code, where local file permissions are the standard security boundary. Encryption would require key management that exceeds the threat model of a developer-local agent cognitive layer. If deployment requires confidentiality on shared file systems (e.g., NFS, CI runners), pipe state through a encrypted volume or enclose the project directory in a FUSE-backed encrypted container.

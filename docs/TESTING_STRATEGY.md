@@ -44,6 +44,8 @@ Key coverage areas:
 - `focus-resolver.ts`: fallback chain
 - `graphify-parser.ts`: output parsing and resilience
 - Various vault stores: atomic write, backend resolution
+- `hydrate-from-memory.ts`: content-hash dedup, confidence capping (0.75) with originalConfidence preservation, context parsing, graceful degradation
+- `filesystem-store.ts` / `state-manager.ts`: atomic write protocol, UnitOfWork OCC (optimistic concurrency)
 
 ### Graphify v1 Unit Coverage
 
@@ -62,6 +64,8 @@ Key coverage areas:
 - Hook behavior: context injection, double-preamble guard, compaction survivor, tool-result capture, turn-end eviction
 - Persistence: atomic write, migration path
 - Vault: backend resolution, note creation and search
+- **OCC conflict detection**: concurrent `UnitOfWork` on stale `lastPersisted` → `"Transaction conflict"` rejection, state unchanged
+- **OMP memory hydration**: `HydrateFromMemoryUseCase` with mocked backend, cap at 0.75 with originalConfidence preservation, dedup by content hash
 
 ## Behavioral Tests
 
@@ -75,6 +79,8 @@ Key coverage:
 - **Vault projection**: learning resolved → turn ends → artifact in vault
 - **Cross-session recall**: session 1 commits → session 2 recalls
 - **Double-preamble guard**: both hooks fire → only one preamble injected
+- **OMP memory hydration**: OMP entries → parsed → deduped → imported with confidence ≤ 0.75, originalConfidence preserved for roundtrip fidelity
+- **Graceful degradation (memory)**: OMP memory offline/not searchable/search failure → 0 imports without error
 
 ## Coverage Targets
 
@@ -93,7 +99,7 @@ bun test --isolate --coverage
 ```
 | Suite | Result |
 |---|---|
-| Tests | 1116 pass, 0 fail (80 files) |
-| Function coverage | 85.78% |
-| Line coverage | 89.63% |
+| Tests | ~1120 pass (≤2 known non-blocking failures) |
+| Function coverage | ~86% |
+| Line coverage | ~91% |
 

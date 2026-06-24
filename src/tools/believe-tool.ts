@@ -100,17 +100,6 @@ export async function executeBelieveFact(
     contradicts: params.contradicts,
     epistemicStatus,
   });
-  // v1.0: Bridge durable retention to OMP memory backend
-  if (runtime.retainToOmp && confidence >= 0.5) {
-    runtime.retainToOmp([{
-      content: `[noesis/belief] ${params.content}`,
-      context: `id: ${factId}, confidence: ${confidence.toFixed(2)}, source: ${params.source}${params.tags ? `, tags: ${params.tags.join(", ")}` : ""}`,
-      source: "noesis",
-      importance: mapConfidenceToImportance(confidence),
-    }]).catch(() => {
-      // Best-effort bridge; non-critical if OMP memory is unavailable
-    });
-  }
 
   // v0.3: Project belief fact to vault as best-effort side effect
   runtime.vaultStore.push({
@@ -131,6 +120,24 @@ export async function executeBelieveFact(
   // v1.0 Rec 7: Auto-flag for human review when belief exceeds thresholds
   const state = runtime.stateManager.read();
   const createdFact = state.belief.facts.find(f => f.id === factId);
+  // v1.0: Bridge durable retention to OMP memory backend
+  if (runtime.retainToOmp && createdFact && createdFact.confidence >= 0.5) {
+    let context = `id: ${factId}, confidence: ${createdFact.confidence.toFixed(2)}, source: ${params.source}`;
+    if (createdFact.originalConfidence !== undefined) {
+      context += `, originalConfidence: ${createdFact.originalConfidence.toFixed(2)}`;
+    }
+    if (params.tags && params.tags.length > 0) {
+      context += `, tags: ${params.tags.join(", ")}`;
+    }
+    runtime.retainToOmp([{
+      content: `[noesis/belief] ${createdFact.content}`,
+      context,
+      source: "noesis",
+      importance: mapConfidenceToImportance(createdFact.confidence),
+    }]).catch(() => {
+      // Best-effort bridge; non-critical if OMP memory is unavailable
+    });
+  }
   let reviewFlagged = false;
   if (createdFact && shouldReview(createdFact)) {
     // ponytail: best-effort side effect — review flag is advisory, not critical

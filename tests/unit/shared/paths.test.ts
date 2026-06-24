@@ -3,7 +3,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import { ensureNoesisDir, validateGraphPath } from "../../../src/shared/paths.js";
 import { createTempDir } from "../../helpers/temp-dir.js";
-import { existsSync, writeFileSync, mkdirSync } from "node:fs";
+import { existsSync, writeFileSync, mkdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 
@@ -29,6 +29,14 @@ describe("ensureNoesisDir", () => {
     const second = ensureNoesisDir(tmp.path);
     expect(first).toBe(second);
     expect(existsSync(second)).toBe(true);
+  });
+
+  it("should create directory with 0700 permissions on POSIX", () => {
+    if (process.platform === "win32") return; // no-op on Windows
+    const dir = ensureNoesisDir(tmp.path);
+    const stats = statSync(dir);
+    // mode includes file-type bits; mask to owner/group/other permission bits
+    expect(stats.mode & 0o777).toBe(0o700);
   });
 });
 

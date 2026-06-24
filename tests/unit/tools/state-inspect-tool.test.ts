@@ -30,6 +30,10 @@ function textContent(result: { content: (TextContent | ImageContent)[] }): strin
   if (block?.type !== "text") throw new Error("Expected text content block");
   return block.text;
 }
+function detailsOf(result: { details?: unknown }): Record<string, any> {
+  return result.details as Record<string, any>;
+}
+
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -400,5 +404,300 @@ describe("executeRecall — non-search query variants", () => {
     expect(result.isError).toBe(false);
     expect(result.details!.count).toBe(1);
     expect(textContent(result)).toContain("Unit test hypothesis");
+  });
+});
+
+describe("executeRecall — new query modes (attention, token_profile, compaction_history, provenance)", () => {
+
+  it("returns attention summary from fresh state with defaults", async () => {
+    const { runtime } = await setup();
+
+    const result = await executeRecall(runtime, {
+      query: "attention",
+      minConfidence: 0.75,
+      includeCompleted: false,
+      includeSuperseded: false,
+      includeArchived: false,
+    });
+
+    expect(result.isError).toBe(false);
+    expect(textContent(result)).toContain("Attention Summary:");
+    expect(textContent(result)).toContain("Focus: ");
+    expect(textContent(result)).toContain("Priority: normal");
+    expect(textContent(result)).toContain("Files (0):");
+    expect(textContent(result)).toContain("Graph queries (0):");
+    expect(textContent(result)).toContain("Graph findings: 0");
+    expect(textContent(result)).toContain("Pending evidence items: 0");
+    expect(result.details!.query).toBe("attention");
+    expect(result.details!.focus).toBe("");
+    expect(result.details!.priority).toBe("normal");
+    expect(result.details!.fileCount).toBe(0);
+    expect(result.details!.graphQueryCount).toBe(0);
+    expect(result.details!.graphFindingCount).toBe(0);
+    expect(result.details!.pendingEvidenceCount).toBe(0);
+    expect(typeof result.details!.updatedAt).toBe("string");
+  });
+
+  it("returns attention summary with seeded graph findings and pending evidence", async () => {
+    const { runtime } = await setup();
+    const now = new Date().toISOString();
+
+    await runtime.stateManager.mutate((s) => {
+      s.attention.focus = "Graph-rich attention test";
+      s.attention.priority = "critical";
+      s.attention.files = ["a.ts", "b.ts", "c.ts"];
+      s.attention.graphQueries = ["q1", "q2"];
+      s.attention.graphFindings = [{
+        query: "q1",
+        nodes: ["node1"],
+        relations: ["rel1"],
+        confidence: "EXTRACTED",
+        timestamp: now,
+      }];
+      s.attention.pendingEvidence = [{
+        findings: [{
+          query: "q1",
+          nodes: ["node1"],
+          relations: ["rel1"],
+          confidence: "EXTRACTED",
+          timestamp: now,
+        }],
+        query: "q1",
+        turnAdded: 1,
+        turnsRemaining: 3,
+      }];
+      s.attention.updatedAt = now;
+    });
+
+    const result = await executeRecall(runtime, {
+      query: "attention",
+      minConfidence: 0.75,
+      includeCompleted: false,
+      includeSuperseded: false,
+      includeArchived: false,
+    });
+
+    expect(result.isError).toBe(false);
+    expect(textContent(result)).toContain("Graph-rich attention test");
+    expect(textContent(result)).toContain("critical");
+    expect(textContent(result)).toContain("Files (3):");
+    expect(textContent(result)).toContain("Graph queries (2):");
+    expect(textContent(result)).toContain("Graph findings: 1");
+    expect(textContent(result)).toContain("Pending evidence items: 1");
+    expect(result.details!.query).toBe("attention");
+    expect(result.details!.focus).toBe("Graph-rich attention test");
+    expect(result.details!.priority).toBe("critical");
+    expect(result.details!.fileCount).toBe(3);
+    expect(result.details!.graphQueryCount).toBe(2);
+    expect(result.details!.graphFindingCount).toBe(1);
+    expect(result.details!.pendingEvidenceCount).toBe(1);
+    expect(result.details!.updatedAt).toBe(now);
+  });
+
+  it("returns token_profile from in-memory state", async () => {
+    const { runtime } = await setup();
+
+    // Seed a fact so the token profile has at least some content to report on
+    await runtime.stateManager.mutate((s) => {
+      s.belief.facts.push(sampleFact({
+        id: "bf-tp-1",
+        content: "Token profile test fact",
+        confidence: 0.9,
+        source: "execution",
+      }));
+    });
+
+    const result = await executeRecall(runtime, {
+      query: "token_profile",
+      minConfidence: 0.75,
+      includeCompleted: false,
+      includeSuperseded: false,
+      includeArchived: false,
+    });
+
+    expect(result.isError).toBe(false);
+    expect(textContent(result)).toContain("Token Profile:");
+    expect(result.details!.query).toBe("token_profile");
+    expect(typeof result.details!.totalTokens).toBe("number");
+  });
+
+  it("returns token_profile even from fresh empty state", async () => {
+    const { runtime } = await setup();
+
+    const result = await executeRecall(runtime, {
+      query: "token_profile",
+      minConfidence: 0.75,
+      includeCompleted: false,
+      includeSuperseded: false,
+      includeArchived: false,
+    });
+
+    expect(result.isError).toBe(false);
+    expect(textContent(result)).toContain("Token Profile:");
+    // Even empty state has 5 sections (beliefs, inference, commitment, learning, attention) with 0 tokens
+    expect(result.details!.query).toBe("token_profile");
+    expect(Array.isArray(result.details!.sections)).toBe(true);
+    expect(typeof result.details!.totalTokens).toBe("number");
+  });
+
+  it("returns compaction_history with seeded entries", async () => {
+    const { runtime } = await setup();
+
+    await runtime.stateManager.mutate((s) => {
+      s.compactionHistory.push({
+        occurredAt: "2026-06-24T00:00:00.000Z",
+        preCounts: { facts: 50, decisions: 10 },
+        postCounts: { facts: 30, decisions: 5 },
+        preserved: ["bf-1", "bd-1"],
+        degraded: [{ id: "bf-2", content: "Degraded fact", reason: "truncated" }],
+        evicted: [{ id: "bf-3", content: "Evicted fact", reason: "capacity" }],
+        reconstructionHints: [],
+      });
+    });
+
+    const result = await executeRecall(runtime, {
+      query: "compaction_history",
+      minConfidence: 0.75,
+      includeCompleted: false,
+      includeSuperseded: false,
+      includeArchived: false,
+    });
+
+    expect(result.isError).toBe(false);
+    expect(textContent(result)).toContain("Compaction History (1 entries):");
+    expect(textContent(result)).toContain("2026-06-24");
+    expect(result.details!.query).toBe("compaction_history");
+    expect(result.details!.count).toBe(1);
+    expect(Array.isArray(result.details!.entries)).toBe(true);
+    expect(detailsOf(result).entries[0].occurredAt).toBe("2026-06-24T00:00:00.000Z");
+    expect(detailsOf(result).entries[0].preCounts).toEqual({ facts: 50, decisions: 10 });
+    expect(detailsOf(result).entries[0].postCounts).toEqual({ facts: 30, decisions: 5 });
+    expect(detailsOf(result).entries[0].preservedCount).toBe(2);
+    expect(detailsOf(result).entries[0].degradedCount).toBe(1);
+    expect(detailsOf(result).entries[0].evictedCount).toBe(1);
+  });
+
+  it("returns compaction_history with empty entries array when no history exists", async () => {
+    const { runtime } = await setup();
+
+    const result = await executeRecall(runtime, {
+      query: "compaction_history",
+      minConfidence: 0.75,
+      includeCompleted: false,
+      includeSuperseded: false,
+      includeArchived: false,
+    });
+
+    expect(result.isError).toBe(false);
+    expect(textContent(result)).toContain("Compaction History (0 entries):");
+    expect(result.details!.count).toBe(0);
+    expect(result.details!.entries).toEqual([]);
+  });
+
+  it("returns provenance for a seeded fact", async () => {
+    const { runtime } = await setup();
+
+    await runtime.stateManager.mutate((s) => {
+      s.belief.facts.push(sampleFact({
+        id: "bf-prov-1",
+        content: "Provenance test fact",
+        source: "execution",
+        confidence: 0.9,
+        evidence: "Test evidence",
+      }));
+    });
+
+    const result = await executeRecall(runtime, {
+      query: "provenance",
+      keyword: "bf-prov-1",
+      minConfidence: 0.75,
+      includeCompleted: false,
+      includeSuperseded: false,
+      includeArchived: false,
+    });
+
+    expect(result.isError).toBe(false);
+    expect(textContent(result)).toContain("Provenance for bf-prov-1:");
+    expect(textContent(result)).toContain("Provenance test fact");
+    expect(textContent(result)).toContain("execution");
+    expect(result.details!.query).toBe("provenance");
+    expect(result.details!.beliefId).toBe("bf-prov-1");
+    expect(result.details!.node).toBeDefined();
+    expect(detailsOf(result).node.content).toBe("Provenance test fact");
+    expect(detailsOf(result).node.source).toBe("execution");
+  });
+
+  it("returns provenance for a seeded decision", async () => {
+    const { runtime } = await setup();
+
+    await runtime.stateManager.mutate((s) => {
+      s.belief.decisions.push(sampleDecision({
+        id: "bd-prov-1",
+        content: "Provenance test decision",
+        rationale: "For testing",
+        source: "user",
+      }));
+    });
+
+    const result = await executeRecall(runtime, {
+      query: "provenance",
+      keyword: "bd-prov-1",
+      minConfidence: 0.75,
+      includeCompleted: false,
+      includeSuperseded: false,
+      includeArchived: false,
+    });
+
+    expect(result.isError).toBe(false);
+    expect(textContent(result)).toContain("Provenance for bd-prov-1:");
+    expect(textContent(result)).toContain("Provenance test decision");
+    expect(detailsOf(result).node.content).toBe("Provenance test decision");
+    expect(detailsOf(result).node.source).toBe("user");
+  });
+
+  it("returns error for provenance with unknown belief ID", async () => {
+    const { runtime } = await setup();
+
+    const result = await executeRecall(runtime, {
+      query: "provenance",
+      keyword: "bf-nonexistent",
+      minConfidence: 0.75,
+      includeCompleted: false,
+      includeSuperseded: false,
+      includeArchived: false,
+    });
+
+    expect(result.isError).toBe(true);
+    expect(textContent(result)).toContain("No provenance found for belief ID:");
+    expect(result.details!.error).toBeDefined();
+    expect(result.details!.beliefId).toBe("bf-nonexistent");
+  });
+
+  it("returns provenance overview preview when no keyword given", async () => {
+    const { runtime } = await setup();
+
+    await runtime.stateManager.mutate((s) => {
+      s.belief.facts.push(sampleFact({
+        id: "bf-prov-preview-1",
+        content: "Preview fact",
+        source: "execution",
+        confidence: 0.9,
+      }));
+    });
+
+    const result = await executeRecall(runtime, {
+      query: "provenance",
+      minConfidence: 0.75,
+      includeCompleted: false,
+      includeSuperseded: false,
+      includeArchived: false,
+    });
+
+    expect(result.isError).toBe(false);
+    expect(textContent(result)).toContain("Provenance Overview");
+    expect(textContent(result)).toContain("total items");
+    expect(result.details!.query).toBe("provenance");
+    expect(typeof result.details!.totalItems).toBe("number");
+    expect(typeof result.details!.itemsWithChain).toBe("number");
   });
 });

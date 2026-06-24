@@ -62,7 +62,7 @@ Graph-backed turns must query Graphify before reading project files. `noesis_att
 |---|---|
 | Graph file missing | `query()` returns `{findings: [], error}` |
 | Timeout (30s) | Caught → structured error |
-| Binary missing | `detectCapability` returns DEGRADED |
+| Binary missing | `detectCapability()` returns `DEGRADED` — graph operations skipped, Noesis continues standalone without graph perception. All other systems unaffected. |
 | JSON parse failure | Warning → returns `[]` |
 | MCP server fails | Error logged → CLI fallback |
 | MCP connection lost | OMP detects → reconnects; CLI fallback during reconnection |
@@ -91,5 +91,5 @@ The CLI is used for:
 3. MCP is primary query path; CLI is fallback for automated/build ops
 4. Confidence is always evidence-grounded for graph sources
 5. Stale → confidence penalty; query refusals reserved for errors
-6. DEGRADED mode is graceful
+6. DEGRADED is a capability label only — graceful; noesis continues standalone without graph perception
 7. All Graphify commands use `Bun.spawn`, never shell

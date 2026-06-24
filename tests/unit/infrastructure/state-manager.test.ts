@@ -138,4 +138,37 @@ describe("StateManager", () => {
     const content = await file.json();
     expect(content.version).toBe(CURRENT_VERSION);
   });
+
+  it("should throw Transaction conflict when state.json was modified externally before mutate", async () => {
+    const sm = new StateManager(tempDir.path);
+    await sm.initialize();
+
+    // Simulate another process writing to the same state file
+    const onDisk = await Bun.file(statePath(tempDir.path)).json();
+    onDisk.attention.focus = "other-process-focus";
+    onDisk.lastPersisted = new Date(Date.now() + 1000).toISOString();
+    await writeAtomic(statePath(tempDir.path), onDisk);
+
+    // Our mutate should now detect the conflict
+    let thrown = false;
+    try {
+      await sm.mutate((s) => {
+        s.attention.focus = "our-focus";
+      });
+    } catch (err: any) {
+      if (err.message.includes("Transaction conflict") && err.message.includes("another process")) {
+        thrown = true;
+      }
+    }
+
+    expect(thrown).toBe(true);
+
+    // Our in-memory state was NOT updated with our-focus (it's the original empty focus)
+    expect(sm.read().attention.focus).toBe("");
+
+    // Disk state still has the external process's changes — our stale write was rejected
+    const diskAfter = await Bun.file(statePath(tempDir.path)).json();
+    expect(diskAfter.attention.focus).toBe("other-process-focus");
+  });
 });
+

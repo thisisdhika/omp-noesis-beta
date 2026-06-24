@@ -31,6 +31,8 @@ import {
   getRankedLearning,
   getFailures,
 } from "../domains/learning/learning-domain.js";
+import { resolveProvenance } from "../application/use-cases/resolve-provenance.js";
+import { estimateTokens } from "../shared/tokens.js";
 
 
 // ============================================================
@@ -45,6 +47,7 @@ export function buildRecallParams(pi: ExtensionAPI) {
       "relevant_learning",
       "current_workflow",
       "full_state_digest",
+      "attention",
       "token_profile",
       "compaction_loss",
       "compaction_history",
@@ -71,7 +74,7 @@ export function buildRecallParams(pi: ExtensionAPI) {
     message: "Validation feedback: keyword is required when query is 'search'.",
     params: {
       suggestions: {
-        search: "Required: keyword. Optional: tagFilter, minConfidence, skillScope, limit, layers."
+      search: "Required: keyword. Optional: tagFilter, minConfidence, skillScope, limit, layers."
       }
     }
   });
@@ -83,7 +86,7 @@ export function buildRecallParams(pi: ExtensionAPI) {
 export async function executeRecall(
   runtime: NoesisRuntime,
   params: {
-    query: "active_beliefs" | "active_decisions" | "unresolved_hypotheses" | "relevant_learning" | "current_workflow" | "full_state_digest" | "token_profile" | "compaction_loss" | "compaction_history" | "provenance" | "search";
+    query: "active_beliefs" | "active_decisions" | "unresolved_hypotheses" | "relevant_learning" | "current_workflow" | "full_state_digest" | "attention" | "token_profile" | "compaction_loss" | "compaction_history" | "provenance" | "search";
     tagFilter?: string[];
     minConfidence: number;
     skillScope?: string;
@@ -400,6 +403,153 @@ export async function executeRecall(
       isError: false,
     };
   }
+  if (params.query === "attention") {
+    const attn = state.attention;
+    const lines: string[] = [];
+    lines.push(`Attention Summary:`);
+    lines.push(`  Focus: ${attn.focus}`);
+    lines.push(`  Priority: ${attn.priority}`);
+    lines.push(`  Files (${attn.files.length}): ${attn.files.length > 0 ? attn.files.join(", ") : "(none)"}`);
+    lines.push(`  Graph queries (${attn.graphQueries.length}): ${attn.graphQueries.length > 0 ? attn.graphQueries.join(", ") : "(none)"}`);
+    lines.push(`  Graph findings: ${attn.graphFindings.length}`);
+    lines.push(`  Pending evidence items: ${attn.pendingEvidence.length}`);
+    lines.push(`  Updated: ${attn.updatedAt}`);
+
+    return {
+      content: [{ type: "text", text: lines.join("\n") }],
+      details: {
+        query: "attention",
+        focus: attn.focus,
+        priority: attn.priority,
+        fileCount: attn.files.length,
+        graphQueryCount: attn.graphQueries.length,
+        graphFindingCount: attn.graphFindings.length,
+        pendingEvidenceCount: attn.pendingEvidence.length,
+        updatedAt: attn.updatedAt,
+      },
+      isError: false,
+    };
+  }
+
+  if (params.query === "token_profile") {
+    const sections = [
+      { name: "beliefs", content: JSON.stringify(state.belief) },
+      { name: "inference", content: JSON.stringify(state.inference) },
+      { name: "commitment", content: JSON.stringify(state.commitment) },
+      { name: "learning", content: JSON.stringify(state.learning) },
+      { name: "attention", content: JSON.stringify(state.attention) },
+    ];
+    const sectionTokens = sections.map((s) => ({
+      name: s.name,
+      tokens: estimateTokens(s.content),
+    }));
+    const totalTokens = sectionTokens.reduce((sum, s) => sum + s.tokens, 0);
+
+    const lineText = sectionTokens.map((s) => `  ${s.name}: ${s.tokens} tokens`);
+
+    return {
+      content: [{ type: "text", text: `Token Profile:\n${lineText.join("\n")}\n  Total: ${totalTokens} tokens` }],
+      details: {
+        query: "token_profile",
+        sections: sectionTokens,
+        totalTokens,
+      },
+      isError: false,
+    };
+  }
+
+  if (params.query === "compaction_history") {
+    const history = state.compactionHistory ?? [];
+    const lines = history.length > 0
+      ? history.map((e, i) =>
+          `  [${i}] ${e.occurredAt}: pre={facts:${e.preCounts.facts}, decisions:${e.preCounts.decisions}}, post={facts:${e.postCounts.facts}, decisions:${e.postCounts.decisions}}`,
+        )
+      : ["  (none)"];
+
+    return {
+      content: [{ type: "text", text: `Compaction History (${history.length} entries):\n${lines.join("\n")}` }],
+      details: {
+        query: "compaction_history",
+        count: history.length,
+        entries: history.map((e) => ({
+          occurredAt: e.occurredAt,
+          preCounts: e.preCounts,
+          postCounts: e.postCounts,
+          preservedCount: e.preserved.length,
+          degradedCount: e.degraded.length,
+          evictedCount: e.evicted.length,
+        })),
+      },
+      isError: false,
+    };
+  }
+  if (params.query === "provenance") {
+    const beliefId = params.keyword;
+    const facts = state.belief.facts;
+    const decisions = state.belief.decisions;
+
+    if (!beliefId) {
+      // Preview mode: show first 3 items with supersession chains + total count
+      const allItems = [
+        ...facts.map((f) => ({ id: f.id, content: f.content, supersededBy: f.supersededBy, kind: "fact" as const })),
+        ...decisions.map((d) => ({ id: d.id, content: d.content, supersededBy: d.supersededBy, kind: "decision" as const })),
+      ];
+      const withChain = allItems.filter(
+        (item) => item.supersededBy || allItems.some((other) => other.supersededBy === item.id),
+      );
+      const preview = withChain.slice(0, 3).map(
+        (item) => `  [${item.kind}] ${item.id}: ${item.content.slice(0, 120)}`,
+      );
+
+      return {
+        content: [{
+          type: "text",
+          text: `Provenance Overview: ${allItems.length} total items, ${withChain.length} with supersession chains.\n` +
+            (preview.length > 0 ? `Preview (first ${preview.length}):\n${preview.join("\n")}\n` : "") +
+            `\nUse keyword (belief ID) to trace a specific chain.`,
+        }],
+        details: {
+          query: "provenance",
+          totalItems: allItems.length,
+          itemsWithChain: withChain.length,
+          preview: withChain.slice(0, 3).map((item) => ({
+            id: item.id,
+            kind: item.kind,
+            content: item.content.slice(0, 120),
+          })),
+        },
+        isError: false,
+      };
+    }
+
+    const node = resolveProvenance(state, beliefId);
+    if (!node) {
+      return {
+        isError: true,
+        content: [{ type: "text", text: `No provenance found for belief ID: ${beliefId}` }],
+        details: { error: "not_found", query: "provenance", beliefId },
+      };
+    }
+
+    const plines: string[] = [];
+    plines.push(`Provenance for ${beliefId}:`);
+    plines.push(`  Content: ${node.content}`);
+    plines.push(`  Source: ${node.source}`);
+    plines.push(`  Created: ${node.createdAt}`);
+    plines.push(`  Supersedes: ${node.supersedes.length > 0 ? node.supersedes.join(", ") : "(none)"}`);
+    plines.push(`  Superseded by: ${node.supersededBy ?? "(none)"}`);
+    if (node.evidence) plines.push(`  Evidence: ${node.evidence}`);
+
+    return {
+      content: [{ type: "text", text: plines.join("\n") }],
+      details: {
+        query: "provenance",
+        beliefId,
+        node,
+      },
+      isError: false,
+    };
+  }
 
   // query === "search"
   if (!params.keyword) {
@@ -476,7 +626,7 @@ export function registerStateInspectTool(pi: ExtensionAPI, runtime: NoesisRuntim
     name: "noesis_state_inspect",
     label: "Noesis: State Inspect",
     description:
-      "Read current (live, in-memory) cognitive state — beliefs, decisions, hypotheses, learning entries, active workflows, compaction loss reports, and keyword search across all layers (query:\"search\"). " +
+      "Read current (live, in-memory) cognitive state — beliefs, decisions, hypotheses, learning entries, active workflows, attention, token profile, compaction loss/history, provenance chains, and keyword search across all layers (query:\"search\"). " +
       "Call BEFORE assuming you do not know something; check current-session memory first rather than guessing or fabricating. " +
       "Do NOT call to store information — use noesis_believe_fact, noesis_believe_decision. " +
       "Consequence: returns a snapshot of live in-memory state without modifying anything; does NOT search durable cross-session storage. For persistent artifacts stored across sessions consider vault backends. " +

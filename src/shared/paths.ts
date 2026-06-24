@@ -12,9 +12,7 @@ import { join } from "node:path";
 /** Ensure the noesis state directory exists under the project root. */
 export function ensureNoesisDir(projectRoot: string): string {
   const dir = join(projectRoot, ".omp", "noesis");
-  if (!existsSync(dir)) {
-    mkdirSync(dir, { recursive: true });
-  }
+    mkdirSync(dir, { recursive: true, mode: 0o700 });
   return dir;
 }
 

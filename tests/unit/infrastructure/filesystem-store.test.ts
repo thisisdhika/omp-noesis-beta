@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, afterEach } from "bun:test";
-import { existsSync, mkdirSync, readdirSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, rmSync, statSync } from "node:fs";
 import { writeAtomic, readJSON, fileExists } from "../../../src/infrastructure/filesystem-store.js";
 import { createTempDir } from "../../helpers/temp-dir.js";
 import { join } from "node:path";
@@ -62,6 +62,18 @@ describe("writeAtomic", () => {
 
     const raw = await Bun.file(filePath).text();
     expect(raw.endsWith("\n")).toBe(true);
+  });
+
+  it("should set 0600 file permissions on POSIX", async () => {
+    if (process.platform === "win32") return; // no-op on Windows
+    tempDir = createTempDir();
+    const filePath = join(tempDir.path, "perms.json");
+
+    await writeAtomic(filePath, { secret: "data" });
+
+    const stats = statSync(filePath);
+    // mode includes file-type bits; mask to owner/group/other permission bits
+    expect(stats.mode & 0o777).toBe(0o600);
   });
 });
 

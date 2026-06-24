@@ -14,6 +14,7 @@ export const BeliefFactSchema = z.object({
   id: z.string().regex(/^bf-[a-z0-9-]+$/),
   content: z.string().min(1).max(CAPS.contentLength),
   confidence: z.number().min(0).max(1),
+  originalConfidence: z.number().min(0).max(1).optional(),
   source: BeliefSourceSchema,
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),

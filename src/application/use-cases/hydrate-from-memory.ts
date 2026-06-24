@@ -25,6 +25,7 @@ interface ParsedMemoryEntry {
   tags?: string[];
   source?: string;
   id?: string;
+  originalConfidence?: number;
 }
 
 interface HydrateResult {
@@ -53,10 +54,12 @@ function parseContext(content: string, context?: string): ParsedMemoryEntry | nu
     .filter(Boolean);
   const source = context?.match(/source:\s*(\S+)/)?.[1];
   const id = context?.match(/id:\s*(\S+)/)?.[1];
+  const originalConfidence = context?.match(/originalConfidence:\s*([\d.]+)/)?.[1];
 
   return {
     content: stripped,
     confidence: confidence ? parseFloat(confidence) : undefined,
+    originalConfidence: originalConfidence ? parseFloat(originalConfidence) : undefined,
     tags,
     source,
     id,
@@ -111,11 +114,14 @@ export class HydrateFromMemoryUseCase {
 
       // Import with capped confidence — OMP memory entries are supplements
       const confidence = Math.min(parsed.confidence ?? 0.5, 0.75);
+      // Preserve original confidence for roundtrip fidelity
+      const originalConfidence = parsed.originalConfidence ?? (parsed.confidence !== undefined && parsed.confidence > 0.75 ? parsed.confidence : undefined);
 
       this.uow.belief.addFact({
         id: generateId("bf"),
         content: parsed.content,
         confidence,
+        originalConfidence,
         source: "omp-memory",
         tags: parsed.tags,
         createdAt: now,

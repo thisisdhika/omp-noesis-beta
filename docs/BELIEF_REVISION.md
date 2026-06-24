@@ -64,6 +64,25 @@ Chain head is always active. Archived beliefs do not participate.
 
 The gap is intentional: not everything retrieved deserves to be believed.
 
+## Commitment Cascade
+
+Decisions do not cascade automatically into facts, workflow steps, or other decisions. When a decision is superseded:
+
+- Related `BeliefFact` entries remain unchanged — they are not demoted, archived, or re-derived
+- Workflow steps are not created, updated, or removed
+- Dependent hypotheses flagged for review (supersession algorithm step 5) are surfaced for human inspection, not resolved automatically
+
+Follow-up is manual. The existing tools for review and action are:
+
+| Tool | Purpose |
+|---|---|
+| `noesis_state_inspect` | Review current decisions, flagged hypotheses, and active facts |
+| `noesis_believe_fact` / `noesis_believe_decision` | Commit new facts or decisions explicitly |
+| `noesis_commit` | Manage workflow steps — extend, update, or replace |
+| Audit trail (`supersededBy`, version chains) | Trace provenance and roll back when needed |
+
+This is the same boundary as Separation of Recall and Commitment: no implicit promotion. A decision is a commitment about a course of action or rationale. Its consequences for facts, tasks, and future decisions are evaluated and applied by the agent, not by the revision engine.
+
 ## Audit Trail
 
 Every revision preserves:
