@@ -34,10 +34,6 @@ import type { MemoryBackendSearchItem } from "@oh-my-pi/pi-coding-agent/memory-b
 // Types
 // ---------------------------------------------------------------------------
 
-/** MemoryBackendSearchItem doesn't carry context in its type, but the
- *  runtime's save path stores it and the hydration use case reads it.
- *  We extend the type so tests can provide context for parseContext. */
-type SearchItemWithContext = MemoryBackendSearchItem & { context?: string };
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -46,12 +42,12 @@ type SearchItemWithContext = MemoryBackendSearchItem & { context?: string };
 /** Create a mock NoesisRuntime configured for hydration (search + status). */
 function createHydrationRuntime(
   stateManager: StateManager,
-  beliefItems: SearchItemWithContext[],
-  decisionItems: SearchItemWithContext[],
+  beliefItems: MemoryBackendSearchItem[],
+  decisionItems: MemoryBackendSearchItem[],
 ): NoesisRuntime {
   const searchFromOmp = mock(async (query: string) => {
-    if (query === "[noesis/belief]") return beliefItems as MemoryBackendSearchItem[];
-    if (query === "[noesis/decision]") return decisionItems as MemoryBackendSearchItem[];
+    if (query === "[noesis/belief]") return beliefItems;
+    if (query === "[noesis/decision]") return decisionItems;
     return [];
   });
   const getMemoryStatus = mock(async (): Promise<MemoryStatus> => ({
