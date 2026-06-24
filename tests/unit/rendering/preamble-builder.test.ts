@@ -132,6 +132,10 @@ describe("buildPreamble budget enforcement", () => {
         confidence: 0.95,
         source: "execution",
         status: "active",
+        scope: "local" as const,
+        revision: 0,
+        epistemicStatus: "speculative" as const,
+        reviewRequired: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });
@@ -143,6 +147,8 @@ describe("buildPreamble budget enforcement", () => {
         rationale: "",
         source: "user",
         status: "active",
+        scope: "local" as const,
+        revision: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });
@@ -194,6 +200,10 @@ describe("buildPreamble budget enforcement", () => {
         confidence: 0.95,
         source: "execution",
         status: "active",
+        scope: "local" as const,
+        revision: 0,
+        epistemicStatus: "speculative" as const,
+        reviewRequired: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });
@@ -223,6 +233,10 @@ describe("buildPreamble with contested warnings", () => {
       createdAt: "2026-01-01T00:00:00.000Z",
       updatedAt: "2026-01-01T00:00:00.000Z",
       status: "superseded",
+      scope: "local" as const,
+      revision: 0,
+      epistemicStatus: "speculative" as const,
+      reviewRequired: false,
     });
     state.inference.hypotheses.push({
       id: "hy-1",
@@ -447,6 +461,10 @@ describe("buildPreamble with low-confidence beliefs", () => {
       confidence: 0.5,
       source: "execution",
       status: "active",
+      scope: "local" as const,
+      revision: 0,
+      epistemicStatus: "speculative" as const,
+      reviewRequired: false,
       createdAt: "2026-01-01T00:00:00.000Z",
       updatedAt: "2026-01-01T00:00:00.000Z",
     });
@@ -463,6 +481,10 @@ describe("buildPreamble with low-confidence beliefs", () => {
         confidence: 0.4,
         source: "execution",
         status: "active",
+        scope: "local" as const,
+        revision: 0,
+        epistemicStatus: "speculative" as const,
+        reviewRequired: false,
         createdAt: "2026-01-01T00:00:00.000Z",
         updatedAt: "2026-01-01T00:00:00.000Z",
       });
@@ -484,6 +506,10 @@ describe("buildPreamble with low-confidence beliefs", () => {
       confidence: 0.9,
       source: "execution",
       status: "active",
+      scope: "local" as const,
+      revision: 0,
+      epistemicStatus: "speculative" as const,
+      reviewRequired: false,
       createdAt: "2026-01-01T00:00:00.000Z",
       updatedAt: "2026-01-01T00:00:00.000Z",
     });
@@ -506,6 +532,10 @@ describe("buildPreamble with stale-penalized beliefs", () => {
       confidence: 0.85,
       source: "graph",
       status: "active",
+      scope: "local" as const,
+      revision: 0,
+      epistemicStatus: "speculative" as const,
+      reviewRequired: false,
       createdAt: "2026-01-01T00:00:00.000Z",
       updatedAt: "2026-01-01T00:00:00.000Z",
     });
@@ -551,6 +581,8 @@ describe("buildPreamble budget enforcement while loop", () => {
         rationale: "",
         source: "user",
         status: "active",
+        scope: "local" as const,
+        revision: 0,
         createdAt: "2026-01-01T00:00:00.000Z",
         updatedAt: "2026-01-01T00:00:00.000Z",
       });
@@ -563,6 +595,10 @@ describe("buildPreamble budget enforcement while loop", () => {
         confidence: 0.95,
         source: "execution",
         status: "active",
+        scope: "local" as const,
+        revision: 0,
+        epistemicStatus: "speculative" as const,
+        reviewRequired: false,
         createdAt: "2026-01-01T00:00:00.000Z",
         updatedAt: "2026-01-01T00:00:00.000Z",
       });
@@ -641,6 +677,10 @@ describe("buildPreamble budget enforcement while loop", () => {
         confidence: 0.95,
         source: "execution",
         status: "active",
+        scope: "local" as const,
+        revision: 0,
+        epistemicStatus: "speculative" as const,
+        reviewRequired: false,
         createdAt: "2026-01-01T00:00:00.000Z",
         updatedAt: "2026-01-01T00:00:00.000Z",
       });

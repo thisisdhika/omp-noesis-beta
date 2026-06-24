@@ -103,8 +103,12 @@ export function confirmHypothesis(
       status: "active",
       tags: hypothesis.tags,
       evidence: hypothesis.evidence,
+      epistemicStatus: "speculative" as const,
+      reviewRequired: false,
+      scope: "local" as const,
+      revision: 0,
     };
-    hypothesis.relatedBeliefId = beliefFact.id;
+    hypothesis.relatedBeliefId = beliefFact!.id;
   }
 
   return { hypothesis, beliefFact };

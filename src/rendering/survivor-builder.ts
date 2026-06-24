@@ -48,7 +48,8 @@ function buildBeliefs(state: NoesisState): string {
   const entries = active.map((f) => {
     const c = escapeXml(String(f.confidence));
     const content = escapeXml(f.content);
-    return `    <belief confidence="${c}">${content}</belief>`;
+    const ep = escapeXml(f.epistemicStatus ?? "speculative");
+    return `    <belief confidence="${c}" epistemic="${ep}">${content}</belief>`;
   });
 
   return ["  <beliefs>", ...entries, "  </beliefs>"].join("\n");

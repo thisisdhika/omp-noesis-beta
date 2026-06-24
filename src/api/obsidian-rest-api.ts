@@ -12,6 +12,7 @@
  */
 
 import type { VaultStore } from "../vault/vault-store.js";
+import { log } from "../shared/logger.js";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -160,17 +161,17 @@ export function startRestApi(options: RestApiOptions): RestApiServer | null {
       fetch: (req) => handleRequest(req, options.vaultStore),
     });
 
-    console.log(`[ObsidianRestAPI] Server running on http://localhost:${server.port}`);
+    log.debug(`[ObsidianRestAPI] Server running on http://localhost:${server.port}`);
 
     return {
       stop() {
         server.stop();
-        console.log("[ObsidianRestAPI] Server stopped");
+        log.debug("[ObsidianRestAPI] Server stopped");
       },
-      port: server.port,
+      port: server.port ?? DEFAULT_PORT,
     };
   } catch (err) {
-    console.warn(
+    log.warn(
       `[ObsidianRestAPI] Failed to start: ${err instanceof Error ? err.message : String(err)}`,
     );
     return null;

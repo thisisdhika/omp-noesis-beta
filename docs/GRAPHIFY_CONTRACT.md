@@ -1,6 +1,6 @@
 # Graphify Integration Contract
 
-> **Version:** 1.0.0 | **Updated:** 2026-06-24
+> **Version:** 1.0.1 | **Updated:** 2026-06-24
 
 Graphify is the required perception substrate. MCP is the primary LLM-to-Graphify path; CLI is the fallback for automated Noesis-internal queries.
 

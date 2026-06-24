@@ -233,6 +233,7 @@ describe("NoesisStateSchema", () => {
         },
         actions: [],
       },
+      sandbox: { sandboxes: [] },
       learning: {
         successes: [],
         failures: [],

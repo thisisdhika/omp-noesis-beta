@@ -104,6 +104,10 @@ describe("UnitOfWork", () => {
       createdAt: now(),
       updatedAt: now(),
       status: "active" as const,
+      epistemicStatus: "speculative" as const,
+      reviewRequired: false,
+      scope: "local" as const,
+      revision: 0,
     };
     uow.belief.addFact(testFact);
 
@@ -171,6 +175,10 @@ describe("UnitOfWork", () => {
       createdAt: now(),
       updatedAt: now(),
       status: "active",
+      epistemicStatus: "speculative" as const,
+      reviewRequired: false,
+      scope: "local" as const,
+      revision: 0,
     });
 
     uow.rollback();

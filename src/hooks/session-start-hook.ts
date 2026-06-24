@@ -13,7 +13,9 @@
 import type { ExtensionAPI } from "@oh-my-pi/pi-coding-agent";
 import type { NoesisRuntime } from "../runtime.js";
 import { tryLifecycleGraphUpdate } from "../infrastructure/graphify-client.js";
+import { ReconcileWithGraphUseCase } from "../application/use-cases/reconcile-with-graph.js";
 import { HydrateFromMemoryUseCase } from "../application/use-cases/hydrate-from-memory.js";
+import { log } from "../shared/logger.js";
 
 /**
  * Register the session_start hook that proactively checks and
@@ -28,30 +30,45 @@ export function registerSessionStartHook(pi: ExtensionAPI, runtime: NoesisRuntim
     // Log memory backend status
     const status = await runtime.getMemoryStatus?.();
     if (status) {
-      console.log(`[Noesis] OMP memory backend: ${status.backend} (searchable=${status.searchable}, writable=${status.writable})`);
+      log.debug(`[Noesis] OMP memory backend: ${status.backend} (searchable=${status.searchable}, writable=${status.writable})`);
     }
 
     // Graph health check (existing behavior)
-    try {
-      await tryLifecycleGraphUpdate(runtime.projectRoot, runtime.stateManager, {
-        allowFreshGraph: false,
-        fullRebuildOnNoGraph: true,
-        timeout: 120000,
-      });
-    } catch {
+    // Graph health check — fire-and-forget to avoid 30s handler timeout
+    tryLifecycleGraphUpdate(runtime.projectRoot, runtime.stateManager, {
+      allowFreshGraph: false,
+      fullRebuildOnNoGraph: true,
+      timeout: 120000,
+    }).catch(() => {
       // Best-effort — don't block session start
-    }
+    });
 
-    // Hydrate beliefs from OMP memory
-    try {
-      const uow = runtime.stateManager.createUnitOfWork();
-      const useCase = new HydrateFromMemoryUseCase(uow);
-      const { imported } = await useCase.execute(runtime);
-      if (imported > 0) {
-        console.log(`[Noesis] Hydrated ${imported} beliefs from OMP memory`);
+    // Hydrate beliefs from OMP cross-session memory — fire-and-forget
+    void (async () => {
+      try {
+        const uow = runtime.stateManager.createUnitOfWork();
+        const useCase = new HydrateFromMemoryUseCase(uow);
+        const { imported } = await useCase.execute(runtime);
+        if (imported > 0) {
+          log.debug(`[Noesis] Hydrated ${imported} beliefs from OMP memory`);
+        }
+      } catch {
+        // Best-effort — never block session start on hydration failure
       }
-    } catch {
-      // Best-effort — never block session start on hydration failure
-    }
+    })();
+
+    // Reconcile beliefs with current graph state — fire-and-forget
+    void (async () => {
+      try {
+        const uow = runtime.stateManager.createUnitOfWork();
+        const useCase = new ReconcileWithGraphUseCase(uow);
+        const result = await useCase.execute(runtime);
+        if (result.revisionCount > 0) {
+          log.debug(`[Noesis] Graph reconcile: ${result.revisionCount} beliefs revised`);
+        }
+      } catch {
+        // Best-effort — never block session start on reconcile failure
+      }
+    })();
   });
 }

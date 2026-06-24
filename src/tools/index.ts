@@ -16,6 +16,8 @@ import { registerBelieveFactTool, registerBelieveDecisionTool } from "./believe-
 import { registerInferTool } from "./infer-tool.js";
 import { registerCommitTool } from "./commit-tool.js";
 import { registerStateInspectTool } from "./state-inspect-tool.js";
+import { registerSandboxTool } from "./sandbox-tool.js";
+import { registerFederateTool } from "./federate-tool.js";
 import { registerToolAliases } from "./aliases.js";
 
 /**
@@ -32,5 +34,7 @@ export function registerTools(pi: ExtensionAPI, runtime: NoesisRuntime): void {
   registerInferTool(pi, runtime);
   registerCommitTool(pi, runtime);
   registerStateInspectTool(pi, runtime);
+  registerSandboxTool(pi, runtime);
+  registerFederateTool(pi, runtime);
   registerToolAliases(pi, runtime);
 }

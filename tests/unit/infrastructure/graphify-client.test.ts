@@ -98,26 +98,8 @@ describe("detectCapability", () => {
     expect(await detectCapability(tempDir.path)).toBe("FULL");
   });
 
-  it("executes auto-heal successfully and returns FULL", async () => {
-    // Create source files so graphify
-    // `graphify . --update` exits with code 0.
-    const srcDir = join(tempDir.path, "src");
-    mkdirSync(srcDir, { recursive: true });
-    writeFileSync(join(srcDir, "index.ts"), "export const x = 1;");
-    writeFileSync(
-      join(tempDir.path, "package.json"),
-      JSON.stringify({ name: "test-project" }),
-    );
-    // Create stale graph to trigger auto-heal
-    createGraphFile(tempDir.path, 48);
-    // Auto-heal succeeds → lines 55-62 (inner block, re-stat, return FULL)
-    expect(await detectCapability(tempDir.path)).toBe("FULL");
-  });
-
-  it("returns STALE on second stale call when _autoHealAttempted is true", async () => {
-    // After a prior stale call set _autoHealAttempted = true, the
-    // inner if block is skipped and the function falls through to
-    // line 65: return "STALE".
+  it("returns STALE when graph file is older than 24h", async () => {
+    // detectCapability is a pure stat-only check — no auto-heal side effect.
     createGraphFile(tempDir.path, 48);
     expect(await detectCapability(tempDir.path)).toBe("STALE");
   });

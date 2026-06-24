@@ -192,8 +192,8 @@ function mergeConfigYaml(existing: string, recommended: string): string {
           if (!data[section]) data[section] = {};
         } else if (section) {
           subSection = headerKey;
-          if (!data[section]) data[section] = {};
-          if (!data[section][subSection]) data[section][subSection] = {};
+          const sec = (data[section] ??= {}) as YamlRecord;
+          if (!sec[subSection]) sec[subSection] = {};
         }
         continue;
       }
@@ -204,12 +204,12 @@ function mergeConfigYaml(existing: string, recommended: string): string {
         const value = kvMatch[2]!.trim();
 
         if (subSection) {
-          if (!data[section]) data[section] = {};
-          if (!data[section][subSection]) data[section][subSection] = {};
-          data[section][subSection][key] = value;
+          const sec = (data[section] ??= {}) as YamlRecord;
+          const sub = (sec[subSection] ??= {}) as YamlRecord;
+          sub[key] = value;
         } else if (section) {
-          if (!data[section]) data[section] = {};
-          data[section][key] = value;
+          const sec = (data[section] ??= {}) as YamlRecord;
+          sec[key] = value;
         } else if (isTopLevel) {
           data[key] = value;
         }

@@ -20,6 +20,8 @@ import { AddHypothesisUseCase } from "../application/use-cases/add-hypothesis.js
 import { UpdateHypothesisUseCase } from "../application/use-cases/update-hypothesis.js";
 import { ConfirmHypothesisUseCase } from "../application/use-cases/confirm-hypothesis.js";
 import { AddReasoningStepUseCase } from "../application/use-cases/add-reasoning-step.js";
+import { CaptureLearningUseCase } from "../application/use-cases/capture-learning.js";
+import { ApplyLessonUseCase } from "../application/use-cases/apply-lesson.js";
 
 
 
@@ -28,7 +30,7 @@ import { AddReasoningStepUseCase } from "../application/use-cases/add-reasoning-
 // ============================================================
 export function buildInferParams(pi: ExtensionAPI) {
   return pi.zod.object({
-    action: pi.zod.enum(["add_hypothesis", "update_hypothesis", "add_reasoning"]),
+    action: pi.zod.enum(["add_hypothesis", "update_hypothesis", "add_reasoning", "capture_lesson"]),
     content: pi.zod.string().optional(),
     id: pi.zod.string().optional(),
     status: pi.zod.enum(["testing", "confirmed", "refuted", "abandoned"]).optional(),
@@ -37,6 +39,26 @@ export function buildInferParams(pi: ExtensionAPI) {
     autoPromote: pi.zod.boolean().default(true),
     relatesTo: pi.zod.string().optional(),
     tags: pi.zod.array(pi.zod.string()).optional(),
+    description: pi.zod.string().optional(),
+    isSuccess: pi.zod.boolean().optional(),
+    trigger: pi.zod.object({
+      pattern: pi.zod.string().max(200),
+      toolName: pi.zod.string().optional(),
+      skillScope: pi.zod.string().optional(),
+    }).optional(),
+    diagnosis: pi.zod.object({
+      rootCause: pi.zod.string().max(1000),
+      graphNodes: pi.zod.array(pi.zod.string()).max(5).optional(),
+    }).optional(),
+    intervention: pi.zod.object({
+      fix: pi.zod.string().max(1000),
+      confidence: pi.zod.number().min(0).max(1),
+    }).optional(),
+    prevention: pi.zod.object({
+      beliefStatement: pi.zod.string().max(1000),
+      autoApplied: pi.zod.boolean().default(false),
+    }).optional(),
+    retrievalKeys: pi.zod.array(pi.zod.string().max(50)).max(5).optional(),
   });
 }
 
@@ -46,7 +68,7 @@ export function buildInferParams(pi: ExtensionAPI) {
 export async function executeInfer(
   runtime: NoesisRuntime,
   params: {
-    action: "add_hypothesis" | "update_hypothesis" | "add_reasoning";
+    action: "add_hypothesis" | "update_hypothesis" | "add_reasoning" | "capture_lesson";
     content?: string;
     id?: string;
     status?: "testing" | "confirmed" | "refuted" | "abandoned";
@@ -55,6 +77,13 @@ export async function executeInfer(
     autoPromote: boolean;
     relatesTo?: string;
     tags?: string[];
+    description?: string;
+    isSuccess?: boolean;
+    trigger?: { pattern: string; toolName?: string; skillScope?: string };
+    diagnosis?: { rootCause: string; graphNodes?: string[] };
+    intervention?: { fix: string; confidence: number };
+    prevention?: { beliefStatement: string; autoApplied: boolean };
+    retrievalKeys?: string[];
   },
 ): Promise<AgentToolResult<Record<string, unknown>>> {
   if (params.action === "add_hypothesis") {
@@ -195,6 +224,92 @@ export async function executeInfer(
       };
     }
   }
+  // action === "capture_lesson"
+  if (params.action === "capture_lesson") {
+    const description = params.description;
+    if (!description) {
+      return {
+        isError: true,
+        content: [{ type: "text", text: "Missing required field: description" }],
+        details: { error: "missing_fields", action: "capture_lesson" },
+      };
+    }
+    const uow = runtime.stateManager.createUnitOfWork();
+    const captureUseCase = new CaptureLearningUseCase(uow);
+    const lesson = await captureUseCase.execute({
+      description,
+      toolName: params.trigger?.toolName,
+      isSuccess: params.isSuccess,
+      skillScope: params.trigger?.skillScope,
+    });
+    // Apply the typed lesson fields via the learning repo
+    const learningRepo = uow.learning;
+    const isSuccess = params.isSuccess ?? false;
+    const enrichedLesson = {
+      ...lesson,
+      trigger: params.trigger,
+      diagnosis: params.diagnosis,
+      intervention: params.intervention,
+      prevention: params.prevention,
+      retrievalKeys: params.retrievalKeys,
+    };
+
+    const entries = isSuccess ? learningRepo.getSuccesses() : learningRepo.getFailures();
+    const idx = entries.findIndex(e => e.id === lesson.id);
+    if (idx !== -1) {
+      entries[idx] = enrichedLesson;
+      if (isSuccess) {
+        learningRepo.setSuccesses(entries);
+      } else {
+        learningRepo.setFailures(entries);
+      }
+    }
+
+    // Auto-apply prevention if applicable
+    let factId: string | null = null;
+    if (params.prevention) {
+      const applyUow = runtime.stateManager.createUnitOfWork();
+      const applyUseCase = new ApplyLessonUseCase(applyUow);
+      const result = await applyUseCase.execute({
+        lesson: enrichedLesson,
+      });
+      factId = result.factId;
+      if (result.applied) {
+        const applyEntries = isSuccess ? learningRepo.getSuccesses() : learningRepo.getFailures();
+        const applyIdx = applyEntries.findIndex(e => e.id === lesson.id);
+        if (applyIdx !== -1) {
+          const applyUpdated = { ...applyEntries[applyIdx]! };
+          if (applyUpdated.prevention) {
+            applyUpdated.prevention = { ...applyUpdated.prevention, autoApplied: true };
+          }
+          applyEntries[applyIdx] = applyUpdated;
+          if (isSuccess) {
+            learningRepo.setSuccesses(applyEntries);
+          } else {
+            learningRepo.setFailures(applyEntries);
+          }
+        }
+      }
+    }
+    return {
+      content: [
+        {
+          type: "text",
+          text: `Lesson captured: ${lesson.id}\n${description}` +
+            (params.diagnosis ? `\nRoot cause: ${params.diagnosis.rootCause}` : "") +
+            (factId ? `\nPrevention auto-applied as belief: ${factId}` : ""),
+        },
+      ],
+      details: {
+        id: lesson.id,
+        description,
+        kind: "captured_lesson",
+        factId,
+      },
+      isError: false,
+    };
+  }
+
 
   // action === "add_reasoning"
   const content = params.content;
@@ -240,7 +355,7 @@ export function registerInferTool(pi: ExtensionAPI, runtime: NoesisRuntime): voi
       "Confirmed hypotheses auto-promote to beliefs. " +
       "Runtime validates required fields per action and returns clear error messages, " +
       "so partial or incomplete payloads are not rejected at parse time. " +
-      "Fields by action: add_hypothesis(content) | update_hypothesis(id,status) | add_reasoning(content)",
+      "Fields by action: add_hypothesis(content) | update_hypothesis(id,status) | add_reasoning(content) | capture_lesson(description,trigger,diagnosis,intervention,prevention,retrievalKeys)",
     parameters: buildInferParams(pi),
     async execute(tCID, params, _signal, _onUpdate, _ctx) {
       return executeInfer(runtime, params);

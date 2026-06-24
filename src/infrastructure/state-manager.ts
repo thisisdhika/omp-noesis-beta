@@ -16,6 +16,9 @@ import { migrate } from "./migrations.js";
 import { deepClone, deepMergeDefaults } from "../shared/clone.js";
 import { ensureNoesisDir } from "../shared/paths.js";
 import { type IUnitOfWork, UnitOfWork } from "./unit-of-work.js";
+import { log } from "../shared/logger.js";
+import type { CanonicalLedger } from "../domains/federation/schema.js";
+import { emptyLedger, CanonicalLedgerSchema } from "../domains/federation/schema.js";
 
 export class StateManager {
   #state!: NoesisState;
@@ -52,11 +55,11 @@ export class StateManager {
     } catch (err: unknown) {
       // JSON parse errors are recoverable — rebuild from EMPTY_STATE
       if (err instanceof SyntaxError) {
-        console.warn("[StateManager] Corrupt state file, rebuilding from EMPTY_STATE", err.message);
+        log.warn("[StateManager] Corrupt state file, rebuilding from EMPTY_STATE", err.message);
         loaded = null;
       } else {
         // I/O errors (permissions, disk failure) — do not destroy existing data
-        console.error("[StateManager] CRITICAL: I/O error reading state — preserving on-disk data", err);
+        log.error("[StateManager] CRITICAL: I/O error reading state — preserving on-disk data", err);
         throw err;
       }
     }
@@ -84,7 +87,7 @@ export class StateManager {
           await writeAtomic(this.#statePath, this.#state);
         }
       } catch (validationErr) {
-        console.warn("[StateManager] Invalid state schema, falling back to EMPTY_STATE", validationErr);
+        log.warn("[StateManager] Invalid state schema, falling back to EMPTY_STATE", validationErr);
         this.#state = deepClone(EMPTY_STATE);
         await writeAtomic(this.#statePath, this.#state);
       }
@@ -164,7 +167,7 @@ export class StateManager {
           await writeAtomic(this.#statePath, migrated);
         }
       } catch (err: unknown) {
-        console.warn("[StateManager] Failed to checkpoint attention due to read/parse error", err);
+        log.warn("[StateManager] Failed to checkpoint attention due to read/parse error", err);
       }
     });
   }
@@ -172,5 +175,34 @@ export class StateManager {
   /** Force reload from disk, re-running initialize logic. */
   async invalidate(): Promise<void> {
     await this.initialize();
+  }
+
+  // ============================================================================
+  // FEDERATION LEDGER
+  // ============================================================================
+
+  /**
+   * Load the federation ledger from .omp/noesis/ledger.json.
+   * Returns null if the file doesn't exist.
+   */
+  async loadLedger(): Promise<CanonicalLedger | null> {
+    const ledgerPath = join(this.#statePath, "..", "ledger.json");
+    try {
+      const raw = readJSON(ledgerPath);
+      if (raw === null) return null;
+      return CanonicalLedgerSchema.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Save the federation ledger to .omp/noesis/ledger.json.
+   */
+  async saveLedger(ledger: CanonicalLedger): Promise<void> {
+    const ledgerPath = join(this.#statePath, "..", "ledger.json");
+    // Validate before write
+    CanonicalLedgerSchema.parse(ledger);
+    await writeAtomic(ledgerPath, ledger);
   }
 }

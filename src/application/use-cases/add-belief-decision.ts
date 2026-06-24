@@ -76,6 +76,8 @@ export class AddBeliefDecisionUseCase {
       createdAt: timestamp,
       updatedAt: timestamp,
       status: "active",
+      scope: "local" as const,
+      revision: 0,
       tags: input.tags,
     });
 

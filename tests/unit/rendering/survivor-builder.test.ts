@@ -124,6 +124,10 @@ describe("buildSurvivorContext budget enforcement", () => {
         confidence: 0.95,
         source: "execution",
         status: "active",
+        scope: "local" as const,
+        revision: 0,
+        epistemicStatus: "speculative" as const,
+        reviewRequired: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });
@@ -171,6 +175,10 @@ describe("buildSurvivorContext budget enforcement", () => {
         confidence: 0.95,
         source: "execution",
         status: "active",
+        scope: "local" as const,
+        revision: 0,
+        epistemicStatus: "speculative" as const,
+        reviewRequired: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });
@@ -288,6 +296,10 @@ describe("buildSurvivorContext beliefs eviction", () => {
         confidence: 0.95,
         source: "execution",
         status: "active",
+        scope: "local" as const,
+        revision: 0,
+        epistemicStatus: "speculative" as const,
+        reviewRequired: false,
         createdAt: "2026-01-01T00:00:00.000Z",
         updatedAt: "2026-01-01T00:00:00.000Z",
       });
@@ -327,6 +339,10 @@ describe("buildSurvivorContext beliefs eviction", () => {
         confidence: 0.95,
         source: "execution",
         status: "active",
+        scope: "local" as const,
+        revision: 0,
+        epistemicStatus: "speculative" as const,
+        reviewRequired: false,
         createdAt: "2026-01-01T00:00:00.000Z",
         updatedAt: "2026-01-01T00:00:00.000Z",
       });

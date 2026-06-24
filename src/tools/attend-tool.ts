@@ -15,6 +15,7 @@ import type { NoesisRuntime } from "../runtime.js";
 import type { GraphFinding } from "../shared/schema.js";
 import { AttendUseCase } from "../application/use-cases/attend.js";
 import { query as graphifyQuery } from "../infrastructure/graphify-client.js";
+import { log } from "../shared/logger.js";
 
 export function buildAttendParams(pi: ExtensionAPI) {
   return pi.zod.object({
@@ -56,11 +57,13 @@ export async function executeAttend(
         if (canUpdate) {
           const opts = capability === "NO_GRAPH" ? { fullRebuild: true, timeout: 120000 } : {};
           const { tryBackgroundGraphUpdate } = await import("../infrastructure/graphify-client.js");
-          await tryBackgroundGraphUpdate(runtime.projectRoot, runtime.stateManager, opts);
+          // Fire-and-forget — graph update can exceed 30s handler timeout
+          tryBackgroundGraphUpdate(runtime.projectRoot, runtime.stateManager, opts)
+            .catch(() => {});
         }
       }
     } catch (err) {
-      console.warn(`[noesis_attend] Graph refresh failed: ${err}`);
+      log.warn(`[noesis_attend] Graph refresh failed: ${err}`);
       // Continue anyway — queries may work with stale or no graph
     }
   }
@@ -68,7 +71,7 @@ export async function executeAttend(
     for (const q of graphQueries) {
       const result = await graphifyQuery(runtime.projectRoot, q);
       if (result.error) {
-        console.warn(`[noesis_attend] Graph query "${q}" failed: ${result.error}`);
+        log.warn(`[noesis_attend] Graph query "${q}" failed: ${result.error}`);
       }
       allFindings.push(...result.findings);
       findingsCount += result.findings.length;

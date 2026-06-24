@@ -117,28 +117,13 @@ describe("stale graph freshness in preamble", () => {
     expect(preamble).toContain("30h stale, review needed]");
   });
 
-  it("renders NO_GRAPH when no graph file exists", () => {
+  it("renders NO_GRAPH when no graph file exists", async () => {
     // No graph file → detectCapability returns NO_GRAPH
     const handler = pi._getHooks("context")[0]!;
     const result = await handler({
       messages: [{ role: "user" as const, content: [{ type: "text" as const, text: "test" }] }],
     });
     const preambleText = extractPreambleText(result);
-    expect(preambleText).toContain("[Noesis: NO_GRAPH — graph not built]");
-  });
-});
-    // The exact hour number may vary ±1 depending on execution timing
-    expect(preambleText).toMatch(/graph\s+(29|30|31)h\s+stale/);
-  });
-
-  it("renders NO_GRAPH when no graph file exists", async () => {
-    // No graph file created → detectCapability returns NO_GRAPH
-    const handler = pi._getHooks("context")[0]!;
-    const result = await handler({
-      messages: [{ role: "user" as const, content: [{ type: "text" as const, text: "test" }] }],
-    });
-    const preambleText = extractPreambleText(result);
-
     expect(preambleText).toContain("[Noesis: NO_GRAPH — graph not built]");
   });
 });

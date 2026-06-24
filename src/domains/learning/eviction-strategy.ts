@@ -45,7 +45,7 @@ export function evictOverCap(entries: LearningEntry[], cap: number): LearningEnt
 
   // Sort by capturedAt ascending (oldest first) and drop the excess
   const sorted = [...entries].sort(
-    (a, b) => Date.parse(a.capturedAt) - Date.parse(b.capturedAt),
+    (a, b) => Date.parse(a.capturedAt) - Date.parse(b.capturedAt) || a.id.localeCompare(b.id),
   );
   return sorted.slice(sorted.length - cap);
 }

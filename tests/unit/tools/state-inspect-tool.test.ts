@@ -48,7 +48,7 @@ describe("noesis_state_inspect — in-memory state boundary", () => {
     });
 
     expect(result.isError).toBe(false);
-    expect(result.details.query).toBe("active_beliefs");
+    expect(result.details!.query).toBe("active_beliefs");
     expect(textContent(result)).toContain("(none)");
   });
 
@@ -74,7 +74,7 @@ describe("noesis_state_inspect — in-memory state boundary", () => {
     });
 
     expect(result.isError).toBe(false);
-    expect(result.details.count).toBe(1);
+    expect(result.details!.count).toBe(1);
     expect(textContent(result)).toContain("In-memory boundary fact");
   });
 });
@@ -95,7 +95,7 @@ describe("executeRecall — search (query=search)", () => {
     });
 
     expect(result.isError).toBe(true);
-    expect(result.details.error).toBe("missing_fields");
+    expect(result.details!.error).toBe("missing_fields");
     expect(textContent(result)).toContain("Missing required field: keyword");
   });
 
@@ -123,9 +123,9 @@ describe("executeRecall — search (query=search)", () => {
     });
 
     expect(result.isError).toBe(false);
-    expect(result.details.query).toBe("search");
-    expect(result.details.keyword).toBe("Database");
-    expect(result.details.totalMatches).toBeGreaterThanOrEqual(1);
+    expect(result.details!.query).toBe("search");
+    expect(result.details!.keyword).toBe("Database");
+    expect(result.details!.totalMatches).toBeGreaterThanOrEqual(1);
     expect(textContent(result)).toContain("Database connection limit is 100");
   });
 
@@ -153,7 +153,7 @@ describe("executeRecall — search (query=search)", () => {
     });
 
     expect(result.isError).toBe(false);
-    expect(result.details.totalMatches).toBe(0);
+    expect(result.details!.totalMatches).toBe(0);
     expect(textContent(result)).toContain("(no matches)");
   });
 
@@ -203,8 +203,8 @@ describe("executeRecall — search (query=search)", () => {
 
     expect(result.isError).toBe(false);
     // All 4 layers matched
-    expect(result.details.totalMatches).toBe(4);
-    const results = result.details.results as Array<{ kind: string; id: string }>;
+    expect(result.details!.totalMatches).toBe(4);
+    const results = result.details!.results as Array<{ kind: string; id: string }>;
     const kinds = results.map((r) => r.kind).sort();
     expect(kinds).toEqual(["decision", "fact", "hypothesis", "learning"]);
   });
@@ -233,8 +233,8 @@ describe("executeRecall — search (query=search)", () => {
     });
 
     expect(result.isError).toBe(false);
-    expect(result.details.totalMatches).toBe(1);
-    const results = result.details.results as Array<{ kind: string }>;
+    expect(result.details!.totalMatches).toBe(1);
+    const results = result.details!.results as Array<{ kind: string }>;
     expect(results[0]!.kind).toBe("decision");
   });
 
@@ -260,8 +260,8 @@ describe("executeRecall — search (query=search)", () => {
     });
 
     expect(result.isError).toBe(false);
-    expect(result.details.totalMatches).toBe(1);
-    const results = result.details.results as Array<{ kind: string }>;
+    expect(result.details!.totalMatches).toBe(1);
+    const results = result.details!.results as Array<{ kind: string }>;
     expect(results[0]!.kind).toBe("hypothesis");
   });
 
@@ -288,8 +288,8 @@ describe("executeRecall — search (query=search)", () => {
     });
 
     expect(result.isError).toBe(false);
-    expect(result.details.totalMatches).toBe(1);
-    const results = result.details.results as Array<{ kind: string }>;
+    expect(result.details!.totalMatches).toBe(1);
+    const results = result.details!.results as Array<{ kind: string }>;
     expect(results[0]!.kind).toBe("learning");
   });
 
@@ -317,8 +317,8 @@ describe("executeRecall — search (query=search)", () => {
     });
 
     expect(result.isError).toBe(false);
-    expect(result.details.totalMatches).toBe(1);
-    const results = result.details.results as Array<{ kind: string }>;
+    expect(result.details!.totalMatches).toBe(1);
+    const results = result.details!.results as Array<{ kind: string }>;
     expect(results[0]!.kind).toBe("learning");
   });
 
@@ -347,7 +347,7 @@ describe("executeRecall — search (query=search)", () => {
     });
 
     expect(result.isError).toBe(false);
-    expect(result.details.totalMatches).toBe(2);
+    expect(result.details!.totalMatches).toBe(2);
   });
 });
 
@@ -374,7 +374,7 @@ describe("executeRecall — non-search query variants", () => {
     });
 
     expect(result.isError).toBe(false);
-    expect(result.details.count).toBeGreaterThanOrEqual(1);
+    expect(result.details!.count).toBeGreaterThanOrEqual(1);
     expect(textContent(result)).toContain("Unit test decision");
   });
 
@@ -398,7 +398,7 @@ describe("executeRecall — non-search query variants", () => {
     });
 
     expect(result.isError).toBe(false);
-    expect(result.details.count).toBe(1);
+    expect(result.details!.count).toBe(1);
     expect(textContent(result)).toContain("Unit test hypothesis");
   });
 });

@@ -42,3 +42,7 @@ tests/helpers/.test-*/
 
 # Lockfile (Bun-native; npm lockfile not needed)
 package-lock.json
+
+# Noesis — generated graph artifacts (local tracking only)
+# Noesis — cognitive state directory (regenerated on init)
+.omp/noesis/

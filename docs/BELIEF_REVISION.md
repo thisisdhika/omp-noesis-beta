@@ -1,6 +1,6 @@
 # Belief Revision Model
 
-> **Version:** 1.0.0 | **Updated:** 2026-06-24
+> **Version:** 1.0.1 | **Updated:** 2026-06-24
 
 ## Philosophy
 

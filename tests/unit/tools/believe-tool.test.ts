@@ -343,24 +343,6 @@ describe("noesis_believe_fact", () => {
     expect(state.belief.facts).toHaveLength(1);
   });
 
-  // Fact retrieval failure — uncovered line 88
-  it("throws when created fact cannot be retrieved from state", async () => {
-    const { pi, runtime } = await setup();
-    /* read() is called once in executeBeliefFact (line 86) after UoW commit.
-       createUnitOfWork accesses #state internally, so mocking read() to return
-       empty state safely triggers the retrieval failure path. */
-    runtime.stateManager.read = (() =>
-      ({ ...EMPTY_STATE, belief: { facts: [], decisions: [] } } as any)
-    ) as any;
-
-    const execute = toolExecutor(pi, "noesis_believe_fact");
-
-    await expect(execute({
-      content: "Lost fact",
-      confidence: 0.9,
-      source: "user",
-    })).rejects.toThrow("Failed to retrieve created fact");
-  });
 });
 
 describe("noesis_believe_decision", () => {

@@ -9,6 +9,8 @@ import { BeliefLayerSchema } from "../domains/belief/schema.js";
 import { InferenceLayerSchema } from "../domains/inference/schema.js";
 import { CommitmentLayerSchema } from "../domains/commitment/schema.js";
 import { LearningLayerSchema } from "../domains/learning/schema.js";
+import { CompactionResultSchema } from "../domains/compaction/schema.js";
+import { SandboxShellSchema } from "../domains/sandbox/schema.js";
 
 // Re-export shared base constants, types and helpers
 export * from "./schema-base.js";
@@ -19,6 +21,8 @@ export * from "../domains/belief/schema.js";
 export * from "../domains/inference/schema.js";
 export * from "../domains/commitment/schema.js";
 export * from "../domains/learning/schema.js";
+export * from "../domains/compaction/schema.js";
+export * from "../domains/sandbox/schema.js";
 
 // ============================================================================
 // TOP-LEVEL STATE
@@ -33,11 +37,14 @@ export const NoesisStateSchema = z.object({
     updateOnAttend: z.boolean().optional(),
     maxUpdateInterval: z.number().optional(),
   }).optional(),
+  _lastGraphSnapshot: z.array(z.string()).optional(),
   attention: AttentionLayerSchema,
   belief: BeliefLayerSchema,
   inference: InferenceLayerSchema,
+  sandbox: SandboxShellSchema,
   commitment: CommitmentLayerSchema,
   learning: LearningLayerSchema,
+  compactionHistory: z.array(CompactionResultSchema).max(5).default([]),
 });
 export type NoesisState = z.infer<typeof NoesisStateSchema>;
 
@@ -76,11 +83,13 @@ export const EMPTY_STATE: NoesisState = {
     },
     actions: [],
   },
+  sandbox: { sandboxes: [] },
   learning: {
     successes: [],
     failures: [],
     summary: { successCount: 0, failureCount: 0, resolvedCount: 0 },
   },
+  compactionHistory: [],
 };
 
 // ============================================================================

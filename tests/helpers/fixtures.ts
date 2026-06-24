@@ -50,6 +50,10 @@ export function populatedState(): NoesisState {
     updatedAt: now(),
     status: "active",
     tags: ["typescript", "safety"],
+    epistemicStatus: "certain",
+    scope: "local",
+    revision: 0,
+    reviewRequired: false,
   });
 
   // Add a belief decision
@@ -57,11 +61,13 @@ export function populatedState(): NoesisState {
     id: generateId("bd"),
     content: "Use Zod for runtime validation",
     rationale: "Provides type-safe runtime checks beyond TypeScript compile-time checks",
+    status: "active",
     source: "user",
     createdAt: now(),
     updatedAt: now(),
-    status: "active",
     tags: ["validation", "architecture"],
+    scope: "local",
+    revision: 0,
   });
 
   // Add a hypothesis
@@ -117,6 +123,10 @@ export function sampleFact(overrides?: Partial<BeliefFact>): BeliefFact {
     createdAt: now(),
     updatedAt: now(),
     status: "active",
+    epistemicStatus: "speculative",
+    reviewRequired: false,
+    scope: "local",
+    revision: 0,
     ...overrides,
   };
 }
@@ -131,6 +141,8 @@ export function sampleDecision(overrides?: Partial<BeliefDecision>): BeliefDecis
     createdAt: now(),
     updatedAt: now(),
     status: "active",
+    scope: "local",
+    revision: 0,
     ...overrides,
   };
 }

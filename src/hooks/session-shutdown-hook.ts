@@ -19,13 +19,9 @@ import { tryLifecycleGraphUpdate } from "../infrastructure/graphify-client.js";
  */
 export function registerSessionShutdownHook(pi: ExtensionAPI, runtime: NoesisRuntime): void {
   pi.on("session_shutdown", async () => {
-    try {
-      await tryLifecycleGraphUpdate(runtime.projectRoot, runtime.stateManager, {
-        requireAutoUpdate: false,
-        requireStale: true,
-      });
-    } catch {
-      // Best-effort
-    }
+    tryLifecycleGraphUpdate(runtime.projectRoot, runtime.stateManager, {
+      requireAutoUpdate: false,
+      requireStale: true,
+    }).catch(() => {}); // Best-effort, fire-and-forget
   });
 }

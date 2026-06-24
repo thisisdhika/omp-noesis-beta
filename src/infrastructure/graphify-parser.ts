@@ -11,6 +11,7 @@
 
 import type { GraphFinding, GraphConfidence } from "../shared/schema.js";
 import { now } from "../shared/time.js";
+import { log } from "../shared/logger.js";
 
 /** Narrow an unknown value to a record with string keys. */
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -120,7 +121,7 @@ export function parseQueryOutput(raw: string, onWarn?: (msg: string) => void): G
   try {
     parsed = JSON.parse(raw);
   } catch {
-    (onWarn ?? console.warn)("[graphify-parser] Failed to parse Graphify query output as JSON");
+    (onWarn ?? log.warn)("[graphify-parser] Failed to parse Graphify query output as JSON");
     return [];
   }
   if (!isRecord(parsed)) return [];

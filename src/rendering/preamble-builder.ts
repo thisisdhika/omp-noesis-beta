@@ -126,10 +126,19 @@ function buildActiveBeliefs(state: NoesisState, _render: RenderContext): string 
   );
   if (highConfidence.length === 0) return "";
 
+  const epistemicSymbol: Record<string, string> = {
+    certain: "\u25CF",
+    probable: "\u25C9",
+    speculative: "\u25CB",
+    deprecated: "\u25C7",
+    contradicted: "\u26A0",
+  };
+
   const shown = highConfidence.slice(0, CAPS.beliefs);
-  const lines: string[] = ["Beliefs (≥0.75):"];
+  const lines: string[] = ["Beliefs (\u22650.75):"];
   for (const f of shown) {
-    lines.push(`  - [${f.confidence.toFixed(2)}] ${f.content}`);
+    const sym = epistemicSymbol[f.epistemicStatus] ?? "\u25CB";
+    lines.push(`  ${sym} [${f.confidence.toFixed(2)}] ${f.content}`);
   }
   return lines.join("\n");
 }
@@ -161,7 +170,11 @@ function buildTopRankedLearning(state: NoesisState): string {
 
   const lines: string[] = ["Learning:"];
   for (const e of shown) {
-    lines.push(`  - ${e.description}`);
+    let label = `  - ${e.description}`;
+    if (e.prevention) {
+      label += e.prevention.autoApplied ? " [auto-applied]" : " [review]";
+    }
+    lines.push(label);
   }
   return lines.join("\n");
 }

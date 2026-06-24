@@ -20,6 +20,7 @@ import { load as yamlLoad } from "js-yaml";
 import { join } from "node:path";
 import { readdir, readFile, stat } from "node:fs/promises";
 
+import { log } from "../shared/logger.js";
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
@@ -232,7 +233,7 @@ export class ObsidianVaultStore implements VaultStore {
     } catch (err) {
       // Write failed (disk full, permissions, etc.) — buffer for retry
       await this.#retryBuffer.enqueue(artifact);
-      console.warn(
+      log.warn(
         `[ObsidianVaultStore] Failed to push artifact ${artifact.id} of kind ${artifact.kind}: ` +
           `${err instanceof Error ? err.message : String(err)}`,
       );
@@ -292,7 +293,7 @@ export class ObsidianVaultStore implements VaultStore {
     );
 
     if (result.failed > 0) {
-      console.warn(
+      log.warn(
         `[ObsidianVaultStore] Flush: ${result.succeeded} succeeded, ${result.failed} still queued`,
       );
     }

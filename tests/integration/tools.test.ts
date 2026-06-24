@@ -1399,13 +1399,15 @@ describe("noesis_state_inspect search edge cases — in-memory state", () => {
     await runtime.stateManager.mutate((state) => {
       state.belief.decisions.push({
         id: "bd-alt-1",
-        content: "Use primary runtime",          // no "XYZ" keyword
-        rationale: "Best performance",             // no "XYZ" keyword
-        alternatives: ["Node.js XYZ", "Deno"],     // "XYZ" matches
+        content: "Use primary runtime",
+        rationale: "Best performance",
+        alternatives: ["Node.js XYZ", "Deno"],
         source: "user",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         status: "active",
+        scope: "local" as const,
+        revision: 0,
       });
     });
 

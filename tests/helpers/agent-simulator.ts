@@ -304,6 +304,10 @@ export async function createAgentSimulator(options?: AgentSimulatorOptions): Pro
         createdAt: now,
         updatedAt: now,
         tags: overrides?.tags,
+        epistemicStatus: "speculative" as const,
+        reviewRequired: false,
+        scope: "local" as const,
+        revision: 0,
       });
     }
     await stateManager.mutate((s) => {

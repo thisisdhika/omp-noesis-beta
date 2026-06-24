@@ -9,6 +9,7 @@
  */
 
 import type { CapabilityLevel } from "../shared/schema-base.js";
+import type { NoesisState } from "../shared/schema.js";
 import type { GraphFinding } from "../domains/attention/schema.js";
 import { validateGraphPath } from "../shared/paths.js";
 import { readNoesisConfig } from "../shared/config.js";
@@ -16,8 +17,6 @@ import { runGraphifyBuild } from "./graphify-setup.js";
 import { parseQueryOutput } from "./graphify-parser.js";
 import { stat } from "node:fs/promises";
 import { join } from "node:path";
-/** Flag to prevent repeated auto-heal attempts within a session. */
-let _autoHealAttempted = false;
 
 const MAX_GRAPH_SIZE_BYTES = 50 * 1024 * 1024; // 50MB
 
@@ -119,17 +118,6 @@ export async function detectCapability(
     const stats = await stat(graphPath);
     const ageHours = (Date.now() - stats.mtimeMs) / (1000 * 60 * 60);
     if (ageHours > 24) {
-      // Attempt one auto-heal per session via incremental update
-      if (!_autoHealAttempted) {
-        _autoHealAttempted = true;
-        const result = await updateGraph(projectRoot);
-        if (result.success) {
-          // Re-check freshness after successful update
-          const newStats = await stat(graphPath);
-          const newAgeHours = (Date.now() - newStats.mtimeMs) / (1000 * 60 * 60);
-          return newAgeHours > 24 ? "STALE" : "FULL";
-        }
-      }
       return "STALE";
     }
     return "FULL";

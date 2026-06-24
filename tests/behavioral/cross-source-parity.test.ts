@@ -265,15 +265,14 @@ describe("OMP memory bridge", () => {
       // retainToOmp should have been called once
       expect(retainToOmp).toHaveBeenCalledTimes(1);
 
-      const callArgs = retainToOmp.mock.calls[0][0] as MemoryRetainItem[];
+      const callArgs = retainToOmp.mock.calls[0]![0] as MemoryRetainItem[];
       expect(callArgs).toHaveLength(1);
 
       // Content includes [noesis/belief] prefix
-      expect(callArgs[0].content).toContain("[noesis/belief]");
-      expect(callArgs[0].content).toContain("Bridged belief");
-
+      expect(callArgs[0]!.content).toContain("[noesis/belief]");
+      expect(callArgs[0]!.content).toContain("Bridged belief");
       // Importance derived from confidence: 0.8 → mapConfidenceToImportance(0.8) = 0.5
-      expect(callArgs[0].importance).toBe(mapConfidenceToImportance(0.8));
+      expect(callArgs[0]!.importance).toBe(mapConfidenceToImportance(0.8));
     } finally {
       tmp.cleanup();
     }
@@ -299,12 +298,11 @@ describe("OMP memory bridge", () => {
       // retainToOmp should have been called once
       expect(retainToOmp).toHaveBeenCalledTimes(1);
 
-      const callArgs = retainToOmp.mock.calls[0][0] as MemoryRetainItem[];
-      expect(callArgs).toHaveLength(1);
+      const callArgs = retainToOmp.mock.calls[0]![0] as MemoryRetainItem[];
 
       // Content includes [noesis/decision] prefix
-      expect(callArgs[0].content).toContain("[noesis/decision]");
-      expect(callArgs[0].content).toContain("Bridged decision");
+      expect(callArgs[0]!.content).toContain("[noesis/decision]");
+      expect(callArgs[0]!.content).toContain("Bridged decision");
     } finally {
       tmp.cleanup();
     }

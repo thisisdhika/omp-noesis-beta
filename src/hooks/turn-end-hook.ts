@@ -30,12 +30,8 @@ export function registerTurnEndHook(pi: ExtensionAPI, runtime: NoesisRuntime): v
     const useCase = new EndTurnCleanupUseCase(uow);
     await useCase.execute();
 
-    try {
-      await tryLifecycleGraphUpdate(runtime.projectRoot, runtime.stateManager, {
-        requireStale: true,
-      });
-    } catch {
-      // Best-effort — cleanup already ran
-    }
+    tryLifecycleGraphUpdate(runtime.projectRoot, runtime.stateManager, {
+      requireStale: true,
+    }).catch(() => {}); // Best-effort, fire-and-forget — cleanup already ran
   });
 }

@@ -1,6 +1,6 @@
 # omp-noesis Documentation
 
-> **Version:** 1.0.0 | **Updated:** 2026-06-24
+> **Version:** 1.0.1 | **Updated:** 2026-06-24
 
 Noesis adds structured attention, beliefs, inference, commitment, and learning layers to Oh My Pi agents. This directory contains the canonical reference docs.
 

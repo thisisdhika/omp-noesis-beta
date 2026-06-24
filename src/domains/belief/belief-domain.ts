@@ -13,7 +13,7 @@
  */
 
 import type { NoesisState } from "../../shared/schema.js";
-import type { BeliefFact, BeliefDecision, BeliefSource } from "./schema.js";
+import type { BeliefFact, BeliefDecision, BeliefSource, EpistemicStatus } from "./schema.js";
 import { CAPS, generateId } from "../../shared/schema-base.js";
 import { now } from "../../shared/time.js";
 import { supersede } from "./revision-strategy.js";
@@ -35,6 +35,7 @@ export function addFact(
     source: BeliefSource;
     tags?: string[];
     evidence?: string;
+    epistemicStatus?: EpistemicStatus;
     contradicts?: string[];
   },
 ): BeliefFact {
@@ -81,11 +82,16 @@ export function addFact(
     updatedAt: timestamp,
     status: isActiveHead ? "active" : "superseded",
     supersededBy: isActiveHead ? undefined : existingActive!.id,
+    epistemicStatus: "speculative" as const,
+    scope: "local" as const,
+    revision: 0,
+    reviewRequired: false,
   };
 
   if (params.tags !== undefined) {
     fact.tags = params.tags;
   }
+  fact.epistemicStatus = params.epistemicStatus ?? "speculative";
 
   if (params.evidence !== undefined) {
     fact.evidence = params.evidence;
@@ -128,6 +134,8 @@ export function addDecision(
     createdAt: timestamp,
     updatedAt: timestamp,
     status: "active",
+    scope: "local" as const,
+    revision: 0,
   };
 
   if (params.tags !== undefined) {

@@ -226,10 +226,14 @@ describe("AddBeliefFactUseCase", () => {
       content: "Initial statement",
       confidence: 0.9,
       source: "user",
+      epistemicStatus: "speculative" as const,
+      reviewRequired: false,
+      scope: "local" as const,
+      revision: 0,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       status: "active",
-    });
+    })
     uow.inference.addHypothesis({
       id: "hy-1",
       content: "Dependent hyp",
@@ -244,6 +248,7 @@ describe("AddBeliefFactUseCase", () => {
       content: "New contradiction statement",
       confidence: 0.95,
       source: "user",
+      epistemicStatus: "speculative" as const,
       contradicts: ["bf-1"],
     });
 
@@ -270,6 +275,7 @@ describe("AddBeliefFactUseCase", () => {
       content: "Low confidence fact",
       confidence: 0.3,
       source: "user",
+      epistemicStatus: "speculative" as const,
     })).rejects.toThrow(/below minimum threshold/);
 
     // UoW should not have committed
@@ -284,6 +290,7 @@ describe("AddBeliefFactUseCase", () => {
       content: "Boundary fact",
       confidence: 0.5,
       source: "user",
+      epistemicStatus: "speculative" as const,
     });
 
     expect(result.factId).toBeDefined();
@@ -323,10 +330,14 @@ describe("EndTurnCleanupUseCase", () => {
       content: "Stale fact",
       confidence: 0.8,
       source: "user",
+      epistemicStatus: "speculative" as const,
+      reviewRequired: false,
+      scope: "local" as const,
+      revision: 0,
       createdAt: thirtyOneDaysAgo.toISOString(),
       updatedAt: thirtyOneDaysAgo.toISOString(),
       status: "archived",
-    });
+    })
 
     // Add normal active fact
     uow.belief.addFact({
@@ -334,10 +345,14 @@ describe("EndTurnCleanupUseCase", () => {
       content: "Active fact",
       confidence: 0.8,
       source: "user",
+      epistemicStatus: "speculative" as const,
+      reviewRequired: false,
+      scope: "local" as const,
+      revision: 0,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       status: "active",
-    });
+    })
 
     // Enforce limits: create more successes than CAPS.learningEntries limit (which is 100)
     for (let i = 0; i < CAPS.learningEntries + 10; i++) {

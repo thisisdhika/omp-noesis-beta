@@ -145,6 +145,10 @@ describe("compaction execution", () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         status: "active",
+        epistemicStatus: "speculative" as const,
+        reviewRequired: false,
+        scope: "local" as const,
+        revision: 0,
       });
     });
 

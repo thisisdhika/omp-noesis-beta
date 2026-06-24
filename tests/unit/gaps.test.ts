@@ -258,6 +258,10 @@ describe("Milestone 6 Adversarial Gaps Test Suite", () => {
           createdAt: thirtyOneDaysAgo,
           updatedAt: nowStr,
           status: "archived",
+          epistemicStatus: "speculative" as const,
+          reviewRequired: false,
+          scope: "local" as const,
+          revision: 0,
         });
       });
 

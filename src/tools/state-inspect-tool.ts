@@ -13,6 +13,10 @@
  *   - relevant_learning: top-ranked learning entries
  *   - current_workflow: active workflow state
  *   - full_state_digest: comprehensive state summary
+ *   - token_profile: token usage statistics across sessions
+ *   - compaction_loss: last compaction loss report
+ *   - compaction_history: historical compaction loss records
+ *   - provenance: fact/decision provenance trace
  *   - search: keyword search across all state layers
  */
 
@@ -41,6 +45,10 @@ export function buildRecallParams(pi: ExtensionAPI) {
       "relevant_learning",
       "current_workflow",
       "full_state_digest",
+      "token_profile",
+      "compaction_loss",
+      "compaction_history",
+      "provenance",
       "search",
     ]),
     tagFilter: pi.zod.array(pi.zod.string()).optional(),
@@ -75,7 +83,7 @@ export function buildRecallParams(pi: ExtensionAPI) {
 export async function executeRecall(
   runtime: NoesisRuntime,
   params: {
-    query: "active_beliefs" | "active_decisions" | "unresolved_hypotheses" | "relevant_learning" | "current_workflow" | "full_state_digest" | "search";
+    query: "active_beliefs" | "active_decisions" | "unresolved_hypotheses" | "relevant_learning" | "current_workflow" | "full_state_digest" | "token_profile" | "compaction_loss" | "compaction_history" | "provenance" | "search";
     tagFilter?: string[];
     minConfidence: number;
     skillScope?: string;
@@ -343,6 +351,56 @@ export async function executeRecall(
     };
   }
 
+  if (params.query === "compaction_loss") {
+    const history = state.compactionHistory ?? [];
+    const last = history.length > 0 ? history[0] : null;
+
+    if (!last) {
+      return {
+        content: [{ type: "text", text: "No compaction loss data available." }],
+        details: { query: "compaction_loss", hasData: false },
+        isError: false,
+      };
+    }
+
+    const evictedLines = last.evicted.map(
+      (e) => `  [${e.id}] ${e.content} (reason: ${e.reason})`,
+    );
+    const degradedLines = last.degraded.map(
+      (d) => `  [${d.id}] ${d.content} (reason: ${d.reason})`,
+    );
+
+    return {
+      content: [
+        {
+          type: "text",
+          text:
+            `Compaction Loss Report (${last.occurredAt}):\n` +
+            `Before: ${last.preCounts.facts} facts, ${last.preCounts.decisions} decisions\n` +
+            `After:  ${last.postCounts.facts} facts, ${last.postCounts.decisions} decisions\n` +
+            `Preserved: ${last.preserved.length}\n` +
+            (last.degraded.length > 0
+              ? `Degraded (${last.degraded.length}):\n${degradedLines.join("\n")}\n`
+              : "Degraded: none\n") +
+            (last.evicted.length > 0
+              ? `Evicted (${last.evicted.length}):\n${evictedLines.join("\n")}`
+              : "Evicted: none"),
+        },
+      ],
+      details: {
+        query: "compaction_loss",
+        hasData: true,
+        occurredAt: last.occurredAt,
+        preCounts: last.preCounts,
+        postCounts: last.postCounts,
+        preservedCount: last.preserved.length,
+        degraded: last.degraded,
+        evicted: last.evicted,
+      },
+      isError: false,
+    };
+  }
+
   // query === "search"
   if (!params.keyword) {
     return {
@@ -418,7 +476,7 @@ export function registerStateInspectTool(pi: ExtensionAPI, runtime: NoesisRuntim
     name: "noesis_state_inspect",
     label: "Noesis: State Inspect",
     description:
-      "Read current (live, in-memory) cognitive state — beliefs, decisions, hypotheses, learning entries, active workflows, and keyword search across all layers (query:\"search\"). " +
+      "Read current (live, in-memory) cognitive state — beliefs, decisions, hypotheses, learning entries, active workflows, compaction loss reports, and keyword search across all layers (query:\"search\"). " +
       "Call BEFORE assuming you do not know something; check current-session memory first rather than guessing or fabricating. " +
       "Do NOT call to store information — use noesis_believe_fact, noesis_believe_decision. " +
       "Consequence: returns a snapshot of live in-memory state without modifying anything; does NOT search durable cross-session storage. For persistent artifacts stored across sessions consider vault backends. " +

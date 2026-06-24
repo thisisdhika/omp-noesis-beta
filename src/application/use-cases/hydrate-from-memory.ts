@@ -41,6 +41,9 @@ interface HydrateResult {
  * Parse structured context string from OMP memory entries.
  * Expected format: "id: bf-xxx, confidence: 0.8, source: graph, tags: ts,arch"
  */
+// ponytail: OMP types don't expose `context` on search results, but runtime
+// may return it. Cast to access it; fall back to content when absent.
+// Upgrade: request OMP team add `context` to MemoryBackendSearchItem type.
 function parseContext(content: string, context?: string): ParsedMemoryEntry | null {
   // Strip [noesis/belief] or [noesis/decision] prefix
   const stripped = content.replace(/^\[noesis\/(belief|decision)\]\s*/i, "").trim();
@@ -103,7 +106,7 @@ export class HydrateFromMemoryUseCase {
 
     // Import belief facts
     for (const item of beliefItems) {
-      const parsed = parseContext(item.content, item.context);
+      const parsed = parseContext(item.content, (item as { context?: string }).context ?? item.content);
       if (!parsed) { skipped++; continue; }
 
       const hash = contentHash(parsed.content);
@@ -121,6 +124,10 @@ export class HydrateFromMemoryUseCase {
         createdAt: now,
         updatedAt: now,
         status: "active",
+        epistemicStatus: "speculative" as const,
+        reviewRequired: false,
+        scope: "local" as const,
+        revision: 0,
       });
       existingHashes.add(hash);
       imported++;
@@ -128,7 +135,7 @@ export class HydrateFromMemoryUseCase {
 
     // Import decisions
     for (const item of decisionItems) {
-      const parsed = parseContext(item.content, item.context);
+      const parsed = parseContext(item.content, (item as { context?: string }).context ?? item.content);
       if (!parsed) { skipped++; continue; }
 
       const hash = contentHash(parsed.content);
@@ -143,6 +150,8 @@ export class HydrateFromMemoryUseCase {
         createdAt: now,
         updatedAt: now,
         status: "active",
+        scope: "local" as const,
+        revision: 0,
       });
       existingHashes.add(hash);
       imported++;

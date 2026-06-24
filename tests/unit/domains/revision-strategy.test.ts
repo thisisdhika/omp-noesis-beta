@@ -28,6 +28,10 @@ function makeFact(overrides: Partial<BeliefFact> & { id: string }): BeliefFact {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     status: "active",
+    epistemicStatus: "speculative" as const,
+    reviewRequired: false,
+    scope: "local" as const,
+    revision: 0,
     ...overrides,
   };
 }
@@ -40,6 +44,8 @@ function makeDecision(overrides: Partial<BeliefDecision> & { id: string }): Beli
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     status: "active",
+    scope: "local" as const,
+    revision: 0,
     ...overrides,
   };
 }

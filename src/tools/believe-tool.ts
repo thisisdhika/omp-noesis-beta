@@ -21,6 +21,8 @@ import { AddBeliefFactUseCase } from "../application/use-cases/add-belief-fact.j
 import { AddBeliefDecisionUseCase } from "../application/use-cases/add-belief-decision.js";
 import { computeGraphAgeHours } from "../infrastructure/graphify-client.js";
 import { mapGraphConfidence, applyStalePenalty } from "../domains/belief/confidence-strategy.js";
+import { classifyEpistemicStatus } from "../domains/belief/epistemic-strategy.js";
+import { shouldReview } from "../domains/belief/review-strategy.js";
 
 // ============================================================================
 // noesis_believe_fact — store a verified belief fact
@@ -33,6 +35,7 @@ export interface BelieveFactParams {
   evidence?: string;
   tags?: string[];
   contradicts?: string[];
+  epistemicStatus?: "certain" | "probable" | "speculative" | "deprecated" | "contradicted";
   graphFinding?: {
     query: string;
     nodes: string[];
@@ -51,6 +54,7 @@ export function buildBelieveFactParams(pi: ExtensionAPI) {
     source: pi.zod.enum(["graph", "execution", "user", "inference"]),
     evidence: pi.zod.string().optional(),
     tags: pi.zod.array(pi.zod.string()).optional(),
+    epistemicStatus: pi.zod.enum(["certain", "probable", "speculative", "deprecated", "contradicted"]).optional(),
     contradicts: pi.zod.array(pi.zod.string()).optional(),
     graphFinding: pi.zod.object({
       query: pi.zod.string(),
@@ -79,6 +83,12 @@ export async function executeBelieveFact(
     }
   }
 
+  const epistemicStatus = params.epistemicStatus ?? classifyEpistemicStatus({
+    confidence,
+    source: params.source,
+    evidence: params.evidence,
+  });
+
   const uow = runtime.stateManager.createUnitOfWork();
   const useCase = new AddBeliefFactUseCase(uow);
   const { factId, contestedWarnings } = await useCase.execute({
@@ -88,17 +98,13 @@ export async function executeBelieveFact(
     tags: params.tags,
     evidence: params.evidence,
     contradicts: params.contradicts,
+    epistemicStatus,
   });
-
-  const fact = runtime.stateManager.read().belief.facts.find(f => f.id === factId);
-  if (!fact) {
-    throw new Error(`Failed to retrieve created fact: ${factId}`);
-  }
   // v1.0: Bridge durable retention to OMP memory backend
   if (runtime.retainToOmp && confidence >= 0.5) {
     runtime.retainToOmp([{
       content: `[noesis/belief] ${params.content}`,
-      context: `id: ${fact.id}, confidence: ${confidence.toFixed(2)}, source: ${params.source}${params.tags ? `, tags: ${params.tags.join(", ")}` : ""}`,
+      context: `id: ${factId}, confidence: ${confidence.toFixed(2)}, source: ${params.source}${params.tags ? `, tags: ${params.tags.join(", ")}` : ""}`,
       source: "noesis",
       importance: mapConfidenceToImportance(confidence),
     }]).catch(() => {
@@ -110,24 +116,43 @@ export async function executeBelieveFact(
   runtime.vaultStore.push({
     kind: "belief",
     projectPath: runtime.projectRoot,
-    id: fact.id,
-    pushedAt: fact.createdAt,
-    content: fact.content,
+    id: factId,
+    pushedAt: new Date().toISOString(),
+    content: params.content,
     metadata: {
-      confidence: fact.confidence,
-      source: fact.source,
-      tags: fact.tags?.join(", ") ?? null,
-      evidence: fact.evidence ?? null,
+      confidence: confidence,
+      source: params.source,
+      tags: params.tags?.join(", ") ?? null,
+      evidence: params.evidence ?? null,
     },
   }).catch(() => {
     // Best-effort vault projection; failure must not break the belief write
   });
+  // v1.0 Rec 7: Auto-flag for human review when belief exceeds thresholds
+  const state = runtime.stateManager.read();
+  const createdFact = state.belief.facts.find(f => f.id === factId);
+  let reviewFlagged = false;
+  if (createdFact && shouldReview(createdFact)) {
+    // ponytail: best-effort side effect — review flag is advisory, not critical
+    await runtime.stateManager.mutate(s => {
+      const f = s.belief.facts.find(f => f.id === factId);
+      if (f) f.reviewRequired = true;
+    }).catch(() => {
+      // Failure to flag does not break the belief write
+    });
+    reviewFlagged = true;
+  }
 
-  const warningText = contestedWarnings.length > 0 ? `\n\nWarnings:\n${contestedWarnings.join("\n")}` : "";
+  const reviewNote = reviewFlagged
+    ? "\n\n⚠ Review required: this belief exceeds confidence thresholds and should be validated by a human."
+    : "";
+  const warningText = contestedWarnings.length > 0
+    ? `\n\nWarnings:\n${contestedWarnings.join("\n")}`
+    : "";
 
   return {
-    content: [{ type: "text", text: `Created fact: ${fact.id}\n${fact.content}${warningText}` }],
-    details: { id: fact.id, content: fact.content, kind: "fact" },
+    content: [{ type: "text", text: `Created fact: ${factId}\n${params.content}${reviewNote}${warningText}` }],
+    details: { id: factId, content: params.content, kind: "fact" },
     isError: false,
   };
 }

@@ -1,6 +1,11 @@
 # Architecture Specification
 
-> **Version:** 1.0.0 | **Updated:** 2026-06-24
+> **Version:** 1.0.1 | **Updated:** 2026-06-24
+
+## Version History
+
+- **v1.0.1** (2026-06-24): Full TypeScript strict-mode compliance — 0 compile errors, 1111/1111 tests passing. Fixed DeepSeek API compatibility, TUI logging pollution, handler timeouts.
+- **v1.0.0**: Initial release.
 
 ## Overview
 
@@ -15,7 +20,7 @@ omp-noesis is an Oh My Pi extension that adds structured cognitive layers — at
 │────┬──────┬──────────────┬──────────┬──────────┬───────│
 │    │      │              │          │          │       │
 │  ┌─▼──────▼──────────────▼──────────▼──────────▼─┐   │
-│  │              omp-noesis v1.0.0                 │   │
+│  │              omp-noesis v1.0.1                 │   │
 │  │  ┌─────────────────────────────────────────┐  │   │
 │  │  │  src/index.ts (entry)                   │  │   │
 │  │  │  · 7 tools registered                   │  │   │

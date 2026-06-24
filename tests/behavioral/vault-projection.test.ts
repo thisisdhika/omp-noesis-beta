@@ -115,7 +115,7 @@ describe("vault projection — belief fact writes", () => {
       });
 
       expect(result.isError).toBe(false);
-      const factId = result.details.id as string;
+      const factId = result.details!.id as string;
 
       // Verify the vault artifact was written to disk
       const artifactPath = join(dir.path, ".obsidian", "noesis", "belief", `${factId}.md`);
@@ -154,7 +154,7 @@ describe("vault projection — belief fact writes", () => {
 
       // Fact creation must still succeed despite vault error
       expect(result.isError).toBe(false);
-      expect(result.details.kind).toBe("fact");
+      expect(result.details!.kind).toBe("fact");
     } finally {
       dir.cleanup();
     }
@@ -176,7 +176,7 @@ describe("vault projection — belief fact writes", () => {
       });
 
       expect(result.isError).toBe(false);
-      expect(result.details.kind).toBe("fact");
+      expect(result.details!.kind).toBe("fact");
     } finally {
       dir.cleanup();
     }
@@ -207,7 +207,7 @@ describe("vault projection — belief decision writes", () => {
       });
 
       expect(result.isError).toBe(false);
-      const decisionId = result.details.id as string;
+      const decisionId = result.details!.id as string;
 
       const artifactPath = join(dir.path, ".obsidian", "noesis", "decision", `${decisionId}.md`);
       expect(existsSync(artifactPath)).toBe(true);
@@ -243,7 +243,7 @@ describe("vault projection — belief decision writes", () => {
       });
 
       expect(result.isError).toBe(false);
-      expect(result.details.kind).toBe("decision");
+      expect(result.details!.kind).toBe("decision");
     } finally {
       dir.cleanup();
     }

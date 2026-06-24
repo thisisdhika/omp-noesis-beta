@@ -1,6 +1,6 @@
 # Cognitive State Schema
 
-> **Version:** 1.0.0 | **Updated:** 2026-06-24
+> **Version:** 1.0.1 | **Updated:** 2026-06-24
 
 Defines the exact shape of `.omp/noesis/state.json` — the contract between all modules, tools, hooks, and the persistence layer.
 

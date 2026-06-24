@@ -1,11 +1,12 @@
 import type { IUnitOfWork } from "../../infrastructure/unit-of-work.js";
-import type { BeliefSource } from "../../domains/belief/schema.js";
+import type { BeliefSource, EpistemicStatus } from "../../domains/belief/schema.js";
 import { generateId } from "../../shared/schema-base.js";
 const MIN_BELIEF_CONFIDENCE = 0.5;
 export interface AddBeliefFactInput {
   content: string;
   confidence: number;
   source: BeliefSource;
+  epistemicStatus: EpistemicStatus;
   tags?: string[];
   evidence?: string;
   contradicts?: string[];
@@ -72,8 +73,12 @@ export class AddBeliefFactUseCase {
       createdAt: timestamp,
       updatedAt: timestamp,
       status: "active",
+      epistemicStatus: input.epistemicStatus,
       tags: input.tags,
       evidence: input.evidence,
+      reviewRequired: false,
+      scope: "local" as const,
+      revision: 0,
     });
 
     await this.uow.commit();
