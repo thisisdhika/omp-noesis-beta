@@ -45,6 +45,7 @@ noesis:
 // ============================================================================
 
 const RULES_MD = `# Noesis Rules
+- **[noesis-rules]**
 
 **Always do these FIRST:**
 - **Task start:** Call noesis_attend. ALWAYS. No exceptions.
@@ -82,7 +83,9 @@ const RULES_MD = `# Noesis Rules
 - Request fresh graph: \`noesis_attend(focus="...", graphQueries=[...], ensureFresh=true)\`
 - \`graphify-extract\` mode: Use \`skill://graphify\` for headless CI extraction
 - All graph interactions go through the attend-tool or skill file, never direct CLI
-- The attend-tool handles automated preamble evidence via CLI.`;
+- The attend-tool handles automated preamble evidence via CLI.
+
+- **[end-noesis-rules]**`;
 
 // ============================================================================
 // OBSIDIAN INDEX TEMPLATE
@@ -255,6 +258,44 @@ function mergeConfigYaml(existing: string, recommended: string): string {
 }
 
 // ============================================================================
+// RULES MERGE
+// ============================================================================
+
+const RULES_START = "[noesis-rules]";
+const RULES_END = "[end-noesis-rules]";
+
+/**
+ * Marker-based merge for RULES.md.
+ *
+ * The template contains a managed block delimited by [noesis-rules] / [end-noesis-rules].
+ * If the existing file has those markers, replace the content between them.
+ * Otherwise, append the full template at the end.
+ *
+ * Any content outside the markers is user-owned and never touched.
+ */
+function mergeRulesMd(existing: string, template: string): string {
+  const existingStart = existing.indexOf(RULES_START);
+  const existingEnd = existing.indexOf(RULES_END);
+
+  if (existingStart !== -1 && existingEnd !== -1 && existingStart < existingEnd) {
+    // Has markers — extract the template's managed block and inject it
+    const tplStart = template.indexOf(RULES_START);
+    const tplEnd = template.indexOf(RULES_END);
+    if (tplStart === -1 || tplEnd === -1) return existing;
+
+    const managedBlock = template.slice(tplStart, tplEnd + RULES_END.length);
+    const before = existing.slice(0, existingStart);
+    const after = existing.slice(existingEnd + RULES_END.length);
+    const merged = before + managedBlock + after;
+    return merged === existing ? existing : merged;
+  }
+
+  // No markers — append the full template (user can rearrange afterward)
+  const suffix = existing.endsWith("\n") ? "\n" : "\n\n";
+  return existing + suffix + template + "\n";
+}
+
+// ============================================================================
 // INIT COMMAND
 // ============================================================================
 
@@ -264,9 +305,10 @@ function mergeConfigYaml(existing: string, recommended: string): string {
  * 1. Creates `.omp/noesis/` directory.
  * 2. Writes `EMPTY_STATE` to `.omp/noesis/state.json` (unless it exists
  *    and `force` is false).
- * 3. Writes/merges `.omp/config.yml` with recommended settings.
- * 4. Optionally installs and runs Graphify integration.
- *
+ * 3. Writes/merges `.omp/config.yml` with recommended settings (additive).
+ * 4. Writes/merges `.omp/RULES.md` with recommended sections (additive).
+ * 5. Optionally installs and runs Graphify integration.
+ * 6. Adds generated artifacts to `.git/info/exclude` (best-effort).
  * Returns a status string: "initialized-full", "initialized-degraded-no-cli",
  * or "initialized-degraded-no-graphify".
  */
@@ -306,14 +348,25 @@ export async function initCommand(pi: ExtensionAPI, args: InitArgs = {}): Promis
     summary.push("config.yml: created");
   }
 
-  // 3a. Write .omp/RULES.md
+  // 3a. Write/merge .omp/RULES.md
   const rulesPath = join(ompDir, "RULES.md");
-  if (existsSync(rulesPath) && !force) {
-    summary.push("RULES.md: up-to-date");
+  if (force) {
+    mkdirSync(ompDir, { recursive: true });
+    writeFileSync(rulesPath, RULES_MD, "utf-8");
+    summary.push("RULES.md: overwritten");
+  } else if (existsSync(rulesPath)) {
+    const existing = readFileSync(rulesPath, "utf-8");
+    const merged = mergeRulesMd(existing, RULES_MD);
+    if (merged !== existing) {
+      writeFileSync(rulesPath, merged, "utf-8");
+      summary.push("RULES.md: merged");
+    } else {
+      summary.push("RULES.md: up-to-date");
+    }
   } else {
     mkdirSync(ompDir, { recursive: true });
     writeFileSync(rulesPath, RULES_MD, "utf-8");
-    summary.push("RULES.md: written");
+    summary.push("RULES.md: created");
   }
 
   // 3b. Setup Obsidian Vault & Index
@@ -369,58 +422,44 @@ export async function initCommand(pi: ExtensionAPI, args: InitArgs = {}): Promis
   }, { deliverAs: "steer" });
 
 
-
   // 7. Build the project knowledge graph (fire-and-forget — background to avoid 30s handler timeout)
   if (buildGraph) {
     runGraphifyBuild(projectRoot, getBackendArgs()).catch(() => {});
     summary.push("Graph: building in background");
   }
 
-
-  // 8a. Ensure .omp/ is in local git exclude (best-effort)
-  const excludePath = join('.git', 'info', 'exclude');
-  const excludeDir = join('.git', 'info');
+  // 8. Ensure generated artifacts are in local git exclude (best-effort).
+  //    Using .git/info/exclude (per-clone, never version-controlled)
+  //    instead of .gitignore (project-wide, shared with team).
   if (existsSync('.git')) {
+    const excludePath = join('.git', 'info', 'exclude');
+    const excludeDir = join('.git', 'info');
+    const EXCLUDE_ENTRIES = [
+      ".omp/",
+      ".omp/noesis/",
+      "graphify-out/",
+      ".obsidian/noesis/",
+    ];
     try {
       mkdirSync(excludeDir, { recursive: true });
       const excludeContent = existsSync(excludePath)
         ? readFileSync(excludePath, 'utf-8')
         : '';
-      if (!excludeContent.includes('.omp/')) {
-        appendFileSync(excludePath, (excludeContent ? '\n' : '') + '.omp/');
+      const existingLines = excludeContent.split(/\r?\n/).map(l => l.trim());
+      const missing = EXCLUDE_ENTRIES.filter(
+        entry => !existingLines.some(el => el === entry)
+      );
+      if (missing.length > 0) {
+        appendFileSync(
+          excludePath,
+          (excludeContent && !excludeContent.endsWith('\n') ? '\n' : '') +
+          missing.join('\n') + '\n'
+        );
+        summary.push("git exclude: updated");
       }
     } catch {
       // best-effort
     }
-  }
-
-  // 8b. Write recommended .gitignore entries for noesis-generated artifacts.
-  // These are derived/cache files that should never be version-controlled:
-  //   graphify-out/      — AST cache, graph JSON, manifest, cost analysis
-  //   .obsidian/noesis/  — vault projections derived from state.json
-  //   .omp/noesis/       — cognitive state directory (regenerated on init)
-  const gitignorePath = join(projectRoot, ".gitignore");
-  const GITIGNORE_ENTRIES = [
-    "# Noesis — generated graph artifacts (local tracking only)",
-    "graphify-out/",
-    "",
-    "# Noesis — projected vault artifacts (derived from state.json)",
-    ".obsidian/noesis/",
-    "",
-    "# Noesis — cognitive state directory (regenerated on init)",
-    ".omp/noesis/",
-  ];
-  if (existsSync(gitignorePath)) {
-    const existing = readFileSync(gitignorePath, "utf-8");
-    const existingLines = existing.split(/\r?\n/).map(l => l.trim());
-    const missing = GITIGNORE_ENTRIES.filter(line => line && !existingLines.some(el => el === line));
-    if (missing.length > 0) {
-      appendFileSync(gitignorePath, "\n" + missing.join("\n") + "\n");
-      summary.push(".gitignore: updated");
-    }
-  } else {
-    writeFileSync(gitignorePath, GITIGNORE_ENTRIES.join("\n") + "\n");
-    summary.push(".gitignore: created");
   }
   // 9. Done — single status message
   pi.sendMessage({

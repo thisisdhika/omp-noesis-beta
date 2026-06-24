@@ -387,13 +387,145 @@ describe("noesis:init", () => {
     });
   });
 
+  // -----------------------------------------------------------------------
+  // 7. RULES.md merge behavior
+  // -----------------------------------------------------------------------
+
+  describe("RULES.md merge", () => {
+    it("creates RULES.md from template on fresh init", async () => {
+      _enableGraphifyCLI = true;
+      await initCommand(castToExtensionAPI(pi), {});
+      const rulesPath = join(tmp.path, ".omp", "RULES.md");
+      expect(existsSync(rulesPath)).toBeTrue();
+      const content = readFileSync(rulesPath, "utf-8");
+      expect(content).toContain("**Always do these FIRST:**");
+      expect(content).toContain("**Graph Queries:**");
+    });
+
+    it("preserves user-modified section during merge", async () => {
+      const ompDir = join(tmp.path, ".omp");
+      mkdirSync(ompDir, { recursive: true });
+      writeFileSync(
+        join(ompDir, "RULES.md"),
+        [
+          "# Noesis Rules",
+          "",
+          "**Always do these FIRST:**",
+          "- My custom rule for this project",
+          "",
+          "**NEVER:**",
+          "- Never break anything",
+        ].join("\n") + "\n"
+      );
+      _enableGraphifyCLI = true;
+
+      await initCommand(castToExtensionAPI(pi), {});
+
+      const rulesPath = join(ompDir, "RULES.md");
+      const content = readFileSync(rulesPath, "utf-8");
+      // User's section content should be preserved
+      expect(content).toContain("- My custom rule for this project");
+      // Template sections not in user's file should be appended
+      expect(content).toContain("**After events:**");
+      expect(content).toContain("**Graph Queries:**");
+    });
+
+    it("preserves user-only sections not in template", async () => {
+      const ompDir = join(tmp.path, ".omp");
+      mkdirSync(ompDir, { recursive: true });
+      writeFileSync(
+        join(ompDir, "RULES.md"),
+        [
+          "# Noesis Rules",
+          "",
+          "**Always do these FIRST:**",
+          "- Task start: attend",
+          "",
+          "**My Custom Section:**",
+          "- Custom project rules",
+        ].join("\n") + "\n"
+      );
+      _enableGraphifyCLI = true;
+
+      await initCommand(castToExtensionAPI(pi), {});
+
+      const rulesPath = join(ompDir, "RULES.md");
+      const content = readFileSync(rulesPath, "utf-8");
+      expect(content).toContain("**My Custom Section:**");
+      expect(content).toContain("- Custom project rules");
+    });
+
+    it("overwrites RULES.md with template when force is set", async () => {
+      const ompDir = join(tmp.path, ".omp");
+      mkdirSync(ompDir, { recursive: true });
+      writeFileSync(
+        join(ompDir, "RULES.md"),
+        "# Old content\n**Old Section:**\n-old data\n"
+      );
+      _enableGraphifyCLI = true;
+
+      await initCommand(castToExtensionAPI(pi), { force: true });
+
+      const rulesPath = join(ompDir, "RULES.md");
+      const content = readFileSync(rulesPath, "utf-8");
+      // Should be the full template, not old content
+      expect(content).not.toContain("Old content");
+      expect(content).toContain("**Always do these FIRST:**");
+      expect(content).toContain("**Graph Queries:**");
+    });
+
+    it("reports merged when managed block content differs", async () => {
+      // Write a RULES.md with markers matching the template exactly
+      const ompDir = join(tmp.path, ".omp");
+      mkdirSync(ompDir, { recursive: true });
+      writeFileSync(join(ompDir, "RULES.md"), `# Noesis Rules
+
+[noesis-rules]
+
+**Always do these FIRST:**
+- Task start: attend
+
+**After events:**
+- verify → believe
+
+**NEVER:**
+- duplicate
+
+**Templates:**
+- Fact: ...
+
+**Confidence:** execution/user = 1.0
+
+**Boundaries:** noesis_state_inspect = current
+
+**Compaction:** survivor set
+
+**Graph modes:** FULL | STALE
+
+**Graph Queries:**
+- Request fresh via attend
+
+[end-noesis-rules]
+`);
+      _enableGraphifyCLI = true;
+
+      await initCommand(castToExtensionAPI(pi), {});
+      const msgs = sentMessages(pi);
+      const statusMsg = msgs.find(
+        (m) => m.message.customType === "noesis:init-status"
+      );
+      expect(statusMsg).toBeDefined();
+      expect(statusMsg!.message.content).toMatch(/rules\.md.*merged/i);
+    });
+  });
+
 
   // -----------------------------------------------------------------------
   // 8. Git exclude file
   // -----------------------------------------------------------------------
 
   describe("git exclude", () => {
-    it("adds .omp/ to .git/info/exclude when .git directory exists", async () => {
+    it("adds all generated artifacts to .git/info/exclude when .git directory exists", async () => {
       // Create minimal .git structure
       mkdirSync(join(tmp.path, ".git", "info"), { recursive: true });
       _enableGraphifyCLI = true;
@@ -403,7 +535,10 @@ describe("noesis:init", () => {
       const excludePath = join(tmp.path, ".git", "info", "exclude");
       expect(existsSync(excludePath)).toBeTrue();
       const content = readFileSync(excludePath, "utf-8");
-      expect(content).toContain(".omp/");
+      const lines = content.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+      for (const entry of [".omp/", ".omp/noesis/", "graphify-out/", ".obsidian/noesis/"]) {
+        expect(lines).toContain(entry);
+      }
     });
 
     it("does not duplicate .omp/ entry on re-run", async () => {
@@ -415,8 +550,11 @@ describe("noesis:init", () => {
 
       const excludePath = join(tmp.path, ".git", "info", "exclude");
       const content = readFileSync(excludePath, "utf-8");
-      const matches = content.match(/\.omp\//g);
-      expect(matches).toHaveLength(1);
+      const lines = content.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+      // Each exact entry should appear exactly once
+      for (const entry of [".omp/", ".omp/noesis/", "graphify-out/", ".obsidian/noesis/"]) {
+        expect(lines.filter(l => l === entry)).toHaveLength(1);
+      }
     });
 
     it("works gracefully when no .git directory exists", async () => {
@@ -427,4 +565,3 @@ describe("noesis:init", () => {
     });
   });
 });
-
