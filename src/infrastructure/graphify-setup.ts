@@ -98,7 +98,7 @@ export async function runGraphifyBuild(
     const proc = Bun.spawn(["graphify", ".", "--no-viz", ...(extraArgs ?? [])], {
       cwd: projectRoot,
       stdout: "pipe",
-      stderr: "pipe",
+      stderr: "ignore",
       timeout: 120000,
     });
 
