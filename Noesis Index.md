@@ -25,11 +25,9 @@ What the assistant has learned from experience - debugging insights, patterns, a
 ### Commitments
 Active goals, promises, and intentions that the assistant is tracking and working toward.
 
-## Vault Operations
-
 The assistant maintains durable memory through:
-- **mnemopi** — Primary cross-session memory (auto-managed)
-- **local** — Local file-based fallback
+- **state.json** — Authoritative cognitive state (`.omp/noesis/state.json`)
+- **OMP memory** — Cross-session durability channel
 - **obsidian** — Human-readable projection (this vault)
 
 ## Tips

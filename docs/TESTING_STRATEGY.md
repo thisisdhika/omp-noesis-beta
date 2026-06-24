@@ -19,14 +19,16 @@ Traditional line coverage measures execution. Product coverage measures behavior
 ## Running Tests
 
 ```bash
-bun test                        # All layers
-bun test tests/unit             # Unit only
-bun test tests/integration      # Integration only
-bun test tests/behavioral       # Behavioral only
-bun test --coverage             # With coverage
-bun test --watch                # Watch mode
-bun test tests/behavioral/compaction-survival.test.ts  # Single file
+bun test --isolate                     # All layers (coverage via --coverage flag or package.json)
+bun test --isolate tests/unit          # Unit only
+bun test --isolate tests/integration   # Integration only
+bun test --isolate tests/behavioral    # Behavioral only
+bun test --isolate --coverage          # With coverage
+bun test --isolate --watch             # Watch mode
+bun test --isolate tests/behavioral/compaction-survival.test.ts  # Single file
 ```
+
+The `package.json` scripts (`bun run test`, `bun run test:unit`, etc.) all include `--isolate` by default.
 
 ## Unit Tests
 
@@ -83,3 +85,15 @@ Key coverage:
 | Branch coverage (unit) | 100% |
 | Path coverage (integration) | 100% |
 | Behavioral coverage | 100% of specified behaviors |
+
+## Current Status
+
+```bash
+bun test --isolate --coverage
+```
+| Suite | Result |
+|---|---|
+| Tests | 1116 pass, 0 fail (80 files) |
+| Function coverage | 85.78% |
+| Line coverage | 89.63% |
+

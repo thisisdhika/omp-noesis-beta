@@ -4,7 +4,7 @@
 
 ## Version History
 
-- **v1.0.1** (2026-06-24): Full TypeScript strict-mode compliance — 0 compile errors, 1111/1111 tests passing. Fixed DeepSeek API compatibility, TUI logging pollution, handler timeouts.
+- **v1.0.1** (2026-06-24): Full TypeScript strict-mode compliance — 0 compile errors, 1116/1116 tests passing. Fixed DeepSeek API compatibility, TUI logging pollution, handler timeouts.
 - **v1.0.0**: Initial release.
 
 ## Overview
@@ -23,8 +23,8 @@ omp-noesis is an Oh My Pi extension that adds structured cognitive layers — at
 │  │              omp-noesis v1.0.1                 │   │
 │  │  ┌─────────────────────────────────────────┐  │   │
 │  │  │  src/index.ts (entry)                   │  │   │
-│  │  │  · 7 tools registered                   │  │   │
-│  │  │  · 5 hooks registered                   │  │   │
+│  │  │  · 15 tools (8 canonical + 7 aliases)  │  │   │
+│  │  │  · 8 hooks registered                   │  │   │
 │  │  └─────────────────────────────────────────┘  │   │
 │  │  ┌────────┐ ┌──────────┐ ┌──────────┐        │   │
 │  │  │Cognition│ │Perceptn │ │ Learning │        │   │
@@ -49,7 +49,7 @@ omp-noesis is an Oh My Pi extension that adds structured cognitive layers — at
 
 ### Entry Point (`src/index.ts`)
 
-Creates the runtime singleton, registers 7 tools (`noesis_attend`, `noesis_believe_fact`, `noesis_believe_decision`, `noesis_infer`, `noesis_commit`, `noesis_state_inspect`, tool-store hooks), and 5 hooks (`context`, `before_agent_start`, `session.compacting`, `tool_result`, `turn_end`). No business logic during load.
+Creates the runtime singleton, registers 8 canonical tools (`noesis_attend`, `noesis_believe_fact`, `noesis_believe_decision`, `noesis_infer`, `noesis_commit`, `noesis_state_inspect`, `noesis_sandbox`, `noesis_federate`) plus 7 aliases (`focus_task`, `switch_focus`, `store_memory`, `store_decision`, `test_hypothesis`, `track_workflow`, `read_memory`), and 8 hooks (`session_start`, `context`, `before_agent_start`, `session.compacting`, `tool_result`, `turn_end`, `before_provider_request`, `session_shutdown`). No business logic during load.
 
 ### Schema (`src/shared/schema.ts`)
 
@@ -73,7 +73,6 @@ Zod schemas for all state shapes, tool parameters, and internal types. Exports T
 | Attention | `attention-domain.ts` | Focus, files, queries, ephemeral findings |
 | Belief | `belief-domain.ts`, `revision-strategy.ts`, `confidence-strategy.ts` | Facts, decisions, AGM revision |
 | Inference | `inference-domain.ts` | Hypotheses, reasoning, auto-promotion |
-| Commitment | `commitment-domain.ts`, `consistency-strategy.ts` | Workflow, actions, dependency resolution |
 | Learning | `learning-domain.ts`, `ranking-strategy.ts`, `eviction-strategy.ts` | Capture, ranking, retention |
 
 ### Rendering Layer
@@ -155,7 +154,7 @@ schema/shared → infrastructure, domains, vault → rendering → hooks/tools �
 - **Durable write:** Tool/Hook → `stateManager.mutate()` → in-memory → `saveState()` → `state.json`
 - **OMP memory bridge (write):** `noesis_believe_fact`/`noesis_believe_decision` → `runtime.retainToOmp()`
   → OMP memory `save()` — best-effort, async, never blocks the tool response
-- **Session-start hydration (read):** `before_agent_start` hook → `HydrateFromMemoryUseCase.execute()`
+- **Session-start hydration (read):** `session_start` hook → `HydrateFromMemoryUseCase.execute()`
   → OMP memory `search("[noesis/belief]")` + `search("[noesis/decision]")`
   → parse → content-hash dedup → bulk import with capped confidence (≤0.75)
 - **Attention:** `stateManager.mutate()` attention → `checkpointAttention()` → atomic save
@@ -180,7 +179,7 @@ Three storage tiers with clear authority:
 
 ```
 OMP Core session start
-  → before_agent_start hook fires
+  → session_start hook fires
     → HydrateFromMemoryUseCase.execute()
       → runtime.getMemoryStatus()
       → if searchable:

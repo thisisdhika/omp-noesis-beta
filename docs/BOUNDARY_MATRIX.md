@@ -28,13 +28,12 @@
 |---|---|
 | Tool execution, agent orchestration | OMP |
 | Compaction pipeline, skill loading | OMP |
-| Long-term general memory | OMP / Mnemopi |
+| Long-term general memory | OMP memory (cross-session durability channel) |
 | Code graph construction & query | Graphify |
 | Cognitive state, beliefs, decisions | Noesis |
 | AGM belief revision | Noesis |
 | Learning from execution | Noesis |
 | Smart-zone protection | Noesis |
-| Human-readable projection | Obsidian |
 
 ## Hard Ownership Rules
 

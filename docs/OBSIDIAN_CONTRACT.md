@@ -81,7 +81,7 @@ Compaction does NOT project to vault. Only direct tool calls and turn-end retry 
 
 ## What Noesis Never Does
 
-- Read from Obsidian vault for cognition (vault reads use OMP memory — never Obsidian)
+- Read from Obsidian vault for cognition (cognition reads use `state.json` + OMP memory — never Obsidian)
 - Require Obsidian for correctness
 - Create its own note editor or viewer
 - Auto-sync continuously
@@ -91,7 +91,7 @@ Compaction does NOT project to vault. Only direct tool calls and turn-end retry 
 
 | System | Role | Direction |
 |---|---|---|
-| **OMP Memory** | Cross-session durability (memory backend) | Read/write via retainToOmp + searchFromOmp |
+| **OMP Memory** | Cross-session durability channel | Read/write via `retainToOmp` + `searchFromOmp` |
 | **state.json** | Cognitive state authority (`.omp/noesis/state.json`) | Read/write — always authoritative |
 | **Obsidian vault** | Human-reviewable projection (Markdown) | Write-only — best-effort |
 
@@ -99,7 +99,6 @@ Compaction does NOT project to vault. Only direct tool calls and turn-end retry 
 
 At startup, `vault-detector.ts` resolves whether an Obsidian vault is available:
 
-- **Memory backend** (always available): OMP memory backend (`.omp/`) — primary cross-session channel
 - **Projection backend** (optional): obsidian (`.obsidian/`) or none
 - Obsidian projection is best-effort — `NoopVaultStore` is the fallback when no vault is detected
 
