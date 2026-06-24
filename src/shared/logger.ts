@@ -29,13 +29,12 @@ let _logger: Logger = {
  * Switch to OMP's TUI-safe logger during extension activation.
  * Called once from src/index.ts before any hooks/tools run.
  */
-export function setLogger(pi: { logger?: Partial<Logger> }): void {
-  const extLogger = pi.logger;
+export function setLogger(_pi: { logger?: Partial<Logger> }): void {
   _logger = {
     info: () => {}, // silent — TUI hygiene
     debug: () => {}, // silent — TUI hygiene
-    warn: (msg: string, ...args: unknown[]) => extLogger?.warn?.(msg, args.length > 0 ? { args } : undefined),
-    error: (msg: string, ...args: unknown[]) => extLogger?.error?.(msg, args.length > 0 ? { args } : undefined),
+    warn: () => {}, // silent — TUI hygiene
+    error: () => {}, // silent — TUI hygiene
   };
 }
 

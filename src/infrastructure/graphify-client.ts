@@ -267,11 +267,15 @@ export async function updateGraph(
     const proc = Bun.spawn(args, {
       cwd: projectRoot,
       stdout: "pipe",
+      stderr: "pipe",
       timeout: opts.timeout,
     });
-    const output = await new Response(proc.stdout).text();
+    const [output, stderrText] = await Promise.all([
+      new Response(proc.stdout).text(),
+      new Response(proc.stderr).text(),
+    ]);
     const exitCode = await proc.exited;
-    return { success: exitCode === 0, output };
+    return { success: exitCode === 0, output: exitCode === 0 ? output : stderrText || output };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return { success: false, output: message };
