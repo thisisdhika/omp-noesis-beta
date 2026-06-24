@@ -44,7 +44,7 @@ noesis:
 // RULES.md TEMPLATE — static noesis cognitive substrate instructions
 // ============================================================================
 
-const RULES_MD = `# Noesis Rules
+export const RULES_MD = `# Noesis Rules
 - **[noesis-rules]**
 
 **Always do these FIRST:**
@@ -273,7 +273,7 @@ const RULES_END = "[end-noesis-rules]";
  *
  * Any content outside the markers is user-owned and never touched.
  */
-function mergeRulesMd(existing: string, template: string): string {
+export function mergeRulesMd(existing: string, template: string): string {
   const existingStart = existing.indexOf(RULES_START);
   const existingEnd = existing.indexOf(RULES_END);
 
