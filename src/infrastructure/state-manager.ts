@@ -63,6 +63,40 @@ export class StateManager {
   }
 
   /**
+   * Synchronously reload from disk if the on-disk lastPersisted differs
+   * from the in-memory snapshot. This prevents callers from operating on
+   * stale state without destroying optimistic concurrency checks at
+   * commit time.
+   * If the file is missing or corrupt, the in-memory state is preserved.
+   */
+  #refreshIfStale(): void {
+    let raw: unknown;
+    try {
+      raw = readJSON(this.#statePath);
+    } catch {
+      // File missing or corrupt — preserve in-memory state
+      return;
+    }
+    if (raw === null || typeof raw !== "object") return;
+    const disk = raw as Record<string, unknown>;
+    if (typeof disk.lastPersisted !== "string") return;
+    if (disk.lastPersisted === this.#state.lastPersisted) return;
+
+    // On-disk state is newer — merge, migrate, and adopt
+    const merged = deepMergeDefaults(
+      EMPTY_STATE as unknown as Record<string, unknown>,
+      disk,
+    );
+    const migrated = migrate(merged);
+    try {
+      NoesisStateSchema.parse(migrated);
+      this.#state = migrated;
+    } catch {
+      log.warn("[StateManager] Refresh-if-stale: on-disk state failed schema validation, keeping in-memory");
+    }
+  }
+
+  /**
    * Load state from disk, or create and persist a fresh EMPTY_STATE.
    * Gracefully handles missing file (null returned by readJSON)
    * and malformed JSON (readJSON throws → caught below).
@@ -112,9 +146,9 @@ export class StateManager {
       }
     }
   }
-
   /** Expose current in-memory state as readonly. */
   read(): Readonly<NoesisState> {
+    this.#refreshIfStale();
     return this.#state;
   }
 
@@ -125,6 +159,7 @@ export class StateManager {
    * is untouched. Returns the mutated state for convenience.
    */
   async mutate(fn: (state: NoesisState) => void): Promise<NoesisState> {
+    this.#refreshIfStale();
     const clone = deepClone(this.#state);
     fn(clone);
     clone.lastPersisted = new Date().toISOString();
@@ -142,6 +177,7 @@ export class StateManager {
    * with optimistic concurrency lock checks on commit.
    */
   createUnitOfWork(): IUnitOfWork {
+    this.#refreshIfStale();
     const clone = deepClone(this.#state);
     const originalLastPersisted = clone.lastPersisted;
 

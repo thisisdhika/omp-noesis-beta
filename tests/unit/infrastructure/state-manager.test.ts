@@ -139,36 +139,75 @@ describe("StateManager", () => {
     expect(content.version).toBe(CURRENT_VERSION);
   });
 
-  it("should throw Transaction conflict when state.json was modified externally before mutate", async () => {
+  it("should silently incorporate external changes when state.json was modified externally before mutate", async () => {
     const sm = new StateManager(tempDir.path);
     await sm.initialize();
 
     // Simulate another process writing to the same state file
     const onDisk = await Bun.file(statePath(tempDir.path)).json();
+    const oldFocus = onDisk.attention.focus;
     onDisk.attention.focus = "other-process-focus";
     onDisk.lastPersisted = new Date(Date.now() + 1000).toISOString();
     await writeAtomic(statePath(tempDir.path), onDisk);
 
-    // Our mutate should now detect the conflict
-    let thrown = false;
-    try {
-      await sm.mutate((s) => {
-        s.attention.focus = "our-focus";
-      });
-    } catch (err: any) {
-      if (err.message.includes("Transaction conflict") && err.message.includes("another process")) {
-        thrown = true;
-      }
-    }
+    // Our mutate silently pulls in external changes via #refreshIfStale(),
+    // then applies the local mutation on top — no OCC conflict because
+    // we refreshed before cloning.
+    await sm.mutate((s) => {
+      s.attention.focus = "our-focus";
+    });
 
-    expect(thrown).toBe(true);
+    // In-memory state has our mutation applied on top of refreshed external state
+    expect(sm.read().attention.focus).toBe("our-focus");
 
-    // Our in-memory state was NOT updated with our-focus (it's the original empty focus)
+    // Disk state also has our mutation (and preserved external fields)
+    const diskAfter = await Bun.file(statePath(tempDir.path)).json();
+    expect(diskAfter.attention.focus).toBe("our-focus");
+  });
+
+  it("should reflect external writes via read() without calling invalidate", async () => {
+    const sm = new StateManager(tempDir.path);
+    await sm.initialize();
+
     expect(sm.read().attention.focus).toBe("");
 
-    // Disk state still has the external process's changes — our stale write was rejected
+    // External write with a distinct lastPersisted
+    const externalFocus = "external-value";
+    const onDisk = await Bun.file(statePath(tempDir.path)).json();
+    onDisk.attention.focus = externalFocus;
+    onDisk.lastPersisted = new Date(Date.now() + 1000).toISOString();
+    await writeAtomic(statePath(tempDir.path), onDisk);
+
+    // read() calls #refreshIfStale() internally, so external state is visible
+    // without an explicit invalidate() call.
+    expect(sm.read().attention.focus).toBe(externalFocus);
+  });
+
+  it("should refresh from disk before createUnitOfWork so commit succeeds after external write", async () => {
+    const sm = new StateManager(tempDir.path);
+    await sm.initialize();
+
+    await sm.mutate((s) => { s.attention.focus = "baseline"; });
+    expect(sm.read().attention.focus).toBe("baseline");
+
+    // External write with a distinct lastPersisted
+    const onDisk = await Bun.file(statePath(tempDir.path)).json();
+    onDisk.attention.focus = "external-process";
+    onDisk.lastPersisted = new Date(Date.now() + 1000).toISOString();
+    await writeAtomic(statePath(tempDir.path), onDisk);
+
+    // UoW is constructed from refreshed state (not the stale baseline)
+    const uow = sm.createUnitOfWork();
+    expect(uow.attention.get().focus).toBe("external-process");
+
+    // Modify and commit — succeeds without false conflict because
+    // createUnitOfWork refreshed the snapshot before capturing it.
+    uow.attention.update({ focus: "uow-change" });
+    await uow.commit();
+
+    expect(sm.read().attention.focus).toBe("uow-change");
     const diskAfter = await Bun.file(statePath(tempDir.path)).json();
-    expect(diskAfter.attention.focus).toBe("other-process-focus");
+    expect(diskAfter.attention.focus).toBe("uow-change");
   });
 });
 
