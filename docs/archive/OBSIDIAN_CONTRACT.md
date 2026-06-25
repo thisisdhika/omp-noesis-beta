@@ -1,3 +1,11 @@
+> **⚠ STALE NOTICE — v1.0.0, archived**
+> This document is from v1.0.0 (2026-06-15). The frontmatter format and storage
+> layer model have since been updated: tags/status/source were promoted to
+> top-level fields, metadata was restructured, and the OMP memory bridge replaced
+> the earlier Mnemopi-backed CompositeVaultStore architecture. See
+> [docs/OBSIDIAN_CONTRACT.md](../OBSIDIAN_CONTRACT.md) for the current contract.
+>
+
 # omp-noesis: Obsidian Projection Contract
 
 > **Version:** 1.0.0

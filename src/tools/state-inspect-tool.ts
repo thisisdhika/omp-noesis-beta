@@ -626,10 +626,8 @@ export function registerStateInspectTool(pi: ExtensionAPI, runtime: NoesisRuntim
     name: "noesis_state_inspect",
     label: "Noesis: State Inspect",
     description:
-      "Read current (live, in-memory) cognitive state — beliefs, decisions, hypotheses, learning entries, active workflows, attention, token profile, compaction loss/history, provenance chains, and keyword search across all layers (query:\"search\"). " +
-      "Call BEFORE assuming you do not know something; check current-session memory first rather than guessing or fabricating. " +
-      "Do NOT call to store information — use noesis_believe_fact, noesis_believe_decision. " +
-      "Consequence: returns a snapshot of live in-memory state without modifying anything; does NOT search durable cross-session storage. For persistent artifacts stored across sessions consider vault backends. " +
+      "Read live in-memory cognitive state — beliefs, decisions, hypotheses, learning, workflows, attention, token profile, compaction, provenance, and keyword search (query:\"search\") across all layers. " +
+      "Call first when uncertain; don't guess. Not for cross-session queries — use vault backends for durable artifacts. " +
       "Fields: query(required), keyword(required if query=search), tagFilter, minConfidence, skillScope, limit, layers, includeCompleted, includeSuperseded, includeArchived (optional)",
     parameters: buildRecallParams(pi),
     async execute(tCID, params, _signal, _onUpdate, _ctx) {

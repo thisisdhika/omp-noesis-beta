@@ -125,11 +125,11 @@ export function registerAttendTool(pi: ExtensionAPI, runtime: NoesisRuntime): vo
     name: "noesis_attend",
     label: "Noesis: Attend",
     description:
-      "Call at task start or when shifting focus to describe what you are working on and which files are involved. " +
-      "Optionally runs graph queries to enrich context with knowledge graph findings — call BEFORE doing the work, not after. " +
-      "For quick mid-task adjustments, omit graphQueries for a lighter focus-only update without graph enrichment. " +
-      "Consequence: updates the attention layer with focus, files, priority and stores any graph findings returned. " +
-      "Fields: focus (required), files, graphQueries, priority (optional)",
+      "Call at task start or focus shift to describe what you're working on and which files are involved. " +
+      "Optionally runs graph queries to enrich context — call BEFORE doing work, not after. " +
+      "For quick mid-task adjustments, omit graphQueries for a lighter update. " +
+      "Updates attention layer with focus, files, priority, and graph findings. " +
+      "Fields: focus (required), files, graphQueries, priority (optional), ensureFresh (optional)",
     parameters: buildAttendParams(pi),
     async execute(tCID, params, _signal, _onUpdate, _ctx) {
       return executeAttend(runtime, params);

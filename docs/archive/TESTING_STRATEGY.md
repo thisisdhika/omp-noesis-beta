@@ -1,3 +1,11 @@
+> **⚠ STALE NOTICE — v1.0.0, archived**
+> This document is from v1.0.0 (2026-06-15). Test counts and coverage targets
+> have changed: current v1.0.1 reports ~1120 passing tests (was ~507), function
+> coverage ~86% (target ≥94%), line coverage ~91% (target ≥96%). Testing now
+> covers OCC/UnitOfWork conflict detection and OMP memory hydration. See
+> [docs/TESTING_STRATEGY.md](../TESTING_STRATEGY.md) for the current strategy.
+>
+
 # omp-noesis: Testing Strategy
 
 > **Version:** 1.0.0

@@ -14,6 +14,8 @@
 import type { ExtensionAPI, ExtensionCommandContext } from "@oh-my-pi/pi-coding-agent";
 import type { NoesisRuntime } from "../runtime.js";
 import { computeBudget, type SectionBudget } from "../rendering/token-accountant.js";
+import { buildSectionList } from "../rendering/preamble-builder.js";
+import type { RenderContext } from "../shared/schema.js";
 
 // ============================================================================
 // Constants
@@ -88,43 +90,12 @@ export async function tokenProfileCommand(
   runtime: NoesisRuntime,
 ): Promise<string> {
   const state = runtime.stateManager.read();
-
-  // Build sections from active state (parallels preamble-builder section set)
-  const sections: { name: string; content: string }[] = [];
-
-  if (state.attention.focus) {
-    sections.push({ name: "Focus", content: state.attention.focus });
-  }
-  if (state.belief.decisions.length > 0) {
-    sections.push({
-      name: "Active Decisions",
-      content: state.belief.decisions.map((d) => d.content).join("\n"),
-    });
-  }
-  if (state.belief.facts.length > 0) {
-    sections.push({
-      name: "Active Beliefs",
-      content: state.belief.facts.map((f) => f.content).join("\n"),
-    });
-  }
-  if (state.commitment.workflow?.goal) {
-    sections.push({ name: "Workflow", content: state.commitment.workflow.goal });
-  }
-  const unresolved = state.inference.hypotheses.filter((h) => h.status === "testing");
-  if (unresolved.length > 0) {
-    sections.push({
-      name: "Unresolved Hypotheses",
-      content: unresolved.map((h) => h.content).join("\n"),
-    });
-  }
-  const allEntries = [...state.learning.successes, ...state.learning.failures];
-  if (allEntries.length > 0) {
-    sections.push({
-      name: "Top-Ranked Learning",
-      content: allEntries.map((e) => e.description).join("\n"),
-    });
-  }
-
+  // Use the same section generation as the preamble builder for budget parity.
+  const render: RenderContext = {
+    capabilityLevel: "FULL",
+    contextHookFired: false,
+  };
+  const sections = buildSectionList(state, render);
   const budget = computeBudget("", sections);
   return formatTable(budget);
 }

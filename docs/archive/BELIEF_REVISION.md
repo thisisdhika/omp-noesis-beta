@@ -1,3 +1,10 @@
+> **⚠ STALE NOTICE — v1.0.0, archived**
+> This document is from v1.0.0 (2026-06-15). The current v1.0.1 version adds
+> explicit sections on "Separation of Recall and Commitment", "Commitment
+> Cascade", and "Audit Trail" (supersededBy, version chains). See
+> [docs/BELIEF_REVISION.md](../BELIEF_REVISION.md) for the current model.
+>
+
 # omp-noesis: Belief Revision Model
 
 > **Version:** 1.0.0

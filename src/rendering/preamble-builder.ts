@@ -62,10 +62,11 @@ function getContestedWarnings(state: NoesisState): string[] {
 
 function buildCapabilityBlock(render: RenderContext): string {
   const { capabilityLevel, graphifyVersion, graphFreshness } = render;
+  const version = graphifyVersion ? ` v${graphifyVersion}` : "";
 
   switch (capabilityLevel) {
     case "FULL":
-      return `[Noesis: FULL — graph-aware, v${graphifyVersion ?? "?"}]`;
+      return `[Noesis: FULL — graph-aware${version}]`;
     case "STALE": {
       const hours = graphFreshness?.staleHours ?? "?";
       return `[Noesis: STALE — graph ${hours}h stale, review needed]`;
@@ -263,6 +264,38 @@ function buildSections(state: NoesisState, render: RenderContext): Section[] {
   }
   return allSections;
 
+}
+
+/** Map section index to the canonical section name used by token-accountant categorisation. */
+export const SECTION_NAMES: Record<number, string> = {
+  1: "Capability Block",
+  2: "Contested Warnings",
+  3: "Focus",
+  4: "Active Decisions",
+  5: "Active Beliefs",
+  6: "Workflow",
+  7: "Unresolved Hypotheses",
+  8: "Top-Ranked Learning",
+  9: "Graph Evidence",
+  10: "Low Confidence Signal",
+  11: "State Pointer",
+};
+
+/**
+ * Build a section list compatible with token-accountant's computeBudget.
+ * Each entry has a `name` (for category mapping) and `content` (for token estimation).
+ * Only non-empty sections are included.
+ */
+export function buildSectionList(
+  state: NoesisState,
+  render: RenderContext,
+): { name: string; content: string }[] {
+  return buildSections(state, render)
+    .filter(s => s.content.length > 0)
+    .map(s => ({
+      name: SECTION_NAMES[s.index] ?? `Section ${s.index}`,
+      content: s.content,
+    }));
 }
 
 

@@ -1,3 +1,10 @@
+> **⚠ STALE NOTICE — v1.0.0, archived**
+> This document (2026-06-16) is a deep reference on Graphify itself, not Noesis's
+> tool/command surface. The tool and hook architecture around graph integration
+> has evolved since v1.0.0. See [docs/GRAPHIFY_CONTRACT.md](../GRAPHIFY_CONTRACT.md)
+> and [docs/ARCHITECTURE.md](../ARCHITECTURE.md) for current graph integration.
+>
+
 ---
 
 # Graphify in omp-noesis — Complete Reference

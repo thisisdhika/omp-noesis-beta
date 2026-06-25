@@ -1,3 +1,11 @@
+> **⚠ STALE NOTICE — v1.0.0, archived**
+> This document is from v1.0.0 (2026-06-15). The memory architecture has since
+> been updated: the current v1.0.1 uses "OMP memory (cross-session durability
+> channel)" in place of the earlier "OMP / Mnemopi / Hindsight" model. The
+> confidence translation table has also been revised. See
+> [docs/BOUNDARY_MATRIX.md](../BOUNDARY_MATRIX.md) for the current version.
+>
+
 # omp-noesis: Boundary Matrix
 
 > **Version:** 1.0.0

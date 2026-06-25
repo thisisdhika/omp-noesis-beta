@@ -169,12 +169,10 @@ export function registerBelieveFactTool(pi: ExtensionAPI, runtime: NoesisRuntime
     name: "noesis_believe_fact",
     label: "Noesis: Believe Fact",
     description:
-      "Store a verified belief fact into the noesis cognitive state. " +
-      "Use when you have confirmed information from graph queries, execution results, user statements, or confident inferences. " +
-      "Do NOT use for speculative guesses, unverified claims, or routine tool results that do not represent durable knowledge. " +
-      "Facts persist across the session and are included in the preamble for subsequent turns. " +
-      "For recording design decisions use noesis_believe_decision. " +
-      "For cross-session durable retention, also call the OMP `retain` tool separately with the same content.",
+      "Store a verified belief fact (from graph, execution, user, or confident inference). " +
+      "Not for speculation or routine calls. " +
+      "Facts persist in preamble across turns. " +
+      "For decisions use noesis_believe_decision.",
     parameters: buildBelieveFactParams(pi),
     async execute(toolCallId, params, _signal, _onUpdate, _ctx) {
       return executeBelieveFact(runtime, params);
@@ -268,11 +266,10 @@ export function registerBelieveDecisionTool(pi: ExtensionAPI, runtime: NoesisRun
     name: "noesis_believe_decision",
     label: "Noesis: Believe Decision",
     description:
-      "Record a design decision or workflow choice with its rationale into the noesis cognitive state. " +
-      "Use when you choose between alternatives, make an architectural call, or commit to a direction. " +
-      "Do NOT use for factual observations (use noesis_believe_fact) or for routine log entries. " +
-      "Decisions persist across the session and help future turns understand why things were done. " +
-      "For tracking multi-step workflows with progress updates use noesis_commit instead.",
+      "Record a design decision or workflow choice with rationale. " +
+      "Use when choosing between alternatives, making an architectural call, or committing to a direction. " +
+      "Not for facts (use noesis_believe_fact) or routine logs. " +
+      "For multi-step workflow tracking use noesis_commit.",
     parameters: buildBelieveDecisionParams(pi),
     async execute(toolCallId, params, _signal, _onUpdate, _ctx) {
       return executeBelieveDecision(runtime, params);

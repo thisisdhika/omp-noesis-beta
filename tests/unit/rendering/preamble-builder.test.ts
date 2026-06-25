@@ -793,3 +793,46 @@ describe("buildPreamble model-specific density control", () => {
     expect(deepseekResult.length).toBeLessThanOrEqual(claudeResult.length);
   });
 });
+
+// =============================================================================
+// buildPreamble — version display
+// =============================================================================
+
+describe("buildPreamble version display", () => {
+  it("does not show v? when graphifyVersion is undefined", () => {
+    const state: NoesisState = structuredClone(EMPTY_STATE);
+    const render: RenderContext = {
+      capabilityLevel: "FULL",
+      contextHookFired: false,
+      // graphifyVersion intentionally omitted
+    };
+    const result = buildPreamble(state, render);
+    // Should NOT contain "v?" — truthful output only
+    expect(result).not.toMatch(/,?\s*v\?/);
+    // Should still show FULL capability
+    expect(result).toContain("[Noesis: FULL — graph-aware]");
+  });
+
+  it("shows version when graphifyVersion is provided", () => {
+    const state: NoesisState = structuredClone(EMPTY_STATE);
+    const render: RenderContext = {
+      capabilityLevel: "FULL",
+      graphifyVersion: "2.1.0",
+      contextHookFired: false,
+    };
+    const result = buildPreamble(state, render);
+    expect(result).toContain("v2.1.0");
+  });
+
+  it("does not show v? for STALE capability either", () => {
+    const state: NoesisState = structuredClone(EMPTY_STATE);
+    const render: RenderContext = {
+      capabilityLevel: "STALE",
+      graphFreshness: { isStale: true, staleHours: 5 },
+      contextHookFired: false,
+    };
+    const result = buildPreamble(state, render);
+    expect(result).not.toMatch(/,?\s*v\?/);
+    expect(result).toContain("[Noesis: STALE — graph 5h stale, review needed]");
+  });
+});

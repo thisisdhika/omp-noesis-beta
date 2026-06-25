@@ -1,3 +1,11 @@
+> **⚠ STALE NOTICE — v1.0.0, archived**
+> This document (2026-06-16) is a third-party audit that informed development.
+> It references the v1.0.0 codebase state. Current v1.0.1 addresses several of
+> the gaps identified (e.g., circuit breaker via provider-request-hook, observer
+> of inferredConfidence in state-inspect tool). See
+> [docs/GRAPHIFY_CONTRACT.md](../GRAPHIFY_CONTRACT.md) for current graph integration.
+>
+
 # Graphify Integration — Best Practices Audit
 
 > **Version:** 1.0.0

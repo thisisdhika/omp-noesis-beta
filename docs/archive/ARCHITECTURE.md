@@ -1,3 +1,10 @@
+> **⚠ STALE NOTICE — v1.0.0, archived**
+> This document is from v1.0.0 (2026-06-15). It references 7 tools and 5 hooks,
+> predating the current v1.0.1 surface (15 tools: 8 canonical + 7 aliases; 8 hooks;
+> 6 slash commands; OMP memory bridge). See [docs/ARCHITECTURE.md](../ARCHITECTURE.md)
+> for the current architecture specification.
+>
+
 # omp-noesis: Architecture Specification
 
 > **Version:** 1.0.0  

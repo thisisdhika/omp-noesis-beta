@@ -62,19 +62,24 @@ Zod schemas for all state shapes, tool parameters, and internal types. Exports T
 | `filesystem-store.ts` | Atomic read/write of `state.json` |
 | `state-manager.ts` | In-memory authority, OCC via UnitOfWork, checkpointing |
 | `migrations.ts` | Schema version upgrades |
+| `unit-of-work.ts` | Optimistic concurrency control (OCC) |
 | `graphify-client.ts` | Graphify subprocess + MCP fallback |
 | `graphify-parser.ts` | NL output → structured `GraphFinding` |
+| `graphify-delta.ts` | Graph node diff for belief revision auto-reconciliation |
 | `graphify-setup.ts` | CLI detection and build invocation |
-
+| `repositories/` | Per-layer repository classes (belief, attention, commitment, inference, learning) |
 ### Domain Layer
 
 | Domain | Files | Responsibility |
 |---|---|---|
 | Attention | `attention-domain.ts` | Focus, files, queries, ephemeral findings |
-| Belief | `belief-domain.ts`, `revision-strategy.ts`, `confidence-strategy.ts` | Facts, decisions, AGM revision |
+| Belief | `belief-domain.ts`, `revision-strategy.ts`, `confidence-strategy.ts`, `review-strategy.ts`, `grounding-strategy.ts`, `epistemic-strategy.ts` | Facts, decisions, AGM revision, review, graph grounding |
 | Inference | `inference-domain.ts` | Hypotheses, reasoning, auto-promotion |
-| Learning | `learning-domain.ts`, `ranking-strategy.ts`, `eviction-strategy.ts` | Capture, ranking, retention |
-
+| Commitment | `commitment-domain.ts`, `consistency-strategy.ts` | Workflow, actions, dependency resolution |
+| Learning | `learning-domain.ts`, `ranking-strategy.ts`, `eviction-strategy.ts`, `lesson-retrieval.ts` | Capture, ranking, retention, retrieval |
+| Compaction | `loss-strategy.ts` | Per-entry compaction fidelity reporting |
+| Federation | `federation-domain.ts` | Publish/pull/revise/retract canonical ledger entries |
+| Sandbox | `sandbox-domain.ts` | Speculative belief sandboxing (create, explore, merge, discard) |
 ### Rendering Layer
 
 | Module | Responsibility |
@@ -93,14 +98,22 @@ End-turn eviction is orchestrated by `EndTurnCleanupUseCase` in the application 
 | `hydrate-from-memory.ts` | Query OMP memory → parse → dedup → import Noesis beliefs at session start |
 | `add-belief-fact.ts` | Create belief fact with conflict/contradiction detection |
 | `add-belief-decision.ts` | Create belief decision with rationale |
+| `revise-belief.ts` | Explicit belief revision with supersession |
 | `add-hypothesis.ts` | Create hypothesis in inference layer |
 | `confirm-hypothesis.ts` | Transition hypothesis to confirmed |
+| `update-hypothesis.ts` | Update hypothesis status (refute/abandon) |
 | `add-reasoning-step.ts` | Add reasoning step to inference layer |
 | `attend.ts` | Update attention focus with graph perception |
 | `capture-learning.ts` | Capture tool results as learning entries |
+| `apply-lesson.ts` | Apply a captured lesson as a prevention belief |
 | `extend-workflow.ts` / `replace-workflow.ts` / `update-workflow-step.ts` | Workflow lifecycle |
 | `end-turn-cleanup.ts` | Eviction orchestration after tool execution |
-
+| `reconcile-with-graph.ts` | Auto-demote orphaned beliefs when graph nodes are removed |
+| `resolve-provenance.ts` | Trace fact/decision provenance chain |
+| `create-sandbox.ts` / `explore-in-sandbox.ts` / `merge-sandbox.ts` / `discard-sandbox.ts` | Speculative sandbox lifecycle |
+| `publish-belief.ts` / `pull-beliefs.ts` / `retract-belief.ts` / `import-ledger.ts` | Multi-agent federation operations |
+| `submit-for-review.ts` / `accept-review.ts` / `reject-review.ts` | Human-in-the-loop review cycle |
+| `add-planned-action.ts` | Record a planned action in the commitment layer |
 ### OMP Memory Integration
 
 The OMP memory bridge enables cross-session durability while keeping `state.json` authoritative:
@@ -132,10 +145,9 @@ Tool/Hook → state.json (authoritative write)
 | Module | Responsibility |
 |---|---|
 | `vault-store.ts` | Interface (push, pull, search) |
-| `noop-vault-store.ts` | Fallback (no-op) |
+| `vault-detector.ts` | Backend resolution chain (inline no-op fallback) |
 | `obsidian-vault-store.ts` | Markdown + frontmatter projection |
 | `obsidian-writer.ts` | Atomic note creation |
-| `vault-detector.ts` | Backend resolution chain |
 | `vault-retry.ts` | On-disk retry buffer |
 
 ## Dependency Direction

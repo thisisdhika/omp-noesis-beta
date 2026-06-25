@@ -55,7 +55,7 @@ export function registerToolAliases(pi: ExtensionAPI, runtime: NoesisRuntime): v
   pi.registerTool({
     name: "store_memory",
     label: "Noesis: Store Memory",
-    description: "Alias for noesis_believe_fact. Store a verified fact. For storing decisions, use store_decision.",
+    description: "Alias for noesis_believe_fact. Store a verified fact. For decisions, use store_decision.",
     parameters: buildBelieveFactParams(pi),
     async execute(_tCID, params, _signal, _onUpdate, _ctx) {
       return executeBelieveFact(runtime, params);
@@ -99,7 +99,7 @@ export function registerToolAliases(pi: ExtensionAPI, runtime: NoesisRuntime): v
   pi.registerTool({
     name: "read_memory",
     label: "Noesis: Read Memory",
-    description: "Alias for noesis_state_inspect. Query current live state — beliefs, decisions, hypotheses, learning, or keyword search (query:\"search\") across in-memory cognitive state.",
+    description: "Alias for noesis_state_inspect. Query live in-memory cognitive state — beliefs, decisions, hypotheses, learning, or keyword search across layers.",
     parameters: buildRecallParams(pi),
     async execute(_tCID, params, _signal, _onUpdate, _ctx) {
       return executeRecall(runtime, params);

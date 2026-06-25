@@ -1,3 +1,11 @@
+> **⚠ STALE NOTICE — Archived research notes**
+> This document (2026-06-18) contains provider-specific tool-calling research
+> that informed the provider-request-hook and schema adaptation in v1.0.0+.
+> Provider behavior and model names may have changed; the research describes
+> observed behavior at time of writing, not the current tool/command/prompt
+> surface of omp-noesis v1.0.1.
+>
+
 # Provider-Specific Tool-Calling Quirks
 
 **Researcher:** ProviderQuirksResearcher

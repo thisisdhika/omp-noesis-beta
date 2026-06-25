@@ -144,7 +144,7 @@ export function registerSandboxTool(pi: ExtensionAPI, runtime: NoesisRuntime): v
     label: "Noesis: Sandbox",
     description:
       "Speculative belief experimentation sandbox. " +
-      "Subcommands: create <name> [desc], explore <sandboxId> <content> [confidence], " +
+      "Subcommands: create <name> [desc], explore <sandboxId> <content> [confidence] [tags] [evidence], " +
       "merge <sandboxId>, discard <sandboxId>, list",
     parameters: pi.zod.object({
       subcommand: pi.zod.string().describe("create | explore | merge | discard | list"),

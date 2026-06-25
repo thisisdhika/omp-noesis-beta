@@ -398,8 +398,8 @@ describe("noesis:init", () => {
       const rulesPath = join(tmp.path, ".omp", "RULES.md");
       expect(existsSync(rulesPath)).toBeTrue();
       const content = readFileSync(rulesPath, "utf-8");
-      expect(content).toContain("**Always do these FIRST:**");
-      expect(content).toContain("**Graph Queries:**");
+      expect(content).toContain("**Workflow:**");
+      expect(content).toContain("**Graph:**");
     });
 
     it("preserves user-modified section during merge", async () => {
@@ -410,7 +410,7 @@ describe("noesis:init", () => {
         [
           "# Noesis Rules",
           "",
-          "**Always do these FIRST:**",
+          "**Workflow:**",
           "- My custom rule for this project",
           "",
           "**NEVER:**",
@@ -426,8 +426,8 @@ describe("noesis:init", () => {
       // User's section content should be preserved
       expect(content).toContain("- My custom rule for this project");
       // Template sections not in user's file should be appended
-      expect(content).toContain("**After events:**");
-      expect(content).toContain("**Graph Queries:**");
+      expect(content).toContain("**Workflow:**");
+      expect(content).toContain("**Graph:**");
     });
 
     it("preserves user-only sections not in template", async () => {
@@ -438,7 +438,7 @@ describe("noesis:init", () => {
         [
           "# Noesis Rules",
           "",
-          "**Always do these FIRST:**",
+          "**Workflow:**",
           "- Task start: attend",
           "",
           "**My Custom Section:**",
@@ -470,8 +470,8 @@ describe("noesis:init", () => {
       const content = readFileSync(rulesPath, "utf-8");
       // Should be the full template, not old content
       expect(content).not.toContain("Old content");
-      expect(content).toContain("**Always do these FIRST:**");
-      expect(content).toContain("**Graph Queries:**");
+      expect(content).toContain("**Workflow:**");
+      expect(content).toContain("**Graph:**");
     });
 
     it("reports merged when managed block content differs", async () => {

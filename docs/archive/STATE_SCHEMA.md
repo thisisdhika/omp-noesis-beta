@@ -1,3 +1,13 @@
+> **⚠ STALE NOTICE — v1.0.0, archived**
+> This document is from v1.0.0 (2026-06-15). The schema has since been extended:
+> BeliefFact and BeliefDecision now include `epistemicStatus`
+> (`"certain"|"probable"|"speculative"|"deprecated"|"contradicted"`),
+> `originalConfidence` for OMP memory roundtrip fidelity, and additional
+> `source` values (`"omp-memory"`, `"obsidian-import"`). The current version
+> also documents OMP memory hydration, UnitOfWork/OCC concurrency, and local
+> file security. See [docs/STATE_SCHEMA.md](../STATE_SCHEMA.md).
+>
+
 # omp-noesis: Cognitive State Schema
 
 > **Version:** 1.0.0

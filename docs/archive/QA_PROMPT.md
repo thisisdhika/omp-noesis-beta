@@ -1,3 +1,18 @@
+> **⚠ STALE NOTICE — Major version gap (v0.3 → current v1.0.1)**
+> This QA prompt targets omp-noesis v0.3 and is severely outdated. The tool API,
+> parameter schemas, command surface, and memory architecture have been
+> fundamentally redesigned since then. Current v1.0.1 has:
+> • 8 canonical tools (+7 aliases), not 6
+> • 8 hooks, not 5
+> • 6 slash commands (noesis:init, noesis:debug, noesis:token-profile, noesis:review, noesis:sandbox, noesis:federate)
+> • OMP memory bridge (cross-session durability channel)
+> • State schema with epistemicStatus, originalConfidence, omp-memory sources
+> • Split noesis_believe_fact / noesis_believe_decision (was single noesis_believe)
+> • Redesigned commit, infer, state-inspect parameter schemas
+>
+> Do NOT use this document for testing current behavior. See the current docs at `docs/`.
+>
+
 # omp-noesis v0.3 — Full Feature QA Prompt
 
 > Hand this document to a QA agent to perform comprehensive end-to-end testing of the omp-noesis v0.3 extension.

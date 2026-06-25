@@ -1,3 +1,11 @@
+> **⚠ STALE NOTICE — v1.0.0, archived**
+> This document is from v1.0.0 (2026-06-15). The graph integration model has
+> shifted: the current v1.0.1 uses CLI as the primary query path for attend-tool
+> automated queries, with MCP as an LLM-facing option. The stale penalty was
+> revised from >24h to >720h threshold. See
+> [docs/GRAPHIFY_CONTRACT.md](../GRAPHIFY_CONTRACT.md) for the current contract.
+>
+
 # omp-noesis: Graphify Integration Contract
 
 > **Version:** 1.0.0

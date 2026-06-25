@@ -226,11 +226,8 @@ export function registerCommitTool(pi: ExtensionAPI, runtime: NoesisRuntime): vo
     name: "noesis_commit",
     label: "Noesis: Commit",
     description:
-     "Workflow tracking for multi-step tasks. Call when starting multi-step work, " +
-     "completing a step, or replanning. Use extend_workflow to append steps, " +
-     "replace_workflow to replace the entire plan, update_step to change a step's " +
-     "status, or add_action to record a planned action. " +
-     "Tracks cognition, not execution. Do NOT call for single-step tasks.",
+     "Workflow tracking for multi-step tasks. Supports extend_workflow, replace_workflow, update_step, add_action. " +
+     "Tracks cognition, not execution. Not for single-step tasks.",
     parameters: buildCommitParams(pi),
     async execute(toolCallId, params, _signal, _onUpdate, _ctx) {
       return executeCommit(runtime, params);

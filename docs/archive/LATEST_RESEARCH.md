@@ -1,3 +1,9 @@
+> **⚠ STALE NOTICE — Archived research notes**
+> This document (2026-06-21) contains general research on token budgeting and
+> context engineering that informed design decisions. It does not describe the
+> current v1.0.1 tool/command/prompt surface. See `docs/` for current documentation.
+>
+
 # Latest Research
 
 > Status: Research notes for omp-noesis planning

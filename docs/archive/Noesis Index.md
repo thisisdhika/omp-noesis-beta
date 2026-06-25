@@ -1,3 +1,11 @@
+> **⚠ STALE NOTICE — v1.0.0, archived**
+> This document is from v1.0.0 (2026-06-15). The memory architecture has since
+> been updated: the current v1.0.1 uses OMP memory as the cross-session
+> durability channel, with state.json as authoritative, rather than the earlier
+> mnemo-pi/local model. See the current version at [Noesis Index.md](../../Noesis%20Index.md)
+> (root) and [.omp/RULES.md](../../.omp/RULES.md) for current operating rules.
+>
+
 # Noesis Dashboard
 
 Welcome to your Noesis cognitive state dashboard. This file is your window into what the AI assistant has learned, decided, and is tracking in this project.

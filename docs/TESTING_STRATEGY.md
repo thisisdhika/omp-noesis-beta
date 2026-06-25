@@ -99,7 +99,7 @@ bun test --isolate --coverage
 ```
 | Suite | Result |
 |---|---|
-| Tests | ~1120 pass (≤2 known non-blocking failures) |
+| Tests | ~1187 pass (≤2 known non-blocking failures) |
 | Function coverage | ~86% |
 | Line coverage | ~91% |
 

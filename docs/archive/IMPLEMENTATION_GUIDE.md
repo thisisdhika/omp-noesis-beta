@@ -1,3 +1,10 @@
+> **⚠ STALE NOTICE — v1.0.0, archived**
+> This document is from v1.0.0 (2026-06-15). It is a historical build plan that
+> references development-phase decisions for v1.0.0. Tool names, module structure,
+> and architecture have since evolved. See the current docs at `docs/` for the
+> final v1.0.1 implementation.
+>
+
 # omp-noesis: Implementation Guide
 
 > **Version:** 1.0.0  
